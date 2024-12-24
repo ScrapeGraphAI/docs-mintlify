@@ -1,0 +1,13 @@
+---
+title: 'Get SmartScraper Status'
+openapi: 'GET /v1/smartscraper/{request_id}'
+description: 'Check the status and retrieve results of a SmartScraper request.'
+---
+
+This endpoint allows you to check the status of a SmartScraper request and retrieve its results once completed.
+
+### Status Values
+- `queued`: Request is waiting to be processed
+- `processing`: Request is being processed
+- `completed`: Request has finished successfully
+- `failed`: Request failed to process

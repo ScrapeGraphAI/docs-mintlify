@@ -1,29 +1,32 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "ScrapeGraphAI",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg"
   },
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#9333ea",
+    "light": "#9f52eb",
+    "dark": "#1f2937",
+    "background": {
+      "dark": "#101725"
+    },
     "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+      "from": "#9333ea",
+      "to": "#9f52eb"
     }
   },
   "topbarLinks": [
     {
       "name": "Support",
-      "url": "mailto:hi@mintlify.com"
+      "url": "mailto:contact@scrapegraphai.com"
     }
   ],
   "topbarCtaButton": {
     "name": "Dashboard",
-    "url": "https://dashboard.mintlify.com"
+    "url": "https://dashboard.scrapegraphai.com"
   },
   "tabs": [
     {
@@ -45,7 +48,7 @@
     {
       "name": "Blog",
       "icon": "newspaper",
-      "url": "https://mintlify.com/blog"
+      "url": "https://scrapegraphai.com/blog"
     }
   ],
   "navigation": [
@@ -75,11 +78,31 @@
       ]
     },
     {
-      "group": "Endpoint Examples",
+      "group": "SmartScraper",
       "pages": [
-        "api-reference/endpoint/get",
-        "api-reference/endpoint/create",
-        "api-reference/endpoint/delete"
+        "api-reference/endpoint/smartscraper/start",
+        "api-reference/endpoint/smartscraper/get-status"
+      ]
+    },
+    {
+      "group": "LocalScraper",
+      "pages": [
+        "api-reference/endpoint/localscraper/start",
+        "api-reference/endpoint/localscraper/get-status"
+      ]
+    },
+    {
+      "group": "Markdownify",
+      "pages": [
+        "api-reference/endpoint/markdownify/start",
+        "api-reference/endpoint/markdownify/get-status"
+      ]
+    },
+    {
+      "group": "User",
+      "pages": [
+        "api-reference/endpoint/user/get-credits",
+        "api-reference/endpoint/user/submit-feedback"
       ]
     }
   ],

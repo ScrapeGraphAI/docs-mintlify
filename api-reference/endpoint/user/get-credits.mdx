@@ -1,0 +1,14 @@
+---
+title: 'Get Credits'
+openapi: 'GET /v1/credits'
+description: 'Get the remaining credits and total credits used for your account.'
+---
+
+This endpoint allows you to check your account's credit balance and usage. Each API request consumes a different number of credits:
+- Markdownify: 2 credits per webpage
+- SmartScraper: 5 credits per webpage
+- LocalScraper: 10 credits per webpage
+
+The response shows:
+- `remaining_credits`: Number of credits available for use
+- `total_credits_used`: Total number of credits consumed so far 

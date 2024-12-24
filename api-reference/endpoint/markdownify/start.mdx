@@ -1,0 +1,29 @@
+---
+title: 'Start Markdownify'
+openapi: 'POST /v1/markdownify'
+description: 'Convert any webpage into clean, readable Markdown format.'
+---
+
+Markdownify converts webpage content into clean, well-formatted Markdown. This is useful for content migration, documentation creation, or making web content more readable and portable.
+
+### Features
+- Preserves content structure
+- Handles complex layouts
+- Maintains headings hierarchy
+- Converts tables
+- Preserves links and images
+- Cleans up unnecessary formatting
+
+### Example Response
+
+```json
+{
+  "request_id": "65401e0d-8cd6-4d6a-88f6-e21255d1c06a",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com/",
+  "result": "## Transform Websites into\nStructured Data\n\n### Just One Prompt Away\n\nTransform any website into clean, organized data for AI agents and Data Analytics.\nEnhance your apps with our AI-powered API.\n\n### Save time\n\nNo more writing complex code or dealing with manual extraction.\n\n### Save money\n\nWhy hire expensive developers or pay for costly scraping services? Our API gives you high-quality data extraction at a fraction of the cost.\n\n### AI powered\n\nWe employ state-of-the-art AI technologies to streamline the data extraction process...",
+  "error": ""
+}
+```
+
+The response includes the complete webpage content converted to Markdown format. The example above shows a truncated version of the response.

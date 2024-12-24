@@ -1,0 +1,13 @@
+---
+title: 'Get Markdownify Status'
+openapi: 'GET /v1/markdownify/{request_id}'
+description: 'Check the status and retrieve results of a Markdownify request.'
+---
+
+This endpoint allows you to check the status of a Markdownify request and retrieve its results once completed.
+
+### Status Values
+- `queued`: Request is waiting to be processed
+- `processing`: Request is being processed
+- `completed`: Request has finished successfully
+- `failed`: Request failed to process
