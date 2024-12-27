@@ -1,20 +1,20 @@
 ---
-title: '🏠 Zillow Listings'
-description: 'How to extract real estate data from Zillow'
+title: '🏠 Homes Listings'
+description: 'How to extract real estate data from Homes.com'
 ---
 
 <img
   style={{ borderRadius: '0.5rem' }}
-  src="/cookbook/images/zillow-banner.png"
+  src="/cookbook/images/homes-banner.png"
 />
 
-Learn how to extract property listings from Zillow.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather detailed property information, pricing, and agent details.
+Learn how to extract property listings from Homes.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather detailed property information, pricing, and agent details.
 
 <Note>
 Try it yourself in our interactive notebooks:
-- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_sdk.ipynb)
-- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_langchain.ipynb)
-- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_llama_index.ipynb)
+- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/homes-forsale/scrapegraph_sdk.ipynb)
+- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/homes-forsale/scrapegraph_langchain.ipynb)
+- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/homes-forsale/scrapegraph_llama_index.ipynb)
 </Note>
 
 ## The Goal
@@ -43,7 +43,7 @@ from typing import List, Optional
 from scrapegraph_py import Client
 
 # Schema for a single house listing
-class HouseListingSchema(BaseModel):
+class HouseSchema(BaseModel):
     price: int = Field(description="Price of the house in USD")
     bedrooms: int = Field(description="Number of bedrooms")
     bathrooms: int = Field(description="Number of bathrooms")
@@ -57,15 +57,15 @@ class HouseListingSchema(BaseModel):
     agency: str = Field(description="Agency listing the house")
 
 # Schema containing a list of house listings
-class ZillowHouseListingsSchema(BaseModel):
-    houses: List[HouseListingSchema] = Field(description="List of house listings on Zillow or similar platforms")
+class HouseListingsSchema(BaseModel):
+    houses: List[HouseSchema] = Field(description="List of house listings on Homes.com or similar platforms")
 
 client = Client(api_key="your-api-key")
 
 response = client.smartscraper(
-    website_url="https://www.zillow.com/homes/for_sale/",
+    website_url="https://www.homes.com/san-francisco-ca/?bb=nzpwspy0mS749snkvsb",
     user_prompt="Extract property listings information",
-    output_schema=ZillowHouseListingsSchema
+    output_schema=HouseListingsSchema
 )
 ```
 
