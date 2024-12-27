@@ -1,58 +1,128 @@
 ---
-title: 'Zillow Listings'
+title: '🏠 Zillow Listings'
 description: 'How to extract real estate data from Zillow'
 ---
 
-Learn how to scrape property listings from Zillow.com using LocalScraper for handling dynamic JavaScript content.
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/zillow-banner.png"
+/>
+
+Learn how to extract property listings from Zillow.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather detailed property information, pricing, and agent details.
+
+<Note>
+Try it yourself in our interactive notebooks:
+- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_sdk.ipynb)
+- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_langchain.ipynb)
+- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/zillow-forsale/scrapegraph_llama_index.ipynb)
+</Note>
 
 ## The Goal
 
-Extract key property information:
-- Price
-- Address
-- Square footage
-- Bedrooms/bathrooms
-- Property details
-- Listing photos
+We'll extract the following property information:
+
+| Field | Description |
+| ----- | ----------- |
+| Price | Property price in USD |
+| Bedrooms | Number of bedrooms |
+| Bathrooms | Number of bathrooms |
+| Square Feet | Total square footage |
+| Address | Property address |
+| City | Property city |
+| State | Property state |
+| ZIP Code | Location ZIP code |
+| Tags | Property features |
+| Agent | Listing agent name |
+| Agency | Listing agency |
 
 ## Code Example
 
 ```python
-from scrapegraphai import LocalScraper
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from scrapegraph_py import Client
 
-scraper = LocalScraper()
+# Schema for a single house listing
+class HouseListingSchema(BaseModel):
+    price: int = Field(description="Price of the house in USD")
+    bedrooms: int = Field(description="Number of bedrooms")
+    bathrooms: int = Field(description="Number of bathrooms")
+    square_feet: int = Field(description="Total square footage of the house")
+    address: str = Field(description="Address of the house")
+    city: str = Field(description="City where the house is located")
+    state: str = Field(description="State where the house is located")
+    zip_code: str = Field(description="ZIP code of the house location")
+    tags: List[str] = Field(description="Tags like 'New construction' or 'Large garage'")
+    agent_name: str = Field(description="Name of the listing agent")
+    agency: str = Field(description="Agency listing the house")
 
-# Configure the scraper
-job = scraper.start(
-    url="https://www.zillow.com/homes/for_sale/",
-    wait_for=".list-card",
-    extraction_rules={
-        "listings": {
-            "selector": ".list-card",
-            "multiple": True,
-            "data": {
-                "price": ".list-card-price",
-                "address": ".list-card-addr",
-                "details": ".list-card-details",
-                "photos": {
-                    "selector": ".list-card-img img",
-                    "attribute": "src"
-                }
-            }
-        }
-    }
+# Schema containing a list of house listings
+class ZillowHouseListingsSchema(BaseModel):
+    houses: List[HouseListingSchema] = Field(description="List of house listings on Zillow or similar platforms")
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://www.zillow.com/homes/for_sale/",
+    user_prompt="Extract property listings information",
+    output_schema=ZillowHouseListingsSchema
 )
-
-# Get results
-results = scraper.get_status(job.id)
-for listing in results.data["listings"]:
-    print(f"Property: {listing['address']} - {listing['price']}")
 ```
 
-## Best Practices
+## Example Output
 
-- Respect Zillow's robots.txt and terms of service
-- Implement delays between requests
-- Handle pagination properly
-- Store results in a structured format
-- Monitor for layout changes that might break selectors
+```json
+{
+    "houses": [
+        {
+            "price": 750000,
+            "bedrooms": 4,
+            "bathrooms": 3,
+            "square_feet": 2500,
+            "address": "123 Main Street",
+            "city": "San Francisco",
+            "state": "CA",
+            "zip_code": "94105",
+            "tags": ["New Construction", "Smart Home", "Mountain View"],
+            "agent_name": "Jane Smith",
+            "agency": "Bay Area Realty"
+        },
+        {
+            "price": 525000,
+            "bedrooms": 3,
+            "bathrooms": 2,
+            "square_feet": 1800,
+            "address": "456 Oak Avenue",
+            "city": "San Francisco",
+            "state": "CA",
+            "zip_code": "94110",
+            "tags": ["Recently Renovated", "Garage", "Garden"],
+            "agent_name": "John Davis",
+            "agency": "Golden Gate Properties"
+        }
+    ]
+}
+```
+
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note>

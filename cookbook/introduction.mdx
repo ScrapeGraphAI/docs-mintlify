@@ -1,29 +1,82 @@
 ---
 title: 'Introduction'
-description: 'Learn how to use ScrapeGraphAI through practical examples'
+description: 'Learn from practical examples using ScrapeGraphAPI'
 ---
 
-Welcome to the ScrapeGraphAI cookbook! Here you'll find practical examples and recipes for common web scraping scenarios.
+## Overview
 
-## What's Inside
+Welcome to the ScrapeGraphAPI cookbook! Here you'll find practical examples implemented as interactive Google Colab notebooks. Each example demonstrates different integration methods and use cases.
 
-The cookbook contains real-world examples showing how to:
+<Note>
+All examples are available as ready-to-use Google Colab notebooks - just click and start experimenting!
+</Note>
 
-- Extract articles and content from news sites
-- Scrape real estate listings and property data
-- Handle pagination and infinite scroll
-- Work with dynamic JavaScript content
-- And more!
+## Implementation Methods
+
+Each example is available in multiple implementations:
+
+<CardGroup cols={3}>
+  <Card title="SDK Direct Usage" icon="box">
+    Basic implementation using our official SDKs
+  </Card>
+  <Card title="LangChain Integration" icon="link">
+    Integration with LangChain for LLM workflows
+  </Card>
+  <Card title="LlamaIndex Integration" icon="database">
+    Using ScrapeGraph with LlamaIndex tools
+  </Card>
+</CardGroup>
+
+## Example Projects
+
+<CardGroup cols={2}>
+  <Card
+    title="🏢 Company Information"
+    icon="building"
+    href="/cookbook/examples/company-info"
+  >
+    Extract structured company data from websites
+  </Card>
+  <Card
+    title="🌟 GitHub Trending"
+    icon="github"
+    href="/cookbook/examples/github-trending"
+  >
+    Monitor trending repositories and developers
+  </Card>
+  <Card
+    title="📰 Wired Articles"
+    icon="newspaper"
+    href="/cookbook/examples/wired"
+  >
+    Extract news articles and content
+  </Card>
+  <Card
+    title="🏠 Zillow Listings"
+    icon="house"
+    href="/cookbook/examples/zillow"
+  >
+    Scrape real estate property data
+  </Card>
+</CardGroup>
+
+### Advanced Examples
+
+<Card
+  title="🔬 Research Agent with Tavily"
+  icon="microscope"
+  href="/cookbook/examples/research-agent"
+>
+  Build a sophisticated research agent combining ScrapeGraph, LangGraph, and Tavily Search
+</Card>
 
 ## Getting Started
 
-Browse through our examples in the sidebar to find scenarios similar to your use case. Each example includes:
+1. Choose an example that matches your use case
+2. Open the Colab notebook for your preferred implementation method
+3. Follow the step-by-step instructions
+4. Experiment and adapt the code for your needs
 
-- Step-by-step explanation
-- Complete code samples
-- Tips for handling common challenges
-- Best practices and optimization techniques
-
-## Contributing
-
-Have a useful example to share? We welcome community contributions! Submit a PR to add your own cookbook recipe.
+<Note>
+Make sure to have your ScrapeGraphAI API key ready. Get one from the [dashboard](https://dashboard.scrapegraphai.com) if you haven't already.
+</Note>

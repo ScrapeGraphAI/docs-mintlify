@@ -1,5 +1,5 @@
 ---
-title: 'Wired Articles'
+title: '📰 Wired Articles'
 description: 'How to extract articles from Wired.com'
 ---
 
@@ -8,112 +8,100 @@ description: 'How to extract articles from Wired.com'
   src="/cookbook/images/wired-banner.png"
 />
 
-Learn how to scrape article content from Wired.com using ScrapeGraphAI's SmartScraper. This example shows how to extract structured data from news articles while respecting the site's terms of service.
+Learn how to extract article information from Wired.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather article details, categories, and author information.
 
 <Note>
-Try it yourself in our [Google Colab Notebook](https://colab.research.google.com/drive/example-notebook-id)
+Try it yourself in our interactive notebooks:
+- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_sdk.ipynb)
+- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_langchain.ipynb)
+- [LangGraph Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_langgraph.ipynb)
+- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_llama_index.ipynb)
 </Note>
 
 ## The Goal
 
-We'll extract the following from Wired article pages:
+We'll extract the following article information:
 
 | Field | Description |
 | ----- | ----------- |
-| Title | Main article headline |
-| Author | Writer's name and bio |
-| Date | Publication timestamp |
-| Content | Full article text |
-| Image | Featured article image |
+| Category | Article category (e.g., 'Health', 'Environment') |
+| Title | Article headline |
+| Link | URL to the full article |
+| Author | Writer's name |
 
 ## Code Example
 
 ```python
-from scrapegraphai import SmartScraper
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import Client
 
-scraper = SmartScraper()
+# Schema for a single news item
+class NewsItemSchema(BaseModel):
+    category: str = Field(description="Category of the news (e.g., 'Health', 'Environment')")
+    title: str = Field(description="Title of the news article")
+    link: str = Field(description="URL to the news article")
+    author: str = Field(description="Author of the news article")
 
-# Start a scraping job
-job = scraper.start(
-    url="https://www.wired.com/story/example-article",
-    extraction_rules={
-        "title": "h1",
-        "author": ".author-name", 
-        "date": ".publish-date",
-        "content": "article .body",
-        "image": {
-            "selector": ".article-main-image img",
-            "attribute": "src"
-        }
-    }
+# Schema that contains a list of news items
+class ListNewsSchema(BaseModel):
+    news: List[NewsItemSchema] = Field(description="List of news articles with their details")
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://www.wired.com/",
+    user_prompt="Extract latest news articles",
+    output_schema=ListNewsSchema
 )
-
-# Get the results
-result = scraper.get_status(job.id)
-print(f"Title: {result.data['title']}")
-print(f"Author: {result.data['author']}")
 ```
 
-<CodeGroup>
+## Example Output
 
-```python Example Response
+```json
 {
-    "title": "The Future of AI Is Here—But It's Not What We Expected",
-    "author": "Steven Levy",
-    "date": "2024-03-21T12:00:00",
-    "content": "The article text goes here...",
-    "image": "https://wired.com/path/to/image.jpg"
+    "news": [
+        {
+            "category": "Artificial Intelligence",
+            "title": "The Race to Build Better Large Language Models",
+            "link": "https://www.wired.com/story/the-race-to-build-better-llms",
+            "author": "Will Knight"
+        },
+        {
+            "category": "Security",
+            "title": "The Latest Cybersecurity Threats You Need to Know About",
+            "link": "https://www.wired.com/story/latest-cybersecurity-threats",
+            "author": "Lily Hay Newman"
+        },
+        {
+            "category": "Science",
+            "title": "New Discoveries in Quantum Computing",
+            "link": "https://www.wired.com/story/quantum-computing-discoveries",
+            "author": "Steven Levy"
+        }
+    ]
 }
 ```
 
-```python Error Handling
-try:
-    result = scraper.get_status(job.id)
-except Exception as e:
-    print(f"Error: {str(e)}")
-    # Implement retry logic
-```
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
 
-</CodeGroup>
+---
 
-## Best Practices
-
-<Tip>
-Always check a site's robots.txt and terms of service before scraping. Wired allows limited scraping for personal use.
-</Tip>
-
-### Rate Limiting
-
-Implement delays between requests to avoid overwhelming the server:
-
-```python
-import time
-
-# Add delay between requests
-time.sleep(2)
-```
-
-### Error Handling
-
-- Handle network timeouts gracefully
-- Implement retry logic for failed requests
-- Validate extracted data before storage
-
-### Content Structure
-
-- Use semantic selectors that target content structure
-- Handle different article layouts with flexible rules
-- Store results in a structured format (JSON/CSV)
-
-## Monitoring & Maintenance
-
-Keep your scraper running reliably by:
-
-- Monitoring for layout changes
-- Updating selectors when needed
-- Logging errors and exceptions
-- Setting up alerts for failures
-
-<Warning>
-Web scraping can be fragile. Sites may change their layout without notice, breaking your selectors. Regular monitoring is essential.
-</Warning>
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note>
