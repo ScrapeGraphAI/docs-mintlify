@@ -1,0 +1,119 @@
+---
+title: 'Wired Articles'
+description: 'How to extract articles from Wired.com'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/wired-banner.png"
+/>
+
+Learn how to scrape article content from Wired.com using ScrapeGraphAI's SmartScraper. This example shows how to extract structured data from news articles while respecting the site's terms of service.
+
+<Note>
+Try it yourself in our [Google Colab Notebook](https://colab.research.google.com/drive/example-notebook-id)
+</Note>
+
+## The Goal
+
+We'll extract the following from Wired article pages:
+
+| Field | Description |
+| ----- | ----------- |
+| Title | Main article headline |
+| Author | Writer's name and bio |
+| Date | Publication timestamp |
+| Content | Full article text |
+| Image | Featured article image |
+
+## Code Example
+
+```python
+from scrapegraphai import SmartScraper
+
+scraper = SmartScraper()
+
+# Start a scraping job
+job = scraper.start(
+    url="https://www.wired.com/story/example-article",
+    extraction_rules={
+        "title": "h1",
+        "author": ".author-name", 
+        "date": ".publish-date",
+        "content": "article .body",
+        "image": {
+            "selector": ".article-main-image img",
+            "attribute": "src"
+        }
+    }
+)
+
+# Get the results
+result = scraper.get_status(job.id)
+print(f"Title: {result.data['title']}")
+print(f"Author: {result.data['author']}")
+```
+
+<CodeGroup>
+
+```python Example Response
+{
+    "title": "The Future of AI Is Here—But It's Not What We Expected",
+    "author": "Steven Levy",
+    "date": "2024-03-21T12:00:00",
+    "content": "The article text goes here...",
+    "image": "https://wired.com/path/to/image.jpg"
+}
+```
+
+```python Error Handling
+try:
+    result = scraper.get_status(job.id)
+except Exception as e:
+    print(f"Error: {str(e)}")
+    # Implement retry logic
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<Tip>
+Always check a site's robots.txt and terms of service before scraping. Wired allows limited scraping for personal use.
+</Tip>
+
+### Rate Limiting
+
+Implement delays between requests to avoid overwhelming the server:
+
+```python
+import time
+
+# Add delay between requests
+time.sleep(2)
+```
+
+### Error Handling
+
+- Handle network timeouts gracefully
+- Implement retry logic for failed requests
+- Validate extracted data before storage
+
+### Content Structure
+
+- Use semantic selectors that target content structure
+- Handle different article layouts with flexible rules
+- Store results in a structured format (JSON/CSV)
+
+## Monitoring & Maintenance
+
+Keep your scraper running reliably by:
+
+- Monitoring for layout changes
+- Updating selectors when needed
+- Logging errors and exceptions
+- Setting up alerts for failures
+
+<Warning>
+Web scraping can be fragile. Sites may change their layout without notice, breaking your selectors. Regular monitoring is essential.
+</Warning>

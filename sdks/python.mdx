@@ -1,0 +1,213 @@
+---
+title: 'Python SDK'
+description: 'Official Python SDK for ScrapeGraphAI'
+icon: 'python'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
+  alt="ScrapeGraph API Banner"
+/>
+
+<CardGroup cols={2}>
+  <Card title="PyPI Package" icon="box">
+    [![PyPI version](https://badge.fury.io/py/scrapegraph-py.svg)](https://badge.fury.io/py/scrapegraph-py)
+  </Card>
+  <Card title="Python Support" icon="python">
+    [![Python Support](https://img.shields.io/pypi/pyversions/scrapegraph-py.svg)](https://pypi.org/project/scrapegraph-py/)
+  </Card>
+</CardGroup>
+
+## Installation
+
+Install the package using pip:
+
+```bash
+pip install scrapegraph-py
+```
+
+## Features
+
+- **AI-Powered Extraction**: Advanced web scraping using artificial intelligence
+- **Flexible Clients**: Both synchronous and asynchronous support
+- **Type Safety**: Structured output with Pydantic schemas
+- **Production Ready**: Detailed logging and automatic retries
+- **Developer Friendly**: Comprehensive error handling
+
+## Quick Start
+
+Initialize the client with your API key:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key-here")
+```
+
+<Note>
+You can also set the `SGAI_API_KEY` environment variable and initialize the client without parameters: `client = Client()`
+</Note>
+
+## Services
+
+### SmartScraper
+
+Extract specific information from any webpage using AI:
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the main heading and description"
+)
+```
+
+<Accordion title="Basic Schema Example" icon="code">
+Define a simple schema for basic data extraction:
+
+```python
+from pydantic import BaseModel, Field
+
+class ArticleData(BaseModel):
+    title: str = Field(description="The article title")
+    author: str = Field(description="The author's name")
+    publish_date: str = Field(description="Article publication date")
+    content: str = Field(description="Main article content")
+    category: str = Field(description="Article category")
+
+response = client.smartscraper(
+    website_url="https://example.com/blog/article",
+    user_prompt="Extract the article information",
+    output_schema=ArticleData
+)
+
+print(f"Title: {response.title}")
+print(f"Author: {response.author}")
+print(f"Published: {response.publish_date}")
+```
+</Accordion>
+
+<Accordion title="Advanced Schema Example" icon="code">
+Define a complex schema for nested data structures:
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+
+class Employee(BaseModel):
+    name: str = Field(description="Employee's full name")
+    position: str = Field(description="Job title")
+    department: str = Field(description="Department name")
+    email: str = Field(description="Email address")
+
+class Office(BaseModel):
+    location: str = Field(description="Office location/city")
+    address: str = Field(description="Full address")
+    phone: str = Field(description="Contact number")
+
+class CompanyData(BaseModel):
+    name: str = Field(description="Company name")
+    description: str = Field(description="Company description")
+    industry: str = Field(description="Industry sector")
+    founded_year: int = Field(description="Year company was founded")
+    employees: List[Employee] = Field(description="List of key employees")
+    offices: List[Office] = Field(description="Company office locations")
+    website: str = Field(description="Company website URL")
+
+# Extract comprehensive company information
+response = client.smartscraper(
+    website_url="https://example.com/about",
+    user_prompt="Extract detailed company information including employees and offices",
+    output_schema=CompanyData
+)
+
+# Access nested data
+print(f"Company: {response.name}")
+print("\nKey Employees:")
+for employee in response.employees:
+    print(f"- {employee.name} ({employee.position})")
+
+print("\nOffice Locations:")
+for office in response.offices:
+    print(f"- {office.location}: {office.address}")
+```
+</Accordion>
+
+### LocalScraper
+
+Process local HTML content with AI extraction:
+
+```python
+html_content = """
+<html>
+    <body>
+        <h1>Company Name</h1>
+        <p>We are a technology company focused on AI solutions.</p>
+        <div class="contact">
+            <p>Email: contact@example.com</p>
+        </div>
+    </body>
+</html>
+"""
+
+response = client.localscraper(
+    user_prompt="Extract the company description",
+    website_html=html_content
+)
+```
+
+### Markdownify
+
+Convert any webpage into clean, formatted markdown:
+
+```python
+response = client.markdownify(
+    website_url="https://example.com"
+)
+```
+
+## Async Support
+
+All endpoints support asynchronous operations:
+
+```python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient() as client:
+        response = await client.smartscraper(
+            website_url="https://example.com",
+            user_prompt="Extract the main content"
+        )
+        print(response)
+
+asyncio.run(main())
+```
+
+## Feedback
+
+Help us improve by submitting feedback programmatically:
+
+```python
+client.submit_feedback(
+    request_id="your-request-id",
+    rating=5,
+    feedback_text="Great results!"
+)
+```
+
+## Support
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk">
+    Report issues and contribute to the SDK
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
+    Get help from our development team
+  </Card>
+</CardGroup>
+
+<Accordion title="License" icon="scale">
+  This project is licensed under the MIT License. See the [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE) file for details.
+</Accordion>

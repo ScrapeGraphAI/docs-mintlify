@@ -3,7 +3,8 @@
   "name": "ScrapeGraphAI",
   "logo": {
     "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "light": "/logo/light.svg",
+    "href": "https://scrapegraphai.com"
   },
   "favicon": "/favicon.svg",
   "colors": {
@@ -20,6 +21,10 @@
   },
   "topbarLinks": [
     {
+      "name": "Status",
+      "url": "https://scrapegraphapi.openstatus.dev/"
+    },
+    {
       "name": "Support",
       "url": "mailto:contact@scrapegraphai.com"
     }
@@ -28,7 +33,14 @@
     "name": "Dashboard",
     "url": "https://dashboard.scrapegraphai.com"
   },
+  "primaryTab": {
+    "name": "Home"
+  },
   "tabs": [
+    {
+      "name": "Cookbook",
+      "url": "cookbook"
+    },
     {
       "name": "API Reference",
       "url": "api-reference"
@@ -36,14 +48,14 @@
   ],
   "anchors": [
     {
-      "name": "Documentation",
-      "icon": "book-open-cover",
-      "url": "https://mintlify.com/docs"
+      "name": "Official Website",
+      "icon": "globe",
+      "url": "https://scrapegraphai.com/"
     },
     {
       "name": "Community",
-      "icon": "slack",
-      "url": "https://mintlify.com/community"
+      "icon": "discord",
+      "url": "https://discord.gg/uJN7TYcpNa"
     },
     {
       "name": "Blog",
@@ -56,25 +68,57 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quickstart",
-        "development"
+        {
+          "group": "Dashboard",
+          "pages": [
+            "dashboard/overview",
+            "dashboard/playground",
+            "dashboard/jobs",
+            "dashboard/settings"
+          ]
+        }
       ]
     },
     {
-      "group": "Essentials",
+      "group": "Services",
       "pages": [
-        "essentials/markdown",
-        "essentials/code",
-        "essentials/images",
-        "essentials/settings",
-        "essentials/navigation",
-        "essentials/reusable-snippets"
+        "services/smartscraper",
+        "services/localscraper",
+        "services/markdownify"
+      ]
+    },
+    {
+      "group": "Official SDKs",
+      "pages": [
+        "sdks/python",
+        "sdks/javascript"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/langchain",
+        "integrations/llamaindex"
+      ]
+    },
+    {
+      "group": "Cookbook",
+      "pages": [
+        "cookbook/introduction"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "cookbook/examples/wired",
+        "cookbook/examples/zillow"
       ]
     },
     {
       "group": "API Documentation",
       "pages": [
-        "api-reference/introduction"
+        "api-reference/introduction",
+        "api-reference/errors"
       ]
     },
     {
@@ -104,11 +148,21 @@
         "api-reference/endpoint/user/get-credits",
         "api-reference/endpoint/user/submit-feedback"
       ]
+    },
+    {
+      "group": "Contribute",
+      "pages": [
+        "contribute/opensource",
+        "contribute/feedback"
+      ]
     }
   ],
   "footerSocials": {
-    "x": "https://x.com/mintlify",
-    "github": "https://github.com/mintlify",
-    "linkedin": "https://linkedin.com/company/mintlify"
+    "x": "https://x.com/scrapegraphai",
+    "github": "https://github.com/ScrapeGraphAI",
+    "linkedin": "https://www.linkedin.com/company/scrapegraphai/"
+  },
+  "feedback": {
+    "thumbsRating": true
   }
 }

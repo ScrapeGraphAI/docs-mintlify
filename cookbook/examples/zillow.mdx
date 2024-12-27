@@ -1,0 +1,58 @@
+---
+title: 'Zillow Listings'
+description: 'How to extract real estate data from Zillow'
+---
+
+Learn how to scrape property listings from Zillow.com using LocalScraper for handling dynamic JavaScript content.
+
+## The Goal
+
+Extract key property information:
+- Price
+- Address
+- Square footage
+- Bedrooms/bathrooms
+- Property details
+- Listing photos
+
+## Code Example
+
+```python
+from scrapegraphai import LocalScraper
+
+scraper = LocalScraper()
+
+# Configure the scraper
+job = scraper.start(
+    url="https://www.zillow.com/homes/for_sale/",
+    wait_for=".list-card",
+    extraction_rules={
+        "listings": {
+            "selector": ".list-card",
+            "multiple": True,
+            "data": {
+                "price": ".list-card-price",
+                "address": ".list-card-addr",
+                "details": ".list-card-details",
+                "photos": {
+                    "selector": ".list-card-img img",
+                    "attribute": "src"
+                }
+            }
+        }
+    }
+)
+
+# Get results
+results = scraper.get_status(job.id)
+for listing in results.data["listings"]:
+    print(f"Property: {listing['address']} - {listing['price']}")
+```
+
+## Best Practices
+
+- Respect Zillow's robots.txt and terms of service
+- Implement delays between requests
+- Handle pagination properly
+- Store results in a structured format
+- Monitor for layout changes that might break selectors

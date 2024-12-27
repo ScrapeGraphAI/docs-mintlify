@@ -1,0 +1,160 @@
+---
+title: '🦙 LlamaIndex'
+description: 'Integrate ScrapeGraphAI with LlamaIndex for powerful data ingestion'
+---
+
+## Overview
+
+This tool integrates ScrapeGraph with LlamaIndex, providing intelligent web scraping capabilities with structured data extraction.
+
+<Card
+  title="Official LlamaHub Documentation"
+  icon="book"
+  href="https://llamahub.ai/l/tools/llama-index-tools-scrapegraph"
+>
+  View the integration on LlamaHub
+</Card>
+
+## Installation
+
+Install the package using pip:
+
+```bash
+pip install llama-index-tools-scrapegraph
+```
+
+## Usage
+
+First, import and initialize the ScrapegraphToolSpec:
+
+```python
+from llama_index.tools.scrapegraph import ScrapegraphToolSpec
+
+scrapegraph_tool = ScrapegraphToolSpec()
+```
+
+## Available Functions
+
+### Smart Scraping (Sync)
+
+Extract structured data using a schema:
+
+```python
+from pydantic import BaseModel
+
+class ProductSchema(BaseModel):
+    name: str
+    price: float
+    description: str
+
+schema = [ProductSchema]
+result = scrapegraph_tool.scrapegraph_smartscraper(
+    prompt="Extract product information",
+    url="https://example.com/product",
+    api_key="your-api-key",
+    schema=schema,
+)
+```
+
+### Smart Scraping (Async)
+
+Asynchronous version of the smart scraper:
+
+```python
+result = await scrapegraph_tool.scrapegraph_smartscraper_async(
+    prompt="Extract product information",
+    url="https://example.com/product",
+    api_key="your-api-key",
+    schema=schema,
+)
+```
+
+### Submit Feedback
+
+Provide feedback on extraction results:
+
+```python
+response = scrapegraph_tool.scrapegraph_feedback(
+    request_id="request-id",
+    api_key="your-api-key",
+    rating=5,
+    feedback_text="Great results!",
+)
+```
+
+### Check Credits
+
+Monitor your API credit usage:
+
+```python
+credits = scrapegraph_tool.scrapegraph_get_credits(api_key="your-api-key")
+```
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="RAG Applications" icon="database">
+    Build powerful retrieval-augmented generation systems
+  </Card>
+  <Card title="Knowledge Bases" icon="book">
+    Create and maintain up-to-date knowledge bases
+  </Card>
+  <Card title="Web Research" icon="magnifying-glass">
+    Automate web research and data collection
+  </Card>
+  <Card title="Content Indexing" icon="list">
+    Index and structure web content for search
+  </Card>
+</CardGroup>
+
+## Example: Product Information Extraction
+
+```python
+from llama_index.tools.scrapegraph import ScrapegraphToolSpec
+from pydantic import BaseModel, Field
+from typing import List
+
+# Define your schema
+class ProductInfo(BaseModel):
+    name: str = Field(description="Product name")
+    price: float = Field(description="Product price")
+    features: List[str] = Field(description="Product features")
+    description: str = Field(description="Product description")
+
+# Initialize the tool
+tool = ScrapegraphToolSpec()
+
+# Extract product information
+result = tool.scrapegraph_smartscraper(
+    prompt="Extract detailed product information",
+    url="https://example.com/product",
+    api_key="your-api-key",
+    schema=[ProductInfo]
+)
+
+# Process the results
+print(f"Product Name: {result.name}")
+print(f"Price: ${result.price}")
+print("Features:", *result.features, sep="\n- ")
+```
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/llama-index-tools-scrapegraph/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>

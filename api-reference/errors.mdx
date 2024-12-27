@@ -1,0 +1,164 @@
+---
+title: 'Error Handling'
+description: 'Understanding and handling ScrapeGraphAI API errors'
+---
+
+## Error Format
+
+All API errors follow a simple format:
+
+```json
+{
+  "error": "Detailed error message"
+}
+```
+
+## HTTP Status Codes
+
+### 400 Bad Request
+Indicates that the request was malformed or invalid.
+
+<AccordionGroup>
+  <Accordion title="Invalid Parameters" icon="circle-xmark">
+    ```json
+    {
+      "error": "Invalid URL format"
+    }
+    ```
+    The request contains invalid parameters.
+  </Accordion>
+
+  <Accordion title="Invalid Schema" icon="table">
+    ```json
+    {
+      "error": "Invalid schema format"
+    }
+    ```
+    The provided output schema is invalid or malformed.
+  </Accordion>
+
+  <Accordion title="Invalid HTML" icon="code">
+    ```json
+    {
+      "error": "Invalid HTML content"
+    }
+    ```
+    Applies to LocalScraper when the provided HTML is invalid.
+  </Accordion>
+</AccordionGroup>
+
+### 401 Unauthorized
+Authentication-related errors.
+
+<AccordionGroup>
+  <Accordion title="Invalid API Key" icon="key">
+    ```json
+    {
+      "error": "Invalid API key"
+    }
+    ```
+    The API key is invalid, revoked, or not provided.
+  </Accordion>
+
+  <Accordion title="Insufficient Credits" icon="coins">
+    ```json
+    {
+      "error": "Insufficient credits"
+    }
+    ```
+    Your account doesn't have enough credits to perform the operation.
+  </Accordion>
+</AccordionGroup>
+
+### 429 Too Many Requests
+Rate limiting errors.
+
+<AccordionGroup>
+  <Accordion title="Rate Limit Exceeded" icon="gauge-high">
+    ```json
+    {
+      "error": "Too many requests"
+    }
+    ```
+    You've exceeded the rate limit. Wait before retrying.
+  </Accordion>
+</AccordionGroup>
+
+### 500 Server Error
+Internal server errors.
+
+<AccordionGroup>
+  <Accordion title="Processing Error" icon="triangle-exclamation">
+    ```json
+    {
+      "error": "An error occurred while processing your request"
+    }
+    ```
+    An unexpected error occurred while processing the request.
+  </Accordion>
+
+  <Accordion title="Service Unavailable" icon="server">
+    ```json
+    {
+      "error": "Service temporarily unavailable"
+    }
+    ```
+    The service is temporarily unavailable. Try again later.
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling Best Practices
+
+### Retry Strategy
+
+<Note>
+Our SDKs implement automatic retries for certain errors. For direct API usage, implement your own retry logic.
+</Note>
+
+1. **Retryable Errors**
+   - Rate limit exceeded (429)
+   - Service unavailable (500, 503)
+   - Network timeouts
+
+2. **Non-Retryable Errors**
+   - Invalid parameters (400)
+   - Authentication errors (401)
+   - Invalid schemas (400)
+
+### Example Error Handling
+
+<CodeGroup>
+```python Python
+try:
+    response = client.smartscraper(
+        website_url="https://example.com",
+        user_prompt="Extract data"
+    )
+except APIError as e:
+    print(f"Error: {e.message}")
+```
+
+```javascript JavaScript
+try {
+  const response = await client.smartscraper({
+    websiteUrl: 'https://example.com',
+    userPrompt: 'Extract data'
+  });
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+</CodeGroup>
+
+## Support
+
+If you encounter any errors not documented here or need assistance:
+
+<CardGroup cols={2}>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Get help from our community
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
+    Contact our technical team
+  </Card>
+</CardGroup> 
