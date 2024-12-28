@@ -20,7 +20,7 @@ This tool integrates ScrapeGraph with LlamaIndex, providing intelligent web scra
 Install the package using pip:
 
 ```bash
-pip install llama-index-tools-scrapegraph
+pip install llama-index-tools-scrapegraphai
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ pip install llama-index-tools-scrapegraph
 First, import and initialize the ScrapegraphToolSpec:
 
 ```python
-from llama_index.tools.scrapegraph import ScrapegraphToolSpec
+from llama_index.tools.scrapegraph.base import ScrapegraphToolSpec
 
 scrapegraph_tool = ScrapegraphToolSpec()
 ```
@@ -40,20 +40,27 @@ scrapegraph_tool = ScrapegraphToolSpec()
 Extract structured data using a schema:
 
 ```python
-from pydantic import BaseModel
-
-class ProductSchema(BaseModel):
-    name: str
-    price: float
-    description: str
-
-schema = [ProductSchema]
-result = scrapegraph_tool.scrapegraph_smartscraper(
-    prompt="Extract product information",
-    url="https://example.com/product",
-    api_key="your-api-key",
-    schema=schema,
-)
+from pydantic import BaseModel, Field 
+ 
+class FounderSchema(BaseModel): 
+    name: str = Field(description="Name of the founder") 
+    role: str = Field(description="Role of the founder") 
+    social_media: str = Field(description="Social media URL of the founder") 
+ 
+class ListFoundersSchema(BaseModel): 
+    founders: list[FounderSchema] = Field(description="List of founders") 
+ 
+response = scrapegraph_tool.scrapegraph_smartscraper( 
+    prompt="Extract product information", 
+    url="https://scrapegraphai.com/", 
+    api_key="sgai-***", 
+    schema=ListFoundersSchema, 
+) 
+ 
+result = response["result"] 
+ 
+for founder in result["founders"]: 
+    print(founder)
 ```
 
 ### Smart Scraping (Async)
@@ -106,37 +113,6 @@ credits = scrapegraph_tool.scrapegraph_get_credits(api_key="your-api-key")
     Index and structure web content for search
   </Card>
 </CardGroup>
-
-## Example: Product Information Extraction
-
-```python
-from llama_index.tools.scrapegraph import ScrapegraphToolSpec
-from pydantic import BaseModel, Field
-from typing import List
-
-# Define your schema
-class ProductInfo(BaseModel):
-    name: str = Field(description="Product name")
-    price: float = Field(description="Product price")
-    features: List[str] = Field(description="Product features")
-    description: str = Field(description="Product description")
-
-# Initialize the tool
-tool = ScrapegraphToolSpec()
-
-# Extract product information
-result = tool.scrapegraph_smartscraper(
-    prompt="Extract detailed product information",
-    url="https://example.com/product",
-    api_key="your-api-key",
-    schema=[ProductInfo]
-)
-
-# Process the results
-print(f"Product Name: {result.name}")
-print(f"Price: ${result.price}")
-print("Features:", *result.features, sep="\n- ")
-```
 
 ## Support
 
