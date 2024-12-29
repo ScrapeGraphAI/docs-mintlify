@@ -1,0 +1,113 @@
+---
+title: '💬 Chat with Webpage'
+description: 'Build a RAG chatbot for any webpage using ScrapeGraph and LanceDB'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/chat-webpage-banner.png"
+/>
+
+Learn how to build a RAG (Retrieval Augmented Generation) chatbot that can answer questions about any webpage by combining ScrapeGraph's Markdownify service with LanceDB vector store and OpenAI.
+
+<Note>
+Try it yourself in our interactive notebooks:
+- [Burr Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/chat-webpage-simple-rag/scrapegraph_burr_lancedb.ipynb)
+</Note>
+
+## The Goal
+
+We'll create a chatbot that can:
+
+| Feature | Description |
+| ----- | ----------- |
+| Webpage Ingestion | Convert any webpage to markdown format |
+| Content Chunking | Split content into manageable chunks |
+| Vector Storage | Store and index chunks in LanceDB |
+| Question Answering | Answer questions using relevant chunks |
+
+## Code Example
+
+```python
+from burr.core import action, State, ApplicationBuilder
+from scrapegraph_py import Client
+import lancedb
+from lancedb.pydantic import LanceModel, Vector
+import openai
+import tiktoken
+from typing import List, Optional
+
+# Schema for storing text chunks
+class TextDocument(LanceModel):
+    url: str
+    position: int
+    text: str
+    vector: Vector(dim=1536)  # OpenAI embedding dimensions
+
+# Action to fetch and convert webpage to markdown
+@action(reads=[], writes=["markdown_content"])
+def fetch_webpage(state: State, webpage_url: str) -> State:
+    client = Client()
+    response = client.markdownify(website_url=webpage_url)
+    return state.update(markdown_content=response["result"])
+
+# Action to embed and store chunks
+@action(reads=["markdown_content"], writes=[])
+def embed_and_store(state: State, webpage_url: str) -> State:
+    chunks = get_text_chunks(state["markdown_content"])
+    con = lancedb.connect("./webpages")
+    table = con.create_table("chunks", schema=TextDocument)
+    table.add([{
+        "text": chunk,
+        "url": webpage_url,
+        "position": i
+    } for i, chunk in enumerate(chunks)])
+    return state
+
+# Action to answer questions
+@action(reads=[], writes=["llm_answer"])
+def ask_question(state: State, user_query: str) -> State:
+    chunks_table = lancedb.connect("./webpages").open_table("chunks")
+    relevant_chunks = chunks_table.search(user_query).limit(3).to_list()
+    
+    response = openai.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": f"Answer based on: {relevant_chunks}"},
+            {"role": "user", "content": user_query}
+        ]
+    )
+    return state.update(llm_answer=response.choices[0].message.content)
+```
+
+## Example Output
+
+```json
+{
+    "question": "Who are the founders of ScrapeGraphAI?",
+    "answer": "The founders of ScrapeGraphAI are:\n\n1. Marco Perini - Founder & Technical Lead\n2. Marco Vinciguerra - Founder & Software Engineer\n3. Lorenzo Padoan - Founder & Product Engineer"
+}
+```
+
+<CardGroup cols={2}>
+  <Card
+    title="Markdownify"
+    icon="robot"
+    href="/services/markdownify"
+  >
+    Learn more about our webpage-to-markdown service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note> 

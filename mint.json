@@ -114,7 +114,8 @@
         "cookbook/examples/github-trending",
         "cookbook/examples/wired",
         "cookbook/examples/homes",
-        "cookbook/examples/research-agent"
+        "cookbook/examples/research-agent",
+        "cookbook/examples/chat-webpage"
       ]
     },
     {
