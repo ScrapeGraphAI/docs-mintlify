@@ -89,6 +89,25 @@ The response includes:
 - `error`: Error message (if any occurred during conversion)
 </Accordion>
 
+### Async Support
+
+For applications requiring asynchronous execution, Markdownify provides async support through the `AsyncClient`:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.markdownify(
+            website_url="https://example.com/article"
+        )
+        print(response)
+
+# Run the async function
+asyncio.run(main())
+```
+
 ## Integration Options
 
 ### Official SDKs

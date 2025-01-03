@@ -149,6 +149,26 @@ const response = await smartScraper(
 
 </CodeGroup>
 
+### Async Support
+
+For applications requiring asynchronous execution, SmartScraper provides async support through the `AsyncClient`:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.smartscraper(
+            website_url="https://example.com",
+            user_prompt="Extract the main content"
+        )
+        print(response)
+
+# Run the async function
+asyncio.run(main())
+```
+
 ## Integration Options
 
 ### Official SDKs
