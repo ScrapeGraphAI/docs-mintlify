@@ -84,7 +84,13 @@
       "pages": [
         "services/smartscraper",
         "services/localscraper",
-        "services/markdownify"
+        "services/markdownify",
+        {
+          "group": "Extensions",
+          "pages": [
+            "services/extensions/firefox"
+          ]
+        }
       ]
     },
     {
