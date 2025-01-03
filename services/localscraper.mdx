@@ -161,6 +161,38 @@ const response = await localScraper(
 
 </CodeGroup>
 
+### Async Support
+
+For applications requiring asynchronous execution, LocalScraper provides async support through the `AsyncClient`:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    html_content = """
+    <html>
+        <body>
+            <h1>Product: Gaming Laptop</h1>
+            <div class="price">$999.99</div>
+            <div class="description">
+                High-performance gaming laptop with RTX 3080.
+            </div>
+        </body>
+    </html>
+    """
+    
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.localscraper(
+            website_html=html_content,
+            user_prompt="Extract the product information"
+        )
+        print(response)
+
+# Run the async function
+asyncio.run(main())
+```
+
 ## Integration Options
 
 ### Official SDKs
