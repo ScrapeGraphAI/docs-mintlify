@@ -86,7 +86,7 @@
         "services/localscraper",
         "services/markdownify",
         {
-          "group": "Extensions",
+          "group": "Browser Extensions",
           "pages": [
             "services/extensions/firefox"
           ]
