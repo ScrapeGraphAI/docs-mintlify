@@ -165,6 +165,13 @@
         "contribute/opensource",
         "contribute/feedback"
       ]
+    },
+    {
+      "group": "Resources",
+      "icon": "puzzle-piece",
+      "pages": [
+        "resources/badge"
+      ]
     }
   ],
   "footerSocials": {
