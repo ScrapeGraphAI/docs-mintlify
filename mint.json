@@ -104,7 +104,8 @@
       "group": "Integrations",
       "pages": [
         "integrations/langchain",
-        "integrations/llamaindex"
+        "integrations/llamaindex",
+        "integrations/phidata"
       ]
     },
     {
