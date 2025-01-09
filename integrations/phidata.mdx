@@ -1,0 +1,118 @@
+---
+title: '🦐 Phidata'
+description: 'Build AI Assistants with ScrapeGraph using Phidata'
+---
+
+## Overview
+
+[Phidata](https://www.phidata.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Phidata-powered AI agents.
+
+<Card
+  title="Official Phidata Documentation"
+  icon="book"
+  href="https://docs.phidata.com/introduction"
+>
+  Learn more about building AI Assistants with Phidata
+</Card>
+
+## Installation
+
+Install the required packages:
+
+```bash
+pip install phi-scrapegraph
+```
+
+## Usage
+
+### Basic Example
+
+Create an AI Assistant with ScrapeGraph tools:
+
+```python
+from phi.agent import Agent
+from phi.tools.scrapegraph_tools import ScrapeGraphTools
+
+# Initialize with smartscraper enabled
+scrapegraph = ScrapeGraphTools(smartscraper=True)
+
+# Create an agent with the tools
+agent = Agent(
+    tools=[scrapegraph],
+    show_tool_calls=True,
+    markdown=True,
+    stream=True
+)
+
+# Use smartscraper to extract structured data
+agent.print_response("""
+Use smartscraper to extract the following from https://www.wired.com/category/science/:
+- News articles
+- Headlines
+- Images
+- Links
+- Author
+""")
+```
+
+### Markdown Conversion
+
+You can also use ScrapeGraph to convert web pages to markdown:
+
+```python
+from phi.agent import Agent
+from phi.tools.scrapegraph_tools import ScrapeGraphTools
+
+# Initialize with only markdownify enabled
+scrapegraph_md = ScrapeGraphTools(smartscraper=False)
+
+# Create an agent for markdown conversion
+agent_md = Agent(
+    tools=[scrapegraph_md],
+    show_tool_calls=True,
+    markdown=True
+)
+
+# Convert webpage to markdown
+agent_md.print_response(
+    "Fetch and convert https://www.wired.com/category/science/ to markdown format"
+)
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Smart Scraping" icon="robot">
+    Extract structured data using natural language
+  </Card>
+  <Card title="Markdown Conversion" icon="file-code">
+    Convert web pages to clean markdown
+  </Card>
+  <Card title="Streaming Support" icon="stream">
+    Real-time responses with streaming
+  </Card>
+  <Card title="Tool Visibility" icon="eye">
+    Debug with visible tool calls
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="Phidata Discord"
+    icon="discord"
+    href="https://discord.gg/4M322yGwK2"
+  >
+    Join the Phidata community
+  </Card>
+  <Card
+    title="GitHub"
+    icon="github"
+    href="https://github.com/phidatahq/phidata"
+  >
+    Check out the source code
+  </Card>
+</CardGroup>
