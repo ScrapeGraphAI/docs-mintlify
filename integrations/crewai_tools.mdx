@@ -1,0 +1,140 @@
+---
+title: '👥 CrewAI'
+description: 'Enhance your CrewAI agents with AI-powered web scraping capabilities'
+---
+
+## Overview
+
+The CrewAI integration allows you to add powerful web scraping capabilities to your agents. This enables your crews to extract and process web content intelligently using natural language instructions.
+
+<Card
+  title="Official CrewAI Repository"
+  icon="github"
+  href="https://github.com/joaomdmoura/crewAI"
+>
+  View CrewAI on GitHub
+</Card>
+
+## Installation
+
+Install the required packages using pip:
+
+```bash
+pip install crewai crewai-tools python-dotenv
+```
+
+## Example Usage
+
+Here's a complete example of using ScrapeGraph with CrewAI:
+
+```python
+from crewai import Agent, Crew, Process, Task
+from crewai_tools import ScrapegraphScrapeTool
+from dotenv import load_dotenv
+
+load_dotenv()
+
+tool = ScrapegraphScrapeTool()
+
+agent = Agent(
+    role="Web Researcher",
+    goal="Research and extract accurate information from websites",
+    backstory="You are an expert web researcher with experience in extracting and analyzing information from various websites.",
+    tools=[tool],
+)
+
+task = Task(
+    name="scraping task",
+    description="Visit the website https://scrapegraphai.com and extract detailed information about the founders, including their names, roles, and any relevant background information.",
+    expected_output="A file with the information extracted from the website.",
+    agent=agent,
+)
+
+crew = Crew(
+    agents=[agent],
+    tasks=[task],
+)
+
+crew.kickoff()
+```
+
+## Available Tools
+
+### ScrapegraphScrapeTool
+
+The main tool for web scraping with natural language capabilities:
+
+```python
+from crewai_tools import ScrapegraphScrapeTool
+
+# Initialize the tool (uses SGAI_API_KEY from environment)
+tool = ScrapegraphScrapeTool()
+```
+
+<Accordion title="Advanced Configuration" icon="gear">
+You can customize the tool's behavior:
+
+```python
+tool = ScrapegraphScrapeTool(
+    name="custom_scraper",
+    description="Custom description for the tool",
+    max_pages=5  # Limit the number of pages to scrape
+)
+```
+</Accordion>
+
+## Configuration
+
+Set your ScrapeGraph API key in your environment:
+
+```bash
+export SGAI_API_KEY="your-api-key-here"
+```
+
+Or using a `.env` file:
+
+```env
+SGAI_API_KEY=your-api-key-here
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Research Crews" icon="users">
+    Build crews that gather and analyze web data collaboratively
+  </Card>
+  <Card title="Data Collection" icon="database">
+    Automate web scraping tasks with intelligent agents
+  </Card>
+  <Card title="Market Research" icon="chart-line">
+    Extract and analyze competitor information
+  </Card>
+  <Card title="Content Aggregation" icon="newspaper">
+    Gather and process content from multiple sources
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/crewai-tools/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
