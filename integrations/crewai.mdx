@@ -1,0 +1,159 @@
+---
+title: '👥 CrewAI'
+description: 'Use CrewAI with Scrapegraph'
+---
+
+## Overview
+
+[CrewAI](https://github.com/joaomdmoura/crewAI) is a framework for orchestrating role-playing AI agents. With the Scrapegraph CrewAI integration, you can easily incorporate web scraping capabilities into your agent workflows.
+
+<Card
+  title="Try it in Google Colab"
+  icon="google"
+  href="https://colab.research.google.com/drive/14f1nEmo_kPRhc6zTXcm3a9MFcF1aP_-l?authuser=2"
+>
+  Interactive example notebook to get started with CrewAI and Scrapegraph
+</Card>
+
+## Installation
+
+Install the required packages:
+
+```bash
+pip install crewai scrapegraph-tools python-dotenv
+```
+
+## Available Tools
+
+### ScrapegraphScrapeTool
+
+The `ScrapegraphScrapeTool` provides web scraping capabilities to your CrewAI agents:
+
+```python
+from crewai import Agent, Crew, Task
+from crewai_tools import ScrapegraphScrapeTool
+from dotenv import load_dotenv
+
+# Initialize the tool
+tool = ScrapegraphScrapeTool()
+
+# Create an agent with the tool
+agent = Agent(
+    role="Web Researcher",
+    goal="Research and extract accurate information from websites",
+    backstory="You are an expert web researcher with experience in extracting and analyzing information from various websites.",
+    tools=[tool],
+)
+```
+
+<Accordion title="Complete Example" icon="code">
+```python
+from crewai import Agent, Crew, Task
+from crewai_tools import ScrapegraphScrapeTool
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Initialize the Scrapegraph tool
+tool = ScrapegraphScrapeTool()
+
+# Create an agent with the Scrapegraph tool
+agent = Agent(
+    role="Web Researcher",
+    goal="Research and extract accurate information from websites",
+    backstory="You are an expert web researcher with experience in extracting and analyzing information from various websites.",
+    tools=[tool],
+)
+
+# Define a task for the agent
+task = Task(
+    name="scraping task",
+    description="Visit the website https://scrapegraphai.com and extract detailed information about the founders, including their names, roles, and any relevant background information.",
+    expected_output="A file with the information extracted from the website.",
+    agent=agent,
+)
+
+# Create a crew with the agent and task
+crew = Crew(
+    agents=[agent],
+    tasks=[task],
+)
+
+# Execute the task
+result = crew.kickoff()
+```
+</Accordion>
+
+## Configuration
+
+Set your Scrapegraph API key in your environment:
+
+```bash
+export SCRAPEGRAPH_API_KEY="your-api-key-here"
+```
+
+Or using a `.env` file:
+
+```bash
+SCRAPEGRAPH_API_KEY=your_api_key_here
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Content Research" icon="magnifying-glass">
+    Gather information from multiple websites for market research or competitive analysis
+  </Card>
+  <Card title="Data Collection" icon="database">
+    Extract structured data from websites for analysis or database population
+  </Card>
+  <Card title="Automated Monitoring" icon="chart-line">
+    Keep track of changes on specific web pages
+  </Card>
+  <Card title="Information Extraction" icon="filter">
+    Extract specific data points using natural language
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Rate Limiting" icon="gauge">
+    Be mindful of website rate limits and implement appropriate delays
+  </Card>
+  <Card title="Error Handling" icon="bug">
+    Implement proper error handling for failed requests
+  </Card>
+  <Card title="Data Validation" icon="check">
+    Verify extracted data meets requirements
+  </Card>
+  <Card title="Ethical Scraping" icon="shield">
+    Respect robots.txt and website terms of service
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Repository"
+    icon="github"
+    href="https://github.com/scrapegraph/scrapegraph-tools"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/scrapegraph"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>

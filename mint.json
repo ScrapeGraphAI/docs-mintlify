@@ -105,6 +105,7 @@
       "pages": [
         "integrations/langchain",
         "integrations/llamaindex",
+        "integrations/crewai",
         "integrations/phidata"
       ]
     },
