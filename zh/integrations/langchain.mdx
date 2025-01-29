@@ -1,0 +1,210 @@
+---
+title: '🦜 LangChain'
+description: '使用AI驱动的网络爬虫增强您的LangChain代理'
+---
+
+## 概述
+
+LangChain集成使您的代理能够使用自然语言从网站提取结构化数据。这种强大的组合允许您构建能够智能理解和处理网页内容的复杂AI代理。
+
+<Card
+  title="LangChain官方文档"
+  icon="book"
+  href="https://python.langchain.com/docs/integrations/providers/scrapegraph/"
+>
+  在LangChain的官方文档中查看集成
+</Card>
+
+## 安装
+
+使用pip安装包：
+
+```bash
+pip install langchain-scrapegraph
+```
+
+## 可用工具
+
+### SmartScraperTool
+
+使用自然语言提示从任何网页提取结构化数据：
+
+```python
+from langchain_scrapegraph.tools import SmartScraperTool
+
+# 初始化工具（使用环境中的SGAI_API_KEY）
+tool = SmartscraperTool()
+
+# 使用自然语言提取信息
+result = tool.invoke({
+    "website_url": "https://www.example.com",
+    "user_prompt": "提取主标题和第一段"
+})
+```
+
+<Accordion title="使用输出模式" icon="code">
+使用Pydantic模型定义输出结构：
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+from langchain_scrapegraph.tools import SmartScraperTool
+
+class WebsiteInfo(BaseModel):
+    title: str = Field(description="网页的主标题")
+    description: str = Field(description="主要描述或第一段")
+    urls: List[str] = Field(description="网页中的URL")
+
+# 使用模式初始化
+tool = SmartScraperTool(llm_output_schema=WebsiteInfo)
+
+result = tool.invoke({
+    "website_url": "https://www.example.com",
+    "user_prompt": "提取网站信息"
+})
+```
+</Accordion>
+
+### LocalScraperTool
+
+直接使用AI提取处理HTML内容：
+
+```python
+from langchain_scrapegraph.tools import LocalScraperTool
+
+tool = LocalScraperTool()
+result = tool.invoke({
+    "user_prompt": "提取所有联系信息",
+    "website_html": "<html>...</html>"
+})
+```
+
+<Accordion title="使用输出模式" icon="code">
+```python
+from typing import Optional
+from pydantic import BaseModel, Field
+from langchain_scrapegraph.tools import LocalScraperTool
+
+class CompanyInfo(BaseModel):
+    name: str = Field(description="公司名称")
+    description: str = Field(description="公司描述")
+    email: Optional[str] = Field(description="联系邮箱（如果有）")
+    phone: Optional[str] = Field(description="联系电话（如果有）")
+
+tool = LocalScraperTool(llm_output_schema=CompanyInfo)
+
+html_content = """
+<html>
+    <body>
+        <h1>科技公司解决方案</h1>
+        <p>我们是一家领先的AI技术公司。</p>
+        <div class="contact">
+            <p>邮箱: contact@techcorp.com</p>
+            <p>电话: (555) 123-4567</p>
+        </div>
+    </body>
+</html>
+"""
+
+result = tool.invoke({
+    "website_html": html_content,
+    "user_prompt": "提取公司信息"
+})
+```
+</Accordion>
+
+### MarkdownifyTool
+
+将任何网页转换为清晰、格式化的markdown：
+
+```python
+from langchain_scrapegraph.tools import MarkdownifyTool
+
+tool = MarkdownifyTool()
+markdown = tool.invoke({"website_url": "https://example.com"})
+```
+
+## 示例代理
+
+创建一个可以收集和分析网络数据的研究代理：
+
+```python
+from langchain.agents import initialize_agent, AgentType
+from langchain_scrapegraph.tools import SmartScraperTool
+from langchain_openai import ChatOpenAI
+
+# 初始化工具
+tools = [
+    SmartScraperTool(),
+]
+
+# 创建代理
+agent = initialize_agent(
+    tools=tools,
+    llm=ChatOpenAI(temperature=0),
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)
+
+# 使用代理
+response = agent.run("""
+    访问example.com，总结内容并提取主标题和第一段
+""")
+```
+
+## 配置
+
+在您的环境中设置ScrapeGraph API密钥：
+
+```bash
+export SGAI_API_KEY="your-api-key-here"
+```
+
+或者通过程序设置：
+
+```python
+import os
+os.environ["SGAI_API_KEY"] = "your-api-key-here"
+```
+
+<Note>
+从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
+</Note>
+
+## 使用场景
+
+<CardGroup cols={2}>
+  <Card title="研究代理" icon="magnifying-glass">
+    创建收集和分析网络数据的代理
+  </Card>
+  <Card title="数据收集" icon="database">
+    自动从网站提取结构化数据
+  </Card>
+  <Card title="内容处理" icon="file-lines">
+    将网页内容转换为markdown以供进一步处理
+  </Card>
+  <Card title="信息提取" icon="filter">
+    使用自然语言提取特定数据点
+  </Card>
+</CardGroup>
+
+## 支持
+
+需要集成帮助？
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub问题"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph/issues"
+  >
+    报告错误和请求功能
+  </Card>
+  <Card
+    title="Discord社区"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    从我们的社区获取帮助
+  </Card>
+</CardGroup> 

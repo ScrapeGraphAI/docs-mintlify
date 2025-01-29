@@ -1,0 +1,73 @@
+---
+title: '交互式测试'
+description: '交互式API测试环境'
+icon: 'flask'
+---
+
+## API交互式测试
+
+交互式测试环境允许您在不编写任何代码的情况下交互式地测试我们的API。非常适合原型设计和测试您的爬虫配置。
+
+<Frame>
+  <img src="/images/dashboard/playground-1.png" alt="API交互式测试界面" />
+</Frame>
+
+### 可用服务
+
+在中心面板中选择我们的三个主要服务：
+
+- [**SmartScraper**](/services/smartscraper)：适用于任何网站的AI驱动爬虫
+- [**LocalScraper**](/services/localscraper)：用于本地HTML内容的AI驱动爬虫
+- [**Markdownify**](/services/markdownify)：将网页内容转换为清晰的Markdown
+
+### 交互功能
+
+- **服务信息**：右侧边栏提供所选服务的详细信息
+- **示例标签**：点击预制示例，使用常见用例填充测试环境
+- **运行按钮**：立即执行您的配置
+- **代码示例**：点击运行按钮旁边的代码按钮，查看以下实现：
+  - [Python SDK](/sdks/python)
+  - [JavaScript SDK](/sdks/javascript)
+  - cURL命令
+
+## 输出模式配置
+
+精确定义您想要提取的数据：
+
+<Frame>
+  <img src="/images/dashboard/playground-2.png" alt="模式配置" />
+</Frame>
+
+### 模式功能
+
+- **自定义提取**：指定所需输出的结构
+- **模式编辑器**：定义数据字段的可视化界面
+- **预览**：查看您的模式如何映射到提取的数据
+- **多种格式**：预览和复制您的模式：
+  - Pydantic (Python)
+  - Zod (TypeScript)
+  - JSON Schema
+
+## 代码示例
+
+点击代码按钮查看实现示例：
+
+<Frame>
+  <img src="/images/dashboard/playground-3.png" alt="代码示例侧边栏" />
+</Frame>
+
+### 可用实现
+
+代码侧边栏显示如何使用以下方式实现您当前的测试环境配置：
+
+- **Python SDK**：使用我们的[官方SDK](/sdks/python)的即用Python代码
+- **JavaScript SDK**：使用我们的[JS SDK](/sdks/javascript)的JavaScript/TypeScript实现
+- **cURL**：用于命令行使用的直接API调用
+
+<Tip>
+直接从侧边栏复制代码以在您自己的应用程序中使用！
+</Tip>
+
+<Tip>
+使用代码示例按钮查看您的测试环境配置如何使用我们的SDK转换为实际的API调用！
+</Tip> 

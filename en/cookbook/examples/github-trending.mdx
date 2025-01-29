@@ -1,0 +1,116 @@
+---
+title: '🌟 GitHub Trending'
+description: 'Monitor trending repositories and developers'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/github-banner.png"
+/>
+
+Learn how to extract trending repository information from GitHub using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather repository statistics, descriptions, and popularity metrics.
+
+<Note>
+Try it yourself in our interactive notebooks:
+- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_sdk.ipynb)
+- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_langchain.ipynb)
+- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_llama_index.ipynb)
+</Note>
+
+## The Goal
+
+We'll extract the following repository information:
+
+| Field | Description |
+| ----- | ----------- |
+| Name | Repository name (owner/repo format) |
+| Description | Repository description |
+| Stars | Total star count |
+| Forks | Total fork count |
+| Today Stars | Stars gained today |
+| Language | Primary programming language |
+
+## Code Example
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import Client
+
+# Schema for Trending Repositories
+class RepositorySchema(BaseModel):
+    name: str = Field(description="Name of the repository (e.g., 'owner/repo')")
+    description: str = Field(description="Description of the repository")
+    stars: int = Field(description="Star count of the repository")
+    forks: int = Field(description="Fork count of the repository")
+    today_stars: int = Field(description="Stars gained today")
+    language: str = Field(description="Programming language used")
+
+# Schema that contains a list of repositories
+class ListRepositoriesSchema(BaseModel):
+    repositories: List[RepositorySchema] = Field(description="List of github trending repositories")
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://github.com/trending",
+    user_prompt="Extract trending repository information",
+    output_schema=ListRepositoriesSchema
+)
+```
+
+## Example Output
+
+```json
+{
+    "repositories": [
+        {
+            "name": "microsoft/copilot-cli",
+            "description": "CLI tool for GitHub Copilot",
+            "stars": 2891,
+            "forks": 147,
+            "today_stars": 523,
+            "language": "TypeScript"
+        },
+        {
+            "name": "openai/whisper",
+            "description": "Robust Speech Recognition via Large-Scale Weak Supervision",
+            "stars": 54321,
+            "forks": 5432,
+            "today_stars": 321,
+            "language": "Python"
+        },
+        {
+            "name": "langchain-ai/langchain",
+            "description": "Building applications with LLMs through composability",
+            "stars": 12345,
+            "forks": 1234,
+            "today_stars": 234,
+            "language": "Python"
+        }
+    ]
+}
+```
+
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note> 

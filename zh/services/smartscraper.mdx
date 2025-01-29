@@ -1,0 +1,232 @@
+---
+title: 'SmartScraper'
+description: '适用于任何网站的AI驱动网络爬虫'
+icon: 'robot'
+---
+
+<Frame>
+  <img src="/services/images/smartscraper-banner.png" alt="SmartScraper服务" />
+</Frame>
+
+## 概述
+
+SmartScraper是我们的旗舰LLM驱动的网络爬虫服务，可以智能地从任何网站提取结构化数据。通过使用先进的LLM模型，它能像人类一样理解上下文和内容，使网络数据提取比以往更加可靠和高效。
+
+<Note>
+在我们的[交互式平台](https://dashboard.scrapegraphai.com/)上立即试用SmartScraper - 无需编码！
+</Note>
+
+## 主要特点
+
+<CardGroup cols={2}>
+  <Card title="通用兼容性" icon="globe">
+    适用于任何网站结构，包括JavaScript渲染的内容
+  </Card>
+  <Card title="AI理解能力" icon="brain">
+    上下文内容理解，确保准确提取
+  </Card>
+  <Card title="结构化输出" icon="table">
+    以您偏好的格式返回清晰的结构化数据
+  </Card>
+  <Card title="模式支持" icon="code">
+    使用Pydantic或Zod定义自定义输出模式
+  </Card>
+</CardGroup>
+
+## 使用场景
+
+### 内容聚合
+- 新闻文章提取
+- 博客文章摘要
+- 产品信息收集
+- 研究数据采集
+
+### 数据分析
+- 市场研究
+- 竞争对手分析
+- 价格监控
+- 趋势追踪
+
+### AI训练
+- 数据集创建
+- 训练数据收集
+- 内容分类
+- 知识库构建
+
+<Note>
+想了解更多关于我们AI驱动的爬虫技术？访问我们的[主网站](https://scrapegraphai.com)，了解我们如何革新网络数据提取。
+</Note>
+
+## 快速开始
+
+### 快速入门
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://scrapegraphai.com/",
+    user_prompt="提取公司信息"
+)
+```
+
+<Note>
+从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
+</Note>
+
+<Accordion title="响应示例" icon="terminal">
+```json
+{
+  "request_id": "sg-req-abc123",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "提取公司信息",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI是一个强大的AI爬虫API，专为高效的网络数据提取而设计，为LLM应用和AI代理提供支持...",
+    "features": [
+      "轻松、经济且AI驱动的数据提取",
+      "处理代理轮换和速率限制",
+      "支持各种类型的网站"
+    ],
+    "contact_email": "contact@scrapegraphai.com",
+    "social_links": {
+      "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+      "linkedin": "https://www.linkedin.com/company/101881123",
+      "twitter": "https://x.com/scrapegraphai"
+    }
+  },
+  "error": ""
+}
+```
+
+响应包括：
+- `request_id`：用于追踪请求的唯一标识符
+- `status`：提取的当前状态（"completed"已完成, "running"运行中, "failed"失败）
+- `result`：以结构化JSON格式提取的数据
+- `error`：错误信息（如果在提取过程中出现任何错误）
+</Accordion>
+
+## 高级用法
+
+### 自定义模式示例
+
+精确定义您想要提取的数据：
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+
+class ArticleData(BaseModel):
+    title: str = Field(description="文章标题")
+    author: str = Field(description="作者姓名")
+    content: str = Field(description="文章主要内容")
+    publish_date: str = Field(description="发布日期")
+
+response = client.smartscraper(
+    website_url="https://example.com/article",
+    user_prompt="提取文章信息",
+    output_schema=ArticleData
+)
+```
+
+```typescript TypeScript
+import { z } from 'zod';
+
+const ArticleSchema = z.object({
+  title: z.string().describe('文章标题'),
+  author: z.string().describe('作者姓名'),
+  content: z.string().describe('文章主要内容'),
+  publishDate: z.string().describe('发布日期')
+});
+
+const response = await smartScraper(
+  apiKey,
+  'https://example.com/article',
+  '提取文章信息',
+  ArticleSchema
+);
+```
+
+</CodeGroup>
+
+### 异步支持
+
+对于需要异步执行的应用程序，SmartScraper通过`AsyncClient`提供异步支持：
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.smartscraper(
+            website_url="https://example.com",
+            user_prompt="提取主要内容"
+        )
+        print(response)
+
+# 运行异步函数
+asyncio.run(main())
+```
+
+## 集成选项
+
+### 官方SDK
+- [Python SDK](/sdks/python) - 适用于数据科学和后端应用
+- [JavaScript SDK](/sdks/javascript) - 适用于Web应用和Node.js
+
+### AI框架集成
+- [LangChain集成](/integrations/langchain) - 在LLM工作流中使用SmartScraper
+- [LlamaIndex集成](/integrations/llamaindex) - 构建强大的搜索和问答系统
+
+## 最佳实践
+
+### 优化提取
+1. 使用具体的提示词
+2. 使用模式获取结构化数据
+3. 处理多页内容的分页
+4. 实现错误处理和重试机制
+
+### 速率限制
+- 在请求之间实施合理的延迟
+- 使用异步客户端提高性能
+- 监控您的[API使用情况](/dashboard/overview)
+
+## 示例项目
+
+查看我们的[使用手册](/cookbook/introduction)获取真实案例：
+- 电商产品爬取
+- 新闻聚合
+- 研究数据收集
+- 内容监控
+
+## API参考
+
+详细的API文档，请参见：
+- [启动爬虫任务](/api-reference/endpoint/smartscraper/start)
+- [获取任务状态](/api-reference/endpoint/smartscraper/get-status)
+
+## 支持与资源
+
+<CardGroup cols={2}>
+  <Card title="文档" icon="book" href="/introduction">
+    全面的指南和教程
+  </Card>
+  <Card title="API参考" icon="code" href="/api-reference/introduction">
+    详细的API文档
+  </Card>
+  <Card title="社区" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    加入我们的Discord社区
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    查看我们的开源项目
+  </Card>
+</CardGroup>
+
+<Card title="准备开始？" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  立即注册并获取API密钥，开始使用SmartScraper提取数据！
+</Card> 

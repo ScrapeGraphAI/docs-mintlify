@@ -1,0 +1,94 @@
+---
+title: 'Introduction'
+description: 'Complete reference for the ScrapeGraphAI REST API'
+---
+
+## Overview
+
+The ScrapeGraphAI API provides powerful endpoints for AI-powered web scraping and content extraction. Our RESTful API allows you to extract structured data from any website, process local HTML content, and convert web pages to clean markdown.
+
+## Authentication
+
+All API requests require authentication using an API key. You can get your API key from the [dashboard](https://dashboard.scrapegraphai.com).
+
+```bash
+SGAI-APIKEY: your-api-key-here
+```
+
+<Note>
+Keep your API key secure and never expose it in client-side code. Use environment variables to manage your keys safely.
+</Note>
+
+## Base URL
+
+```bash
+https://api.scrapegraphai.com/v1
+```
+
+## Available Services
+
+<CardGroup cols={2}>
+  <Card title="SmartScraper" icon="robot" href="/api-reference/endpoint/smartscraper/start">
+    Extract structured data from any website using AI
+  </Card>
+  <Card title="LocalScraper" icon="file-code" href="/api-reference/endpoint/localscraper/start">
+    Process local HTML content with AI extraction
+  </Card>
+  <Card title="Markdownify" icon="markdown" href="/api-reference/endpoint/markdownify/start">
+    Convert web content to clean markdown
+  </Card>
+  <Card title="User" icon="user" href="/api-reference/endpoint/user/get-credits">
+    Manage credits and submit feedback
+  </Card>
+</CardGroup>
+
+## SDKs & Integration
+
+We provide official SDKs to help you integrate quickly:
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    Perfect for data science and backend applications
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
+    Ideal for web applications and Node.js
+  </Card>
+</CardGroup>
+
+### AI Framework Integration
+
+<CardGroup cols={2}>
+  <Card title="LangChain" icon="link" href="/integrations/langchain">
+    Use our services in your LLM workflows
+  </Card>
+  <Card title="LlamaIndex" icon="database" href="/integrations/llamaindex">
+    Build powerful search and QA systems
+  </Card>
+</CardGroup>
+
+## Error Handling
+
+Our API uses conventional HTTP response codes:
+
+- `200` - Success
+- `400` - Bad Request
+- `401` - Unauthorized
+- `429` - Too Many Requests
+- `500` - Server Error
+
+<Note>
+Check our [error handling guide](/api-reference/errors) for detailed information about error responses and how to handle them.
+</Note>
+
+## Support
+
+Need help with the API? We're here to assist:
+
+<CardGroup cols={2}>
+  <Card title="Discord Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Get help from our community
+  </Card>
+  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
+    Contact our technical team
+  </Card>
+</CardGroup>

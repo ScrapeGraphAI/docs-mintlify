@@ -1,0 +1,120 @@
+---
+title: '🦐 Phidata'
+description: '使用Phidata构建带有ScrapeGraph的AI助手'
+---
+
+## 概述
+
+[Phidata](https://www.phidata.com)是一个用于构建生产就绪AI助手的开发框架。这个集成允许您轻松地将ScrapeGraph的网络爬虫功能添加到您的Phidata驱动的AI代理中。
+
+<Card
+  title="Phidata官方文档"
+  icon="book"
+  href="https://docs.phidata.com/introduction"
+>
+  了解更多关于使用Phidata构建AI助手的信息
+</Card>
+
+## 安装
+
+安装所需的包：
+
+```bash
+pip install -U phidata
+
+pip install scrapegraph-py
+```
+
+## 使用方法
+
+### 基础示例
+
+创建带有ScrapeGraph工具的AI助手：
+
+```python
+from phi.agent import Agent
+from phi.tools.scrapegraph_tools import ScrapeGraphTools
+
+# 初始化并启用smartscraper
+scrapegraph = ScrapeGraphTools(smartscraper=True)
+
+# 使用工具创建代理
+agent = Agent(
+    tools=[scrapegraph],
+    show_tool_calls=True,
+    markdown=True,
+    stream=True
+)
+
+# 使用smartscraper提取结构化数据
+agent.print_response("""
+使用smartscraper从https://www.wired.com/category/science/提取以下内容：
+- 新闻文章
+- 标题
+- 图片
+- 链接
+- 作者
+""")
+```
+
+### Markdown转换
+
+您也可以使用ScrapeGraph将网页转换为markdown：
+
+```python
+from phi.agent import Agent
+from phi.tools.scrapegraph_tools import ScrapeGraphTools
+
+# 仅启用markdownify初始化
+scrapegraph_md = ScrapeGraphTools(smartscraper=False)
+
+# 创建用于markdown转换的代理
+agent_md = Agent(
+    tools=[scrapegraph_md],
+    show_tool_calls=True,
+    markdown=True
+)
+
+# 将网页转换为markdown格式
+agent_md.print_response(
+    "获取并将https://www.wired.com/category/science/转换为markdown格式"
+)
+```
+
+## 特点
+
+<CardGroup cols={2}>
+  <Card title="智能爬取" icon="robot">
+    使用自然语言提取结构化数据
+  </Card>
+  <Card title="Markdown转换" icon="file-code">
+    将网页转换为清晰的markdown
+  </Card>
+  <Card title="流式支持" icon="stream">
+    实时响应流式传输
+  </Card>
+  <Card title="工具可见性" icon="eye">
+    通过可见的工具调用进行调试
+  </Card>
+</CardGroup>
+
+## 支持
+
+需要集成帮助？
+
+<CardGroup cols={2}>
+  <Card
+    title="Phidata Discord"
+    icon="discord"
+    href="https://discord.gg/4MtYHHrgA8"
+  >
+    加入Phidata社区
+  </Card>
+  <Card
+    title="GitHub代码库"
+    icon="github"
+    href="https://github.com/phidatahq/phidata/blob/main/cookbook/tools/scrapegraph_tools.py"
+  >
+    查看源代码
+  </Card>
+</CardGroup> 

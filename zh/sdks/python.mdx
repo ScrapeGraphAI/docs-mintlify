@@ -1,0 +1,213 @@
+---
+title: 'Python SDK'
+description: 'ScrapeGraphAI的官方Python SDK'
+icon: 'python'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
+  alt="ScrapeGraph API Banner"
+/>
+
+<CardGroup cols={2}>
+  <Card title="PyPI包" icon="box">
+    [![PyPI version](https://badge.fury.io/py/scrapegraph-py.svg)](https://badge.fury.io/py/scrapegraph-py)
+  </Card>
+  <Card title="Python支持" icon="python">
+    [![Python Support](https://img.shields.io/pypi/pyversions/scrapegraph-py.svg)](https://pypi.org/project/scrapegraph-py/)
+  </Card>
+</CardGroup>
+
+## 安装
+
+使用pip安装包：
+
+```bash
+pip install scrapegraph-py
+```
+
+## 特点
+
+- **AI驱动提取**：使用人工智能的高级网络爬虫
+- **灵活的客户端**：同时支持同步和异步操作
+- **类型安全**：使用Pydantic模式的结构化输出
+- **生产就绪**：详细的日志记录和自动重试
+- **开发者友好**：全面的错误处理
+
+## 快速开始
+
+使用您的API密钥初始化客户端：
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key-here")
+```
+
+<Note>
+您也可以设置`SGAI_API_KEY`环境变量，然后无需参数初始化客户端：`client = Client()`
+</Note>
+
+## 服务
+
+### SmartScraper
+
+使用AI从任何网页提取特定信息：
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="提取主标题和描述"
+)
+```
+
+<Accordion title="基础模式示例" icon="code">
+定义一个简单的模式用于基本数据提取：
+
+```python
+from pydantic import BaseModel, Field
+
+class ArticleData(BaseModel):
+    title: str = Field(description="文章标题")
+    author: str = Field(description="作者姓名")
+    publish_date: str = Field(description="文章发布日期")
+    content: str = Field(description="文章主要内容")
+    category: str = Field(description="文章分类")
+
+response = client.smartscraper(
+    website_url="https://example.com/blog/article",
+    user_prompt="提取文章信息",
+    output_schema=ArticleData
+)
+
+print(f"标题: {response.title}")
+print(f"作者: {response.author}")
+print(f"发布时间: {response.publish_date}")
+```
+</Accordion>
+
+<Accordion title="高级模式示例" icon="code">
+定义一个用于嵌套数据结构的复杂模式：
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+
+class Employee(BaseModel):
+    name: str = Field(description="员工全名")
+    position: str = Field(description="职位")
+    department: str = Field(description="部门名称")
+    email: str = Field(description="电子邮箱")
+
+class Office(BaseModel):
+    location: str = Field(description="办公室位置/城市")
+    address: str = Field(description="完整地址")
+    phone: str = Field(description="联系电话")
+
+class CompanyData(BaseModel):
+    name: str = Field(description="公司名称")
+    description: str = Field(description="公司描述")
+    industry: str = Field(description="行业领域")
+    founded_year: int = Field(description="公司成立年份")
+    employees: List[Employee] = Field(description="主要员工列表")
+    offices: List[Office] = Field(description="公司办公地点")
+    website: str = Field(description="公司网站URL")
+
+# 提取全面的公司信息
+response = client.smartscraper(
+    website_url="https://example.com/about",
+    user_prompt="提取详细的公司信息，包括员工和办公室",
+    output_schema=CompanyData
+)
+
+# 访问嵌套数据
+print(f"公司: {response.name}")
+print("\n主要员工:")
+for employee in response.employees:
+    print(f"- {employee.name} ({employee.position})")
+
+print("\n办公地点:")
+for office in response.offices:
+    print(f"- {office.location}: {office.address}")
+```
+</Accordion>
+
+### LocalScraper
+
+使用AI提取处理本地HTML内容：
+
+```python
+html_content = """
+<html>
+    <body>
+        <h1>公司名称</h1>
+        <p>我们是一家专注于AI解决方案的科技公司。</p>
+        <div class="contact">
+            <p>邮箱: contact@example.com</p>
+        </div>
+    </body>
+</html>
+"""
+
+response = client.localscraper(
+    user_prompt="提取公司描述",
+    website_html=html_content
+)
+```
+
+### Markdownify
+
+将任何网页转换为清晰、格式化的markdown：
+
+```python
+response = client.markdownify(
+    website_url="https://example.com"
+)
+```
+
+## 异步支持
+
+所有端点都支持异步操作：
+
+```python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient() as client:
+        response = await client.smartscraper(
+            website_url="https://example.com",
+            user_prompt="提取主要内容"
+        )
+        print(response)
+
+asyncio.run(main())
+```
+
+## 反馈
+
+通过程序提交反馈帮助我们改进：
+
+```python
+client.submit_feedback(
+    request_id="your-request-id",
+    rating=5,
+    feedback_text="结果很棒！"
+)
+```
+
+## 支持
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk">
+    报告问题并为SDK做出贡献
+  </Card>
+  <Card title="邮件支持" icon="envelope" href="mailto:support@scrapegraphai.com">
+    从我们的开发团队获取帮助
+  </Card>
+</CardGroup>
+
+<Accordion title="许可证" icon="scale">
+  本项目采用MIT许可证。详见[LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE)文件。
+</Accordion> 

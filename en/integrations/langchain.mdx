@@ -1,0 +1,210 @@
+---
+title: '🦜 LangChain'
+description: 'Supercharge your LangChain agents with AI-powered web scraping'
+---
+
+## Overview
+
+The LangChain integration enables your agents to extract structured data from websites using natural language. This powerful combination allows you to build sophisticated AI agents that can understand and process web content intelligently.
+
+<Card
+  title="Official LangChain Documentation"
+  icon="book"
+  href="https://python.langchain.com/docs/integrations/providers/scrapegraph/"
+>
+  View the integration in LangChain's official documentation
+</Card>
+
+## Installation
+
+Install the package using pip:
+
+```bash
+pip install langchain-scrapegraph
+```
+
+## Available Tools
+
+### SmartScraperTool
+
+Extract structured data from any webpage using natural language prompts:
+
+```python
+from langchain_scrapegraph.tools import SmartScraperTool
+
+# Initialize the tool (uses SGAI_API_KEY from environment)
+tool = SmartscraperTool()
+
+# Extract information using natural language
+result = tool.invoke({
+    "website_url": "https://www.example.com",
+    "user_prompt": "Extract the main heading and first paragraph"
+})
+```
+
+<Accordion title="Using Output Schemas" icon="code">
+Define the structure of the output using Pydantic models:
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+from langchain_scrapegraph.tools import SmartScraperTool
+
+class WebsiteInfo(BaseModel):
+    title: str = Field(description="The main title of the webpage")
+    description: str = Field(description="The main description or first paragraph")
+    urls: List[str] = Field(description="The URLs inside the webpage")
+
+# Initialize with schema
+tool = SmartScraperTool(llm_output_schema=WebsiteInfo)
+
+result = tool.invoke({
+    "website_url": "https://www.example.com",
+    "user_prompt": "Extract the website information"
+})
+```
+</Accordion>
+
+### LocalScraperTool
+
+Process HTML content directly with AI extraction:
+
+```python
+from langchain_scrapegraph.tools import LocalScraperTool
+
+tool = LocalScraperTool()
+result = tool.invoke({
+    "user_prompt": "Extract all contact information",
+    "website_html": "<html>...</html>"
+})
+```
+
+<Accordion title="Using Output Schemas" icon="code">
+```python
+from typing import Optional
+from pydantic import BaseModel, Field
+from langchain_scrapegraph.tools import LocalScraperTool
+
+class CompanyInfo(BaseModel):
+    name: str = Field(description="The company name")
+    description: str = Field(description="The company description")
+    email: Optional[str] = Field(description="Contact email if available")
+    phone: Optional[str] = Field(description="Contact phone if available")
+
+tool = LocalScraperTool(llm_output_schema=CompanyInfo)
+
+html_content = """
+<html>
+    <body>
+        <h1>TechCorp Solutions</h1>
+        <p>We are a leading AI technology company.</p>
+        <div class="contact">
+            <p>Email: contact@techcorp.com</p>
+            <p>Phone: (555) 123-4567</p>
+        </div>
+    </body>
+</html>
+"""
+
+result = tool.invoke({
+    "website_html": html_content,
+    "user_prompt": "Extract the company information"
+})
+```
+</Accordion>
+
+### MarkdownifyTool
+
+Convert any webpage into clean, formatted markdown:
+
+```python
+from langchain_scrapegraph.tools import MarkdownifyTool
+
+tool = MarkdownifyTool()
+markdown = tool.invoke({"website_url": "https://example.com"})
+```
+
+## Example Agent
+
+Create a research agent that can gather and analyze web data:
+
+```python
+from langchain.agents import initialize_agent, AgentType
+from langchain_scrapegraph.tools import SmartScraperTool
+from langchain_openai import ChatOpenAI
+
+# Initialize tools
+tools = [
+    SmartScraperTool(),
+]
+
+# Create an agent
+agent = initialize_agent(
+    tools=tools,
+    llm=ChatOpenAI(temperature=0),
+    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+    verbose=True
+)
+
+# Use the agent
+response = agent.run("""
+    Visit example.com, make a summary of the content and extract the main heading and first paragraph
+""")
+```
+
+## Configuration
+
+Set your ScrapeGraph API key in your environment:
+
+```bash
+export SGAI_API_KEY="your-api-key-here"
+```
+
+Or set it programmatically:
+
+```python
+import os
+os.environ["SGAI_API_KEY"] = "your-api-key-here"
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Research Agents" icon="magnifying-glass">
+    Create agents that gather and analyze web data
+  </Card>
+  <Card title="Data Collection" icon="database">
+    Automate structured data extraction from websites
+  </Card>
+  <Card title="Content Processing" icon="file-lines">
+    Convert web content into markdown for further processing
+  </Card>
+  <Card title="Information Extraction" icon="filter">
+    Extract specific data points using natural language
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>

@@ -1,0 +1,232 @@
+---
+title: 'SmartScraper'
+description: 'AI-powered web scraping for any website'
+icon: 'robot'
+---
+
+<Frame>
+  <img src="/services/images/smartscraper-banner.png" alt="SmartScraper Service" />
+</Frame>
+
+## Overview
+
+SmartScraper is our flagship LLM-powered web scraping service that intelligently extracts structured data from any website. Using advanced LLM models, it understands context and content like a human would, making web data extraction more reliable and efficient than ever.
+
+<Note>
+Try SmartScraper instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
+</Note>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Universal Compatibility" icon="globe">
+    Works with any website structure, including JavaScript-rendered content
+  </Card>
+  <Card title="AI Understanding" icon="brain">
+    Contextual understanding of content for accurate extraction
+  </Card>
+  <Card title="Structured Output" icon="table">
+    Returns clean, structured data in your preferred format
+  </Card>
+  <Card title="Schema Support" icon="code">
+    Define custom output schemas using Pydantic or Zod
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+### Content Aggregation
+- News article extraction
+- Blog post summarization
+- Product information gathering
+- Research data collection
+
+### Data Analysis
+- Market research
+- Competitor analysis
+- Price monitoring
+- Trend tracking
+
+### AI Training
+- Dataset creation
+- Training data collection
+- Content classification
+- Knowledge base building
+
+<Note>
+Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://scrapegraphai.com/",
+    user_prompt="Extract info about the company"
+)
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "request_id": "sg-req-abc123",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "Extract info about the company",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI is a powerful AI scraping API designed for efficient web data extraction to power LLM applications and AI agents...",
+    "features": [
+      "Effortless, cost-effective, and AI-powered data extraction",
+      "Handles proxy rotation and rate limits",
+      "Supports a wide variety of websites"
+    ],
+    "contact_email": "contact@scrapegraphai.com",
+    "social_links": {
+      "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+      "linkedin": "https://www.linkedin.com/company/101881123",
+      "twitter": "https://x.com/scrapegraphai"
+    }
+  },
+  "error": ""
+}
+```
+
+The response includes:
+- `request_id`: Unique identifier for tracking your request
+- `status`: Current status of the extraction ("completed", "running", "failed")
+- `result`: The extracted data in structured JSON format
+- `error`: Error message (if any occurred during extraction)
+</Accordion>
+
+## Advanced Usage
+
+### Custom Schema Example
+
+Define exactly what data you want to extract:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+
+class ArticleData(BaseModel):
+    title: str = Field(description="Article title")
+    author: str = Field(description="Author name")
+    content: str = Field(description="Main article content")
+    publish_date: str = Field(description="Publication date")
+
+response = client.smartscraper(
+    website_url="https://example.com/article",
+    user_prompt="Extract the article information",
+    output_schema=ArticleData
+)
+```
+
+```typescript TypeScript
+import { z } from 'zod';
+
+const ArticleSchema = z.object({
+  title: z.string().describe('Article title'),
+  author: z.string().describe('Author name'),
+  content: z.string().describe('Main article content'),
+  publishDate: z.string().describe('Publication date')
+});
+
+const response = await smartScraper(
+  apiKey,
+  'https://example.com/article',
+  'Extract the article information',
+  ArticleSchema
+);
+```
+
+</CodeGroup>
+
+### Async Support
+
+For applications requiring asynchronous execution, SmartScraper provides async support through the `AsyncClient`:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.smartscraper(
+            website_url="https://example.com",
+            user_prompt="Extract the main content"
+        )
+        print(response)
+
+# Run the async function
+asyncio.run(main())
+```
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use SmartScraper in your LLM workflows
+- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+
+## Best Practices
+
+### Optimizing Extraction
+1. Be specific in your prompts
+2. Use schemas for structured data
+3. Handle pagination for multi-page content
+4. Implement error handling and retries
+
+### Rate Limiting
+- Implement reasonable delays between requests
+- Use async clients for better performance
+- Monitor your [API usage](/dashboard/overview)
+
+## Example Projects
+
+Check out our [cookbook](/cookbook/introduction) for real-world examples:
+- E-commerce product scraping
+- News aggregation
+- Research data collection
+- Content monitoring
+
+## API Reference
+
+For detailed API documentation, see:
+- [Start Scraping Job](/api-reference/endpoint/smartscraper/start)
+- [Get Job Status](/api-reference/endpoint/smartscraper/get-status)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Ready to Start?" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  Sign up now and get your API key to begin extracting data with SmartScraper!
+</Card>

@@ -1,0 +1,239 @@
+---
+title: 'JavaScript SDK'
+description: 'ScrapeGraphAI的官方JavaScript/TypeScript SDK'
+icon: 'js'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
+  alt="ScrapeGraph API Banner"
+/>
+
+<CardGroup cols={2}>
+  <Card title="NPM包" icon="box">
+    [![npm version](https://badge.fury.io/js/scrapegraph-js.svg)](https://badge.fury.io/js/scrapegraph-js)
+  </Card>
+  <Card title="许可证" icon="scale">
+    [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+  </Card>
+</CardGroup>
+
+## 安装
+
+使用npm或yarn安装包：
+
+```bash
+# 使用npm
+npm i scrapegraph-js
+
+# 使用yarn
+yarn add scrapegraph-js
+```
+
+## 特点
+
+- **AI驱动提取**：使用人工智能的智能网络爬虫
+- **异步设计**：完全异步架构
+- **类型安全**：内置TypeScript支持和Zod模式
+- **生产就绪**：自动重试和详细日志
+- **开发者友好**：全面的错误处理
+
+## 快速开始
+
+使用您的API密钥初始化：
+
+```javascript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = process.env.SGAI_APIKEY;
+const websiteUrl = 'https://example.com';
+const prompt = '提取主标题和描述';
+
+try {
+  const response = await smartScraper(apiKey, websiteUrl, prompt);
+  console.log(response.result);
+} catch (error) {
+  console.error('错误:', error);
+}
+```
+
+<Note>
+将您的API密钥安全地存储在环境变量中。使用`.env`文件和`dotenv`等库将它们加载到您的应用程序中。
+</Note>
+
+## 服务
+
+### SmartScraper
+
+使用AI从任何网页提取特定信息：
+
+```javascript
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  '提取主要内容'
+);
+```
+
+<Accordion title="基础模式示例" icon="code">
+使用Zod定义简单模式：
+
+```typescript
+import { z } from 'zod';
+
+const ArticleSchema = z.object({
+  title: z.string().describe('文章标题'),
+  author: z.string().describe('作者姓名'),
+  publishDate: z.string().describe('文章发布日期'),
+  content: z.string().describe('文章主要内容'),
+  category: z.string().describe('文章分类')
+});
+
+const response = await smartScraper(
+  apiKey,
+  'https://example.com/blog/article',
+  '提取文章信息',
+  ArticleSchema
+);
+
+console.log(`标题: ${response.result.title}`);
+console.log(`作者: ${response.result.author}`);
+console.log(`发布时间: ${response.result.publishDate}`);
+```
+</Accordion>
+
+<Accordion title="高级模式示例" icon="code">
+为嵌套数据结构定义复杂模式：
+
+```typescript
+import { z } from 'zod';
+
+const EmployeeSchema = z.object({
+  name: z.string().describe('员工全名'),
+  position: z.string().describe('职位'),
+  department: z.string().describe('部门名称'),
+  email: z.string().describe('电子邮箱')
+});
+
+const OfficeSchema = z.object({
+  location: z.string().describe('办公室位置/城市'),
+  address: z.string().describe('完整地址'),
+  phone: z.string().describe('联系电话')
+});
+
+const CompanySchema = z.object({
+  name: z.string().describe('公司名称'),
+  description: z.string().describe('公司描述'),
+  industry: z.string().describe('行业领域'),
+  foundedYear: z.number().describe('公司成立年份'),
+  employees: z.array(EmployeeSchema).describe('主要员工列表'),
+  offices: z.array(OfficeSchema).describe('公司办公地点'),
+  website: z.string().url().describe('公司网站URL')
+});
+
+// 提取全面的公司信息
+const response = await smartScraper(
+  apiKey,
+  'https://example.com/about',
+  '提取详细的公司信息，包括员工和办公室',
+  CompanySchema
+);
+
+// 访问嵌套数据
+console.log(`公司: ${response.result.name}`);
+console.log('\n主要员工:');
+response.result.employees.forEach(employee => {
+  console.log(`- ${employee.name} (${employee.position})`);
+});
+
+console.log('\n办公地点:');
+response.result.offices.forEach(office => {
+  console.log(`- ${office.location}: ${office.address}`);
+});
+```
+</Accordion>
+
+### LocalScraper
+
+使用AI提取处理本地HTML内容：
+
+```javascript
+const html = `
+<html>
+    <body>
+        <h1>公司名称</h1>
+        <p>我们是一家专注于AI解决方案的科技公司。</p>
+        <div class="contact">
+            <p>邮箱: contact@example.com</p>
+        </div>
+    </body>
+</html>
+`;
+
+const response = await localScraper(
+  apiKey,
+  html,
+  '提取公司描述'
+);
+```
+
+### Markdownify
+
+将任何网页转换为清晰、格式化的markdown：
+
+```javascript
+const response = await markdownify(
+  apiKey,
+  'https://example.com'
+);
+```
+
+## API额度
+
+检查您可用的API额度：
+
+```javascript
+import { getCredits } from 'scrapegraph-js';
+
+try {
+  const credits = await getCredits(apiKey);
+  console.log('可用额度:', credits);
+} catch (error) {
+  console.error('获取额度时出错:', error);
+}
+```
+
+## 反馈
+
+通过程序提交反馈帮助我们改进：
+
+```javascript
+import { sendFeedback } from 'scrapegraph-js';
+
+try {
+  await sendFeedback(
+    apiKey,
+    'request-id',
+    5,
+    '结果很棒！'
+  );
+} catch (error) {
+  console.error('发送反馈时出错:', error);
+}
+```
+
+## 支持
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk">
+    报告问题并为SDK做出贡献
+  </Card>
+  <Card title="邮件支持" icon="envelope" href="mailto:support@scrapegraphai.com">
+    从我们的开发团队获取帮助
+  </Card>
+</CardGroup>
+
+<Accordion title="许可证" icon="scale">
+  本项目采用MIT许可证。详见[LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE)文件。
+</Accordion> 

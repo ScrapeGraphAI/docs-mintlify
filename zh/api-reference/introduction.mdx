@@ -1,0 +1,94 @@
+---
+title: '介绍'
+description: 'ScrapeGraphAI REST API完整参考'
+---
+
+## 概述
+
+ScrapeGraphAI API提供强大的端点，用于AI驱动的网页抓取和内容提取。我们的RESTful API允许您从任何网站提取结构化数据，处理本地HTML内容，并将网页转换为清晰的markdown格式。
+
+## 认证
+
+所有API请求都需要使用API密钥进行认证。您可以从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥。
+
+```bash
+SGAI-APIKEY: your-api-key-here
+```
+
+<Note>
+请保持您的API密钥安全，切勿在客户端代码中暴露它。使用环境变量来安全地管理您的密钥。
+</Note>
+
+## 基础URL
+
+```bash
+https://api.scrapegraphai.com/v1
+```
+
+## 可用服务
+
+<CardGroup cols={2}>
+  <Card title="智能抓取" icon="robot" href="/api-reference/endpoint/smartscraper/start">
+    使用AI从任何网站提取结构化数据
+  </Card>
+  <Card title="本地抓取" icon="file-code" href="/api-reference/endpoint/localscraper/start">
+    使用AI提取处理本地HTML内容
+  </Card>
+  <Card title="Markdown转换" icon="markdown" href="/api-reference/endpoint/markdownify/start">
+    将网页内容转换为清晰的markdown
+  </Card>
+  <Card title="用户" icon="user" href="/api-reference/endpoint/user/get-credits">
+    管理积分和提交反馈
+  </Card>
+</CardGroup>
+
+## SDK和集成
+
+我们提供官方SDK帮助您快速集成：
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="/sdks/python">
+    适用于数据科学和后端应用
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
+    适用于Web应用和Node.js
+  </Card>
+</CardGroup>
+
+### AI框架集成
+
+<CardGroup cols={2}>
+  <Card title="LangChain" icon="link" href="/integrations/langchain">
+    在您的LLM工作流中使用我们的服务
+  </Card>
+  <Card title="LlamaIndex" icon="database" href="/integrations/llamaindex">
+    构建强大的搜索和问答系统
+  </Card>
+</CardGroup>
+
+## 错误处理
+
+我们的API使用常规HTTP响应代码：
+
+- `200` - 成功
+- `400` - 错误请求
+- `401` - 未授权
+- `429` - 请求过多
+- `500` - 服务器错误
+
+<Note>
+查看我们的[错误处理指南](/api-reference/errors)获取有关错误响应及其处理方法的详细信息。
+</Note>
+
+## 支持
+
+需要API帮助？我们随时为您提供协助：
+
+<CardGroup cols={2}>
+  <Card title="Discord社区" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    从我们的社区获取帮助
+  </Card>
+  <Card title="邮件支持" icon="envelope" href="mailto:support@scrapegraphai.com">
+    联系我们的技术团队
+  </Card>
+</CardGroup> 

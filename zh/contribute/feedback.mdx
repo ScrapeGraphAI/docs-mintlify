@@ -1,0 +1,107 @@
+---
+title: '反馈'
+description: '帮助我们改进ScrapeGraphAI'
+icon: 'comments'
+---
+
+## 分享您的体验
+
+您的反馈有助于我们改进ScrapeGraphAI。以下是几种与我们分享想法和体验的方式。
+
+### API反馈
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+client.submit_feedback(
+    request_id="your-request-id",
+    rating=5,
+    feedback_text="电商产品提取效果很好！"
+)
+```
+
+```javascript JavaScript
+const client = new Client('your-api-key');
+
+await client.submitFeedback({
+  requestId: 'your-request-id',
+  rating: 5,
+  feedbackText: '电商产品提取效果很好！'
+});
+```
+
+</CodeGroup>
+
+### 功能请求
+
+有新功能的想法？我们很乐意听取！
+
+<Card
+  title="提交功能请求"
+  icon="lightbulb"
+  href="https://github.com/ScrapeGraphAI/scrapegraph-ai/issues/new?labels=enhancement"
+>
+  在我们的GitHub仓库分享您的想法
+</Card>
+
+### 错误报告
+
+发现了bug？帮助我们通过报告来改进：
+
+<CardGroup cols={2}>
+  <Card
+    title="核心库"
+    icon="bug"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-ai/issues/new?labels=bug"
+  >
+    报告核心功能的问题
+  </Card>
+  <Card
+    title="SDK问题"
+    icon="code"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-sdk/issues/new?labels=bug"
+  >
+    报告SDK相关的问题
+  </Card>
+</CardGroup>
+
+## 社区渠道
+
+加入我们的社区，讨论想法，分享经验，获取帮助：
+
+<CardGroup cols={2}>
+  <Card
+    title="Discord社区"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    与其他开发者和我们的团队交流
+  </Card>
+  <Card
+    title="GitHub讨论"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-ai/discussions"
+  >
+    参与技术讨论
+  </Card>
+</CardGroup>
+
+## 联系我们
+
+需要直接联系我们？
+
+<Card
+  title="邮件支持"
+  icon="envelope"
+  href="mailto:support@scrapegraphai.com"
+>
+  联系我们的支持团队获取直接帮助
+</Card>
+
+<Note>
+对于紧急问题或私密咨询，请直接发送邮件给我们。对于一般性问题和讨论，我们建议使用Discord社区或GitHub讨论。
+</Note> 

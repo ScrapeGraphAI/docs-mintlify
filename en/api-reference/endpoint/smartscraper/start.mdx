@@ -1,0 +1,41 @@
+---
+title: 'Start SmartScraper'
+openapi: 'POST /v1/smartscraper'
+description: 'Extract content from a webpage using AI by providing a natural language prompt and a URL.'
+---
+
+SmartScraper allows you to extract specific information from any webpage using AI. Simply provide a URL and describe what information you want to extract in natural language.
+
+### Use Cases
+- Extract company information from websites
+- Gather product details from e-commerce pages
+- Collect contact information from business pages
+- Extract structured data from articles or blog posts
+
+### Example Response
+
+```json
+{
+  "request_id": "<request-id>",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "Extract info about the company",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI is a powerful AI scraping API designed for efficient web data extraction to power LLM applications and AI agents...",
+    "features": [
+      "Effortless, cost-effective, and AI-powered data extraction",
+      "Handles proxy rotation and rate limits",
+      "Supports a wide variety of websites"
+    ],
+    "contact_email": "contact@scrapegraphai.com",
+    "social_links": {
+      "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+      "linkedin": "https://www.linkedin.com/company/101881123",
+      "twitter": "https://x.com/scrapegraphai"
+    },
+    "..."
+  },
+  "error": ""
+}
+``` 

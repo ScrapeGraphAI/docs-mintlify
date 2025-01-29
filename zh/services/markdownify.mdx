@@ -1,0 +1,175 @@
+---
+title: 'Markdownify'
+description: '将网页内容转换为清晰、结构化的markdown'
+icon: 'markdown'
+---
+
+<Frame>
+  <img src="/services/images/markdownify-banner.png" alt="Markdownify服务" />
+</Frame>
+
+## 概述
+
+Markdownify是我们的专业服务，可以将网页内容转换为清晰、格式良好的markdown。它能智能地保留内容结构，同时删除不必要的元素，非常适合内容迁移、文档创建和知识库构建。
+
+<Note>
+在我们的[交互式平台](https://dashboard.scrapegraphai.com/)上立即试用Markdownify - 无需编码！
+</Note>
+
+## 主要特点
+
+<CardGroup cols={2}>
+  <Card title="智能转换" icon="wand-magic-sparkles">
+    智能保留内容结构
+  </Card>
+  <Card title="清洁输出" icon="broom">
+    移除广告、导航和无关内容
+  </Card>
+  <Card title="格式保留" icon="pen-fancy">
+    保持标题、列表和文本格式
+  </Card>
+  <Card title="资源处理" icon="image">
+    保留图片并处理外部链接
+  </Card>
+</CardGroup>
+
+## 使用场景
+
+### 内容迁移
+- 将博客文章转换为markdown
+- 转换文档
+- 迁移知识库
+- 归档网页内容
+
+### 文档编写
+- 创建技术文档
+- 构建wiki和指南
+- 生成README文件
+- 维护开发者文档
+
+### 内容管理
+- 准备CMS导入内容
+- 创建可移植内容
+- 构建学习资源
+- 格式化文章
+
+<Note>
+想了解更多关于我们AI驱动的爬虫技术？访问我们的[主网站](https://scrapegraphai.com)，了解我们如何革新网络数据提取。
+</Note>
+
+## 快速开始
+
+### 快速入门
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.markdownify(
+    website_url="https://example.com/article"
+)
+```
+
+<Note>
+从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
+</Note>
+
+<Accordion title="响应示例" icon="terminal">
+```json
+{
+  "request_id": "sg-req-md456",
+  "status": "completed",
+  "website_url": "https://example.com/article",
+  "result": "# 理解AI驱动的网络爬虫\n\n随着AI技术的出现，网络爬虫已经发生了显著的演变...\n\n## 主要优势\n\n- 提高准确性\n- 智能提取\n- 结构化输出\n\n![AI爬虫流程](https://example.com/images/ai-scraping.png)\n\n> AI驱动的爬虫代表着网络数据提取的未来。\n\n### 入门指南\n\n1. 选择目标网站\n2. 定义提取目标\n3. 选择合适的工具\n",
+  "error": ""
+}
+```
+
+响应包括：
+- `request_id`：用于追踪请求的唯一标识符
+- `status`：转换的当前状态
+- `result`：包含markdown内容和元数据的对象
+- `error`：错误信息（如果在转换过程中出现任何错误）
+</Accordion>
+
+### 异步支持
+
+对于需要异步执行的应用程序，Markdownify通过`AsyncClient`提供异步支持：
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.markdownify(
+            website_url="https://example.com/article"
+        )
+        print(response)
+
+# 运行异步函数
+asyncio.run(main())
+```
+
+## 集成选项
+
+### 官方SDK
+- [Python SDK](/sdks/python) - 适用于自动化和内容处理
+- [JavaScript SDK](/sdks/javascript) - 适用于Web应用和内容工具
+
+### AI框架集成
+- [LangChain集成](/integrations/langchain) - 在内容管道中使用Markdownify
+- [LlamaIndex集成](/integrations/llamaindex) - 创建可搜索的知识库
+
+## 最佳实践
+
+### 内容优化
+1. 验证源内容质量
+2. 检查图片和链接保留
+3. 审查markdown格式
+4. 验证输出结构
+
+### 处理技巧
+- 分块处理大型内容
+- 保留重要元数据
+- 维护内容层次结构
+- 检查格式一致性
+
+## 示例项目
+
+查看我们的[使用手册](/cookbook/introduction)获取真实案例：
+- 博客迁移工具
+- 文档生成器
+- 内容归档系统
+- 知识库构建器
+
+## API参考
+
+详细的API文档，请参见：
+- [启动转换任务](/api-reference/endpoint/markdownify/start)
+- [获取任务状态](/api-reference/endpoint/markdownify/get-status)
+
+## 支持与资源
+
+<CardGroup cols={2}>
+  <Card title="文档" icon="book" href="/introduction">
+    全面的指南和教程
+  </Card>
+  <Card title="API参考" icon="code" href="/api-reference/introduction">
+    详细的API文档
+  </Card>
+  <Card title="社区" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    加入我们的Discord社区
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    查看我们的开源项目
+  </Card>
+  <Card title="主网站" icon="globe" href="https://www.scrapegraphai.com">
+    访问我们的官方网站
+  </Card>
+</CardGroup>
+
+<Card title="准备开始？" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  立即注册并获取API密钥，开始将网页内容转换为清晰的markdown！
+</Card> 

@@ -1,0 +1,107 @@
+---
+title: 'Feedback'
+description: 'Help us improve ScrapeGraphAI'
+icon: 'comments'
+---
+
+## Share Your Experience
+
+Your feedback helps us improve ScrapeGraphAI. There are several ways to share your thoughts and experiences with us.
+
+### API Feedback
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+client.submit_feedback(
+    request_id="your-request-id",
+    rating=5,
+    feedback_text="Great results for e-commerce product extraction!"
+)
+```
+
+```javascript JavaScript
+const client = new Client('your-api-key');
+
+await client.submitFeedback({
+  requestId: 'your-request-id',
+  rating: 5,
+  feedbackText: 'Great results for e-commerce product extraction!'
+});
+```
+
+</CodeGroup>
+
+### Feature Requests
+
+Have an idea for a new feature? We'd love to hear it!
+
+<Card
+  title="Submit Feature Request"
+  icon="lightbulb"
+  href="https://github.com/ScrapeGraphAI/scrapegraph-ai/issues/new?labels=enhancement"
+>
+  Share your ideas on our GitHub repository
+</Card>
+
+### Bug Reports
+
+Found a bug? Help us improve by reporting it:
+
+<CardGroup cols={2}>
+  <Card
+    title="Core Library"
+    icon="bug"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-ai/issues/new?labels=bug"
+  >
+    Report issues with the core functionality
+  </Card>
+  <Card
+    title="SDK Issues"
+    icon="code"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-sdk/issues/new?labels=bug"
+  >
+    Report SDK-specific problems
+  </Card>
+</CardGroup>
+
+## Community Channels
+
+Join our community to discuss ideas, share experiences, and get help:
+
+<CardGroup cols={2}>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Chat with other developers and our team
+  </Card>
+  <Card
+    title="GitHub Discussions"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-ai/discussions"
+  >
+    Participate in technical discussions
+  </Card>
+</CardGroup>
+
+## Contact Us
+
+Need to reach us directly?
+
+<Card
+  title="Email Support"
+  icon="envelope"
+  href="mailto:support@scrapegraphai.com"
+>
+  Contact our support team for direct assistance
+</Card>
+
+<Note>
+For urgent issues or private inquiries, please email us directly. For general questions and discussions, we encourage using our Discord community or GitHub discussions.
+</Note> 

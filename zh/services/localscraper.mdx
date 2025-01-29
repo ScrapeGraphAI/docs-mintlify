@@ -1,0 +1,257 @@
+---
+title: 'LocalScraper'
+description: '本地HTML内容的AI驱动提取'
+icon: 'file-code'
+---
+
+<Frame>
+  <img src="/services/images/localscraper-banner.png" alt="LocalScraper服务" />
+</Frame>
+
+## 概述
+
+LocalScraper提供与SmartScraper相同的强大AI提取功能，但专门用于处理本地HTML内容。这使其特别适用于已有HTML内容或需要处理缓存页面、内部文档或动态生成内容的场景。
+
+<Note>
+在我们的[交互式平台](https://dashboard.scrapegraphai.com/)上立即试用LocalScraper - 无需编码！
+</Note>
+
+## 主要特点
+
+<CardGroup cols={2}>
+  <Card title="本地处理" icon="laptop-code">
+    直接处理HTML内容，无需发送外部请求
+  </Card>
+  <Card title="AI理解能力" icon="brain">
+    与SmartScraper相同的强大AI提取能力
+  </Card>
+  <Card title="更快处理" icon="bolt">
+    无网络延迟和网站加载延迟
+  </Card>
+  <Card title="完全控制" icon="sliders">
+    完全控制您的HTML输入和处理过程
+  </Card>
+</CardGroup>
+
+## 使用场景
+
+### 内部系统
+- 处理内部缓存页面
+- 从内网内容提取
+- 处理动态JavaScript渲染
+- 处理邮件模板
+
+### 批量处理
+- 归档数据提取
+- 历史内容分析
+- 批量文档处理
+- 离线内容处理
+
+### 开发和测试
+- 本地测试提取逻辑
+- 调试内容处理
+- 无需API调用即可原型设计
+- 离线验证模式
+
+<Note>
+想了解更多关于我们AI驱动的爬虫技术？访问我们的[主网站](https://scrapegraphai.com)，了解我们如何革新网络数据提取。
+</Note>
+
+## 快速开始
+
+### 快速入门
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+html_content = """
+<html>
+    <body>
+        <h1>ScrapeGraphAI</h1>
+        <div class="description">
+            <p>面向现代应用的AI驱动网络爬虫。</p>
+        </div>
+        <div class="features">
+            <ul>
+                <li>智能提取</li>
+                <li>本地处理</li>
+                <li>模式支持</li>
+            </ul>
+        </div>
+    </body>
+</html>
+"""
+
+response = client.localscraper(
+    website_html=html_content,
+    user_prompt="提取公司信息和特点"
+)
+```
+
+<Note>
+从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
+</Note>
+
+<Accordion title="响应示例" icon="terminal">
+```json
+{
+  "request_id": "sg-req-xyz789",
+  "status": "completed",
+  "user_prompt": "提取公司信息和特点",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "面向现代应用的AI驱动网络爬虫。",
+    "features": [
+      "智能提取",
+      "本地处理",
+      "模式支持"
+    ]
+  },
+  "error": ""
+}
+```
+
+响应包括：
+- `request_id`：用于追踪请求的唯一标识符
+- `status`：提取的当前状态
+- `result`：以结构化JSON格式提取的数据
+- `error`：错误信息（如果在提取过程中出现任何错误）
+</Accordion>
+
+## 高级用法
+
+### 自定义模式示例
+
+精确定义您想要提取的数据：
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+from typing import List
+
+class ProductData(BaseModel):
+    name: str = Field(description="产品名称")
+    price: str = Field(description="产品价格")
+    description: str = Field(description="产品描述")
+    specifications: List[str] = Field(description="产品规格")
+
+response = client.localscraper(
+    website_html=html_content,
+    user_prompt="提取产品信息",
+    output_schema=ProductData
+)
+```
+
+```typescript TypeScript
+import { z } from 'zod';
+
+const ProductSchema = z.object({
+  name: z.string().describe('产品名称'),
+  price: z.string().describe('产品价格'),
+  description: z.string().describe('产品描述'),
+  specifications: z.array(z.string()).describe('产品规格')
+});
+
+const response = await localScraper(
+  apiKey,
+  html_content,
+  '提取产品信息',
+  ProductSchema
+);
+```
+
+</CodeGroup>
+
+### 异步支持
+
+对于需要异步执行的应用程序，LocalScraper通过`AsyncClient`提供异步支持：
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    html_content = """
+    <html>
+        <body>
+            <h1>产品：游戏笔记本</h1>
+            <div class="price">¥6999.99</div>
+            <div class="description">
+                配备RTX 3080的高性能游戏笔记本。
+            </div>
+        </body>
+    </html>
+    """
+    
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.localscraper(
+            website_html=html_content,
+            user_prompt="提取产品信息"
+        )
+        print(response)
+
+# 运行异步函数
+asyncio.run(main())
+```
+
+## 集成选项
+
+### 官方SDK
+- [Python SDK](/sdks/python) - 适用于数据科学和后端应用
+- [JavaScript SDK](/sdks/javascript) - 适用于Web应用和Node.js
+
+### AI框架集成
+- [LangChain集成](/integrations/langchain) - 在LLM工作流中使用LocalScraper
+- [LlamaIndex集成](/integrations/llamaindex) - 构建强大的搜索和问答系统
+
+## 最佳实践
+
+### HTML准备
+1. 确保HTML格式正确
+2. 仅包含相关内容
+3. 清理不必要的标记
+4. 正确处理字符编码
+
+### 优化建议
+- 移除不必要的脚本和样式
+- 清理动态内容占位符
+- 保留重要的语义结构
+- 包含相关元数据
+
+## 示例项目
+
+查看我们的[使用手册](/cookbook/introduction)获取真实案例：
+- 动态内容提取
+- 邮件模板处理
+- 缓存内容分析
+- 批量HTML处理
+
+## API参考
+
+详细的API文档，请参见：
+- [启动爬虫任务](/api-reference/endpoint/localscraper/start)
+- [获取任务状态](/api-reference/endpoint/localscraper/get-status)
+
+## 支持与资源
+
+<CardGroup cols={2}>
+  <Card title="文档" icon="book" href="/introduction">
+    全面的指南和教程
+  </Card>
+  <Card title="API参考" icon="code" href="/api-reference/introduction">
+    详细的API文档
+  </Card>
+  <Card title="社区" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    加入我们的Discord社区
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    查看我们的开源项目
+  </Card>
+</CardGroup>
+
+<Card title="准备开始？" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  立即注册并获取API密钥，开始使用LocalScraper提取数据！
+</Card> 

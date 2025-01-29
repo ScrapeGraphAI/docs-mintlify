@@ -1,0 +1,104 @@
+---
+title: '🔬 News Research Agent'
+description: 'Build an AI research agent with ScrapeGraph and Tavily'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/research-agent-banner.png"
+/>
+
+Learn how to build a research agent that combines ScrapeGraph's extraction capabilities with Tavily's search API to gather and analyze news articles on specific topics.
+
+<Note>
+Try it yourself in our [News Research Agent Notebook](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/research-agent/scrapegraph_langgraph_tavily.ipynb)
+</Note>
+
+## The Goal
+
+We'll extract the following information from news articles:
+
+| Field | Description |
+| ----- | ----------- |
+| Title | Article headline |
+| Link | URL to the article |
+| Description | Article summary |
+
+## Code Example
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+
+# Schema for a single news item
+class NewsItemSchema(BaseModel):
+    title: str = Field(description="Title of the news article")
+    link: str = Field(description="URL to the news article")
+    description: str = Field(description="Summary/description of the news article")
+
+# Schema that contains a list of news items
+class ListNewsSchema(BaseModel):
+    news: List[NewsItemSchema] = Field(description="List of news articles with their details")
+
+# Agent implementation...
+# 1. Uses Tavily to search for relevant articles
+# 2. Extracts structured data using ScrapeGraph
+# 3. Returns formatted news list
+```
+
+## Example Output
+
+```json
+{
+  "news": [
+    {
+      "title": "Matternet adds ANRA's UTM tech to expand drone delivery",
+      "link": "https://www.therobotreport.com/matternet-adds-anras-utm-tech-to-expand-drone-delivery/",
+      "description": "This latest partnership follows Matternet's recent launch of a drone delivery operation in Silicon Valley."
+    },
+    {
+      "title": "Helm.ai upgrades generative AI model to enrich autonomous driving data",
+      "link": "https://www.therobotreport.com/helm-ai-upgrades-generative-ai-model-to-enrich-autonomous-driving-data/",
+      "description": "Helm.ai said the new model enables automakers to generate diverse, realistic video data tailored to specific requirements."
+    },
+    {
+      "title": "New research analyzes safety of Waymo robotaxis",
+      "link": "https://www.therobotreport.com/new-research-analyzes-safety-of-waymo-robotaxis/",
+      "description": "Waymo shared research with Swiss Re, one of the world's largest insurance providers, analyzing liability claims related to collisions from 25.3 million fully autonomous miles driven."
+    },
+    {
+      "title": "From AI to humanoids: top robotics trends of 2024",
+      "link": "https://www.therobotreport.com/from-ai-to-humanoids-top-robotics-trends-of-2024/",
+      "description": "The Robot Report Podcast reflects on the successes and challenges that defined the robotics industry in 2024."
+    },
+    {
+      "title": "Symbotic acquires OhmniLabs, maker of disinfection & telepresence robots",
+      "link": "https://www.therobotreport.com/symbotic-buys-healthcare-robot-maker-ohmnilabs/",
+      "description": "With the acquisition of OhmniLabs, Symbotic said it will be better positioned to expand its capabilities for supply chain customers."
+    }
+  ]
+}
+```
+
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note> 

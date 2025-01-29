@@ -1,0 +1,107 @@
+---
+title: '📰 Wired Articles'
+description: 'How to extract articles from Wired.com'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/wired-banner.png"
+/>
+
+Learn how to extract article information from Wired.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather article details, categories, and author information.
+
+<Note>
+Try it yourself in our interactive notebooks:
+- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_sdk.ipynb)
+- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_langchain.ipynb)
+- [LangGraph Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_langgraph.ipynb)
+- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/wired-news/scrapegraph_llama_index.ipynb)
+</Note>
+
+## The Goal
+
+We'll extract the following article information:
+
+| Field | Description |
+| ----- | ----------- |
+| Category | Article category (e.g., 'Health', 'Environment') |
+| Title | Article headline |
+| Link | URL to the full article |
+| Author | Writer's name |
+
+## Code Example
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import Client
+
+# Schema for a single news item
+class NewsItemSchema(BaseModel):
+    category: str = Field(description="Category of the news (e.g., 'Health', 'Environment')")
+    title: str = Field(description="Title of the news article")
+    link: str = Field(description="URL to the news article")
+    author: str = Field(description="Author of the news article")
+
+# Schema that contains a list of news items
+class ListNewsSchema(BaseModel):
+    news: List[NewsItemSchema] = Field(description="List of news articles with their details")
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://www.wired.com/",
+    user_prompt="Extract latest news articles",
+    output_schema=ListNewsSchema
+)
+```
+
+## Example Output
+
+```json
+{
+    "news": [
+        {
+            "category": "Artificial Intelligence",
+            "title": "The Race to Build Better Large Language Models",
+            "link": "https://www.wired.com/story/the-race-to-build-better-llms",
+            "author": "Will Knight"
+        },
+        {
+            "category": "Security",
+            "title": "The Latest Cybersecurity Threats You Need to Know About",
+            "link": "https://www.wired.com/story/latest-cybersecurity-threats",
+            "author": "Lily Hay Newman"
+        },
+        {
+            "category": "Science",
+            "title": "New Discoveries in Quantum Computing",
+            "link": "https://www.wired.com/story/quantum-computing-discoveries",
+            "author": "Steven Levy"
+        }
+    ]
+}
+```
+
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Python SDK"
+    icon="python"
+    href="/sdks/python"
+  >
+    Explore our Python SDK documentation
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note>

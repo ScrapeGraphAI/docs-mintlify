@@ -1,0 +1,1008 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.scrapegraphai.com/",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/v1/smartcrawler": {
+      "post": {
+        "tags": [
+          "SmartCrawler"
+        ],
+        "summary": "Start Smartcrawler",
+        "operationId": "start_smartcrawler_v1_smartcrawler_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrawlRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InProgressCrawlSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/v1/smartcrawler/{session_id}": {
+      "get": {
+        "tags": [
+          "SmartCrawler"
+        ],
+        "summary": "Get Smartcrawler Status",
+        "operationId": "get_smartcrawler_status_v1_smartcrawler__session_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/smartcrawler/sessions/all": {
+      "get": {
+        "tags": [
+          "SmartCrawler"
+        ],
+        "summary": "Get All Sessions",
+        "operationId": "get_all_sessions_v1_smartcrawler_sessions_all_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrawlSessionsList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/smartscraper": {
+      "post": {
+        "tags": [
+          "SmartScraper"
+        ],
+        "summary": "Start Smartscraper",
+        "operationId": "start_smartscraper_v1_smartscraper_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScrapeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedSmartscraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/v1/smartscraper/{request_id}": {
+      "get": {
+        "tags": [
+          "SmartScraper"
+        ],
+        "summary": "Get Smartscraper Status",
+        "operationId": "get_smartscraper_status_v1_smartscraper__request_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedSmartscraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/markdownify": {
+      "post": {
+        "tags": [
+          "Markdownify"
+        ],
+        "summary": "Start Markdownify",
+        "operationId": "start_markdownify_v1_markdownify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkdownifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedMarkdownifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/v1/markdownify/{request_id}": {
+      "get": {
+        "tags": [
+          "Markdownify"
+        ],
+        "summary": "Get Markdownify Status",
+        "operationId": "get_markdownify_status_v1_markdownify__request_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedMarkdownifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/localscraper": {
+      "post": {
+        "tags": [
+          "LocalScraper"
+        ],
+        "summary": "Start Localscraper",
+        "operationId": "start_localscraper_v1_localscraper_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalscraperRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedLocalscraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/v1/localscraper/{request_id}": {
+      "get": {
+        "tags": [
+          "LocalScraper"
+        ],
+        "summary": "Get Localscraper Status",
+        "operationId": "get_localscraper_status_v1_localscraper__request_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedLocalscraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/credits": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get Credits",
+        "operationId": "get_credits_v1_credits_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/v1/feedback": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Submit Feedback",
+        "operationId": "submit_feedback_v1_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CompletedLocalscraperResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LocalscraperStatus"
+          },
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "user_prompt"
+        ],
+        "title": "CompletedLocalscraperResponse"
+      },
+      "CompletedMarkdownifyResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MarkdownifyStatus"
+          },
+          "website_url": {
+            "type": "string",
+            "title": "Website Url"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "website_url"
+        ],
+        "title": "CompletedMarkdownifyResponse"
+      },
+      "CompletedSmartscraperResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SmartscraperStatus"
+          },
+          "website_url": {
+            "type": "string",
+            "title": "Website Url"
+          },
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "website_url",
+          "user_prompt"
+        ],
+        "title": "CompletedSmartscraperResponse"
+      },
+      "CrawlRequest": {
+        "properties": {
+          "website_url": {
+            "type": "string",
+            "title": "Website Url",
+            "example": "https://scrapegraphai.com/"
+          },
+          "input_queries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "title": "Input Queries",
+            "example": [
+              "What does the company do?",
+              "What are the company's core products?",
+              "In which sectors does the company operate?"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "website_url",
+          "input_queries"
+        ],
+        "title": "CrawlRequest"
+      },
+      "CrawlSessionResponseBase": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlStatus"
+          },
+          "website_url": {
+            "type": "string",
+            "title": "Website Url"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "status",
+          "website_url",
+          "timestamp",
+          "message"
+        ],
+        "title": "CrawlSessionResponseBase"
+      },
+      "CrawlSessionsList": {
+        "properties": {
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/CrawlSessionResponseBase"
+            },
+            "type": "array",
+            "title": "Sessions"
+          },
+          "total_sessions": {
+            "type": "integer",
+            "title": "Total Sessions"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Sessions retrieved successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessions",
+          "total_sessions"
+        ],
+        "title": "CrawlSessionsList"
+      },
+      "CrawlStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "title": "CrawlStatus"
+      },
+      "CreditsResponse": {
+        "properties": {
+          "remaining_credits": {
+            "type": "integer",
+            "title": "Remaining Credits"
+          },
+          "total_credits_used": {
+            "type": "integer",
+            "title": "Total Credits Used"
+          }
+        },
+        "type": "object",
+        "required": [
+          "remaining_credits",
+          "total_credits_used"
+        ],
+        "title": "CreditsResponse"
+      },
+      "FeedbackCreate": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id",
+            "description": "ID of the request/session this feedback is for"
+          },
+          "rating": {
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 0,
+            "title": "Rating"
+          },
+          "feedback_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feedback Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "rating"
+        ],
+        "title": "FeedbackCreate"
+      },
+      "FeedbackResponse": {
+        "properties": {
+          "feedback_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Feedback Id"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Feedback submitted successfully"
+          },
+          "feedback_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Feedback Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feedback_id",
+          "request_id",
+          "feedback_timestamp"
+        ],
+        "title": "FeedbackResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InProgressCrawlSessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlStatus"
+          },
+          "website_url": {
+            "type": "string",
+            "title": "Website Url"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "status",
+          "website_url",
+          "timestamp",
+          "message"
+        ],
+        "title": "InProgressCrawlSessionResponse"
+      },
+      "LocalscraperRequest": {
+        "properties": {
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt",
+            "example": "Extract info about the company"
+          },
+          "website_html": {
+            "type": "string",
+            "title": "Website Html",
+            "description": "HTML content, maximum size 2MB",
+            "example": "\u003Chtml\u003E\u003Cbody\u003E\u003Ch1\u003ETitle\u003C/h1\u003E\u003Cp\u003EContent\u003C/p\u003E\u003C/body\u003E\u003C/html\u003E"
+          },
+          "output_schema": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Schema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_prompt",
+          "website_html"
+        ],
+        "title": "LocalscraperRequest"
+      },
+      "LocalscraperStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "title": "LocalscraperStatus"
+      },
+      "MarkdownifyRequest": {
+        "properties": {
+          "website_url": {
+            "type": "string",
+            "title": "Website Url",
+            "example": "https://scrapegraphai.com/"
+          }
+        },
+        "type": "object",
+        "required": [
+          "website_url"
+        ],
+        "title": "MarkdownifyRequest"
+      },
+      "MarkdownifyStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "title": "MarkdownifyStatus"
+      },
+      "ScrapeRequest": {
+        "properties": {
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt",
+            "example": "Extract info about the company"
+          },
+          "website_url": {
+            "type": "string",
+            "title": "Website Url",
+            "example": "https://scrapegraphai.com/"
+          },
+          "output_schema": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Schema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_prompt",
+          "website_url"
+        ],
+        "title": "ScrapeRequest"
+      },
+      "SmartscraperStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "title": "SmartscraperStatus"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "SGAI-APIKEY"
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+---
+title: 'Start LocalScraper'
+openapi: 'POST /v1/localscraper'
+description: 'Extract content from HTML content using AI by providing a natural language prompt and the HTML content.'
+---
+
+LocalScraper works similarly to SmartScraper but accepts HTML content directly instead of a URL. This is useful when you already have the HTML content or need to scrape content that requires authentication.
+
+### Key Features
+- Process HTML content directly
+- No URL required
+- Supports large HTML files (up to 2MB)
+- Same AI-powered extraction capabilities as SmartScraper
+
+### Example Response
+
+```json
+{
+  "request_id": "<request-id>",
+  "status": "completed",
+  "user_prompt": "Extract all product prices and names",
+  "result": {
+    "products": [
+      {
+        "name": "iPhone 15 Pro",
+        "price": "$999.99",
+        "availability": "In Stock"
+      },
+      {
+        "name": "MacBook Air M2",
+        "price": "$1,299.00",
+        "availability": "Pre-order"
+      },
+      {
+        "name": "AirPods Pro",
+        "price": "$249.99",
+        "availability": "In Stock"
+      },
+      {
+        "name": "iPad Air",
+        "price": "$599.00",
+        "availability": "Out of Stock"
+      }
+    ]
+  },
+  "error": ""
+}
+``` 

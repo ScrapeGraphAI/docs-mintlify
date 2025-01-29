@@ -1,0 +1,159 @@
+---
+title: '👥 CrewAI'
+description: '将CrewAI与Scrapegraph结合使用'
+---
+
+## 概述
+
+[CrewAI](https://github.com/joaomdmoura/crewAI)是一个用于编排角色扮演AI代理的框架。通过Scrapegraph CrewAI集成，您可以轻松地将网络爬虫功能整合到您的代理工作流程中。
+
+<Card
+  title="在Google Colab中试用"
+  icon="google"
+  href="https://colab.research.google.com/drive/14f1nEmo_kPRhc6zTXcm3a9MFcF1aP_-l?authuser=2"
+>
+  交互式示例笔记本，帮助您开始使用CrewAI和Scrapegraph
+</Card>
+
+## 安装
+
+安装所需的包：
+
+```bash
+pip install crewai scrapegraph-tools python-dotenv
+```
+
+## 可用工具
+
+### ScrapegraphScrapeTool
+
+`ScrapegraphScrapeTool`为您的CrewAI代理提供网络爬虫功能：
+
+```python
+from crewai import Agent, Crew, Task
+from crewai_tools import ScrapegraphScrapeTool
+from dotenv import load_dotenv
+
+# 初始化工具
+tool = ScrapegraphScrapeTool()
+
+# 使用该工具创建代理
+agent = Agent(
+    role="网络研究员",
+    goal="从网站研究和提取准确信息",
+    backstory="您是一位专业的网络研究员，在从各种网站提取和分析信息方面经验丰富。",
+    tools=[tool],
+)
+```
+
+<Accordion title="完整示例" icon="code">
+```python
+from crewai import Agent, Crew, Task
+from crewai_tools import ScrapegraphScrapeTool
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
+
+# 初始化Scrapegraph工具
+tool = ScrapegraphScrapeTool()
+
+# 使用Scrapegraph工具创建代理
+agent = Agent(
+    role="网络研究员",
+    goal="从网站研究和提取准确信息",
+    backstory="您是一位专业的网络研究员，在从各种网站提取和分析信息方面经验丰富。",
+    tools=[tool],
+)
+
+# 为代理定义任务
+task = Task(
+    name="爬取任务",
+    description="访问网站https://scrapegraphai.com并提取有关创始人的详细信息，包括他们的姓名、角色和任何相关背景信息。",
+    expected_output="包含从网站提取的信息的文件。",
+    agent=agent,
+)
+
+# 使用代理和任务创建团队
+crew = Crew(
+    agents=[agent],
+    tasks=[task],
+)
+
+# 执行任务
+result = crew.kickoff()
+```
+</Accordion>
+
+## 配置
+
+在您的环境中设置Scrapegraph API密钥：
+
+```bash
+export SCRAPEGRAPH_API_KEY="your-api-key-here"
+```
+
+或使用`.env`文件：
+
+```bash
+SCRAPEGRAPH_API_KEY=your_api_key_here
+```
+
+<Note>
+从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
+</Note>
+
+## 使用场景
+
+<CardGroup cols={2}>
+  <Card title="内容研究" icon="magnifying-glass">
+    从多个网站收集信息用于市场研究或竞争分析
+  </Card>
+  <Card title="数据收集" icon="database">
+    从网站提取结构化数据用于分析或数据库填充
+  </Card>
+  <Card title="自动监控" icon="chart-line">
+    跟踪特定网页的变化
+  </Card>
+  <Card title="信息提取" icon="filter">
+    使用自然语言提取特定数据点
+  </Card>
+</CardGroup>
+
+## 最佳实践
+
+<CardGroup cols={2}>
+  <Card title="速率限制" icon="gauge">
+    注意网站速率限制并实施适当的延迟
+  </Card>
+  <Card title="错误处理" icon="bug">
+    为失败的请求实施适当的错误处理
+  </Card>
+  <Card title="数据验证" icon="check">
+    验证提取的数据是否满足要求
+  </Card>
+  <Card title="道德爬取" icon="shield">
+    尊重robots.txt和网站服务条款
+  </Card>
+</CardGroup>
+
+## 支持
+
+需要集成帮助？
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub仓库"
+    icon="github"
+    href="https://github.com/scrapegraph/scrapegraph-tools"
+  >
+    报告错误和请求功能
+  </Card>
+  <Card
+    title="Discord社区"
+    icon="discord"
+    href="https://discord.gg/scrapegraph"
+  >
+    从我们的社区获取帮助
+  </Card>
+</CardGroup> 

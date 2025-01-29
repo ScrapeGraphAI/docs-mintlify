@@ -1,0 +1,136 @@
+---
+title: '🦙 LlamaIndex'
+description: '将ScrapeGraphAI与LlamaIndex集成实现强大的数据摄取'
+---
+
+## 概述
+
+该工具将ScrapeGraph与LlamaIndex集成，提供具有结构化数据提取功能的智能网络爬虫能力。
+
+<Card
+  title="LlamaHub官方文档"
+  icon="book"
+  href="https://docs.llamaindex.ai/en/stable/api_reference/tools/scrapegraph/"
+>
+  在LlamaHub上查看集成
+</Card>
+
+## 安装
+
+使用pip安装包：
+
+```bash
+pip install llama-index-tools-scrapegraphai
+```
+
+## 使用方法
+
+首先，导入并初始化ScrapegraphToolSpec：
+
+```python
+from llama_index.tools.scrapegraph.base import ScrapegraphToolSpec
+
+scrapegraph_tool = ScrapegraphToolSpec()
+```
+
+## 可用功能
+
+### 智能爬取（同步）
+
+使用模式提取结构化数据：
+
+```python
+from pydantic import BaseModel, Field 
+ 
+class FounderSchema(BaseModel): 
+    name: str = Field(description="创始人姓名") 
+    role: str = Field(description="创始人角色") 
+    social_media: str = Field(description="创始人社交媒体URL") 
+ 
+class ListFoundersSchema(BaseModel): 
+    founders: list[FounderSchema] = Field(description="创始人列表") 
+ 
+response = scrapegraph_tool.scrapegraph_smartscraper( 
+    prompt="提取产品信息", 
+    url="https://scrapegraphai.com/", 
+    api_key="sgai-***", 
+    schema=ListFoundersSchema, 
+) 
+ 
+result = response["result"] 
+ 
+for founder in result["founders"]: 
+    print(founder)
+```
+
+### 智能爬取（异步）
+
+智能爬虫的异步版本：
+
+```python
+result = await scrapegraph_tool.scrapegraph_smartscraper_async(
+    prompt="提取产品信息",
+    url="https://example.com/product",
+    api_key="your-api-key",
+    schema=schema,
+)
+```
+
+### 提交反馈
+
+对提取结果提供反馈：
+
+```python
+response = scrapegraph_tool.scrapegraph_feedback(
+    request_id="request-id",
+    api_key="your-api-key",
+    rating=5,
+    feedback_text="结果很棒！",
+)
+```
+
+### 检查额度
+
+监控您的API额度使用情况：
+
+```python
+credits = scrapegraph_tool.scrapegraph_get_credits(api_key="your-api-key")
+```
+
+## 使用场景
+
+<CardGroup cols={2}>
+  <Card title="RAG应用" icon="database">
+    构建强大的检索增强生成系统
+  </Card>
+  <Card title="知识库" icon="book">
+    创建和维护最新的知识库
+  </Card>
+  <Card title="网络研究" icon="magnifying-glass">
+    自动化网络研究和数据收集
+  </Card>
+  <Card title="内容索引" icon="list">
+    为搜索建立索引和结构化网页内容
+  </Card>
+</CardGroup>
+
+## 支持
+
+需要集成帮助？
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub问题"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/llama-index-tools-scrapegraph/issues"
+  >
+    报告错误和请求功能
+  </Card>
+  <Card
+    title="Discord社区"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    从我们的社区获取帮助
+  </Card>
+</CardGroup> 

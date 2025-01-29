@@ -1,6 +1,8 @@
 {
   "$schema": "https://mintlify.com/schema.json",
   "name": "ScrapeGraphAI",
+  "versions": ["en", "zh"],
+  "defaultVersion": "en",
   "logo": {
     "dark": "/logo/dark.svg",
     "light": "/logo/light.svg",
@@ -20,6 +22,14 @@
     }
   },
   "topbarLinks": [
+    {
+      "name": "🇺🇸 EN",
+      "url": "/en/introduction"
+    },
+    {
+      "name": "🇨🇳 中文",
+      "url": "/zh/introduction"
+    },
     {
       "name": "Status",
       "url": "https://scrapegraphapi.openstatus.dev/"
@@ -65,114 +75,137 @@
   ],
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "English Documentation",
+      "version": "en",
       "pages": [
-        "introduction",
+        "en/introduction",
         {
           "group": "Dashboard",
           "pages": [
-            "dashboard/overview",
-            "dashboard/playground",
-            "dashboard/jobs",
-            "dashboard/settings"
+            "en/dashboard/overview",
+            "en/dashboard/playground",
+            "en/dashboard/jobs",
+            "en/dashboard/settings"
           ]
-        }
-      ]
-    },
-    {
-      "group": "Services",
-      "pages": [
-        "services/smartscraper",
-        "services/localscraper",
-        "services/markdownify",
+        },
         {
-          "group": "Browser Extensions",
+          "group": "Services",
           "pages": [
-            "services/extensions/firefox"
+            "en/services/smartscraper",
+            "en/services/localscraper",
+            "en/services/markdownify",
+            {
+              "group": "Browser Extensions",
+              "pages": [
+                "en/services/extensions/firefox"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Official SDKs",
+          "pages": [
+            "en/sdks/python",
+            "en/sdks/javascript"
+          ]
+        },
+        {
+          "group": "Integrations",
+          "pages": [
+            "en/integrations/langchain",
+            "en/integrations/llamaindex",
+            "en/integrations/crewai",
+            "en/integrations/phidata"
+          ]
+        },
+        {
+          "group": "API Documentation",
+          "pages": [
+            "en/api-reference/introduction",
+            "en/api-reference/errors"
+          ]
+        },
+        {
+          "group": "Contribute",
+          "pages": [
+            "en/contribute/opensource",
+            "en/contribute/feedback"
+          ]
+        },
+        {
+          "group": "Resources",
+          "icon": "puzzle-piece",
+          "pages": [
+            "en/resources/badge"
           ]
         }
       ]
     },
     {
-      "group": "Official SDKs",
+      "group": "中文文档",
+      "version": "zh",
       "pages": [
-        "sdks/python",
-        "sdks/javascript"
-      ]
-    },
-    {
-      "group": "Integrations",
-      "pages": [
-        "integrations/langchain",
-        "integrations/llamaindex",
-        "integrations/crewai",
-        "integrations/phidata"
-      ]
-    },
-    {
-      "group": "Cookbook",
-      "pages": [
-        "cookbook/introduction"
-      ]
-    },
-    {
-      "group": "Examples",
-      "pages": [
-        "cookbook/examples/company-info",
-        "cookbook/examples/github-trending",
-        "cookbook/examples/wired",
-        "cookbook/examples/homes",
-        "cookbook/examples/research-agent",
-        "cookbook/examples/chat-webpage"
-      ]
-    },
-    {
-      "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction",
-        "api-reference/errors"
-      ]
-    },
-    {
-      "group": "SmartScraper",
-      "pages": [
-        "api-reference/endpoint/smartscraper/start",
-        "api-reference/endpoint/smartscraper/get-status"
-      ]
-    },
-    {
-      "group": "LocalScraper",
-      "pages": [
-        "api-reference/endpoint/localscraper/start",
-        "api-reference/endpoint/localscraper/get-status"
-      ]
-    },
-    {
-      "group": "Markdownify",
-      "pages": [
-        "api-reference/endpoint/markdownify/start",
-        "api-reference/endpoint/markdownify/get-status"
-      ]
-    },
-    {
-      "group": "User",
-      "pages": [
-        "api-reference/endpoint/user/get-credits",
-        "api-reference/endpoint/user/submit-feedback"
-      ]
-    },
-    {
-      "group": "Contribute",
-      "pages": [
-        "contribute/opensource",
-        "contribute/feedback"
-      ]
-    },
-    {
-      "group": "Resources",
-      "icon": "puzzle-piece",
-      "pages": [
-        "resources/badge"
+        "zh/introduction",
+        {
+          "group": "控制面板",
+          "pages": [
+            "zh/dashboard/overview",
+            "zh/dashboard/playground",
+            "zh/dashboard/jobs",
+            "zh/dashboard/settings"
+          ]
+        },
+        {
+          "group": "服务",
+          "pages": [
+            "zh/services/smartscraper",
+            "zh/services/localscraper",
+            "zh/services/markdownify",
+            {
+              "group": "浏览器扩展",
+              "pages": [
+                "zh/services/extensions/firefox"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "官方SDK",
+          "pages": [
+            "zh/sdks/python",
+            "zh/sdks/javascript"
+          ]
+        },
+        {
+          "group": "集成",
+          "pages": [
+            "zh/integrations/langchain",
+            "zh/integrations/llamaindex",
+            "zh/integrations/crewai",
+            "zh/integrations/phidata"
+          ]
+        },
+        {
+          "group": "API文档",
+          "pages": [
+            "zh/api-reference/introduction",
+            "zh/api-reference/errors"
+          ]
+        },
+        {
+          "group": "贡献",
+          "pages": [
+            "zh/contribute/opensource",
+            "zh/contribute/feedback"
+          ]
+        },
+        {
+          "group": "资源",
+          "icon": "puzzle-piece",
+          "pages": [
+            "zh/resources/badge"
+          ]
+        }
       ]
     }
   ],
