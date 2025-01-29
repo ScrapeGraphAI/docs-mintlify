@@ -61,7 +61,8 @@ LocalScraper提供与SmartScraper相同的强大AI提取功能，但专门用于
 
 ### 快速入门
 
-```python
+<CodeGroup>
+```python Python
 from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
@@ -71,13 +72,13 @@ html_content = """
     <body>
         <h1>ScrapeGraphAI</h1>
         <div class="description">
-            <p>面向现代应用的AI驱动网络爬虫。</p>
+            <p>AI-powered web scraping for modern applications.</p>
         </div>
         <div class="features">
             <ul>
-                <li>智能提取</li>
-                <li>本地处理</li>
-                <li>模式支持</li>
+                <li>Smart Extraction</li>
+                <li>Local Processing</li>
+                <li>Schema Support</li>
             </ul>
         </div>
     </body>
@@ -86,9 +87,54 @@ html_content = """
 
 response = client.localscraper(
     website_html=html_content,
-    user_prompt="提取公司信息和特点"
+    user_prompt="Extract the company information and features"
 )
 ```
+
+```typescript JavaScript
+import { Client } from 'scrapegraph-js';
+// Initialize the client
+const sgai_client = new Client("sgai-6a2...220f00e9");
+
+// Your HTML content
+const htmlContent = `
+<html>
+    <body>
+        <h1>ScrapeGraphAI</h1>
+        <div class="description">
+            <p>AI-powered web scraping for modern applications.</p>
+        </div>
+    </body>
+</html>
+`;
+
+try {
+  const response = await sgai_client.localscraper({
+    userPrompt: "Extract the company description and contact information",
+    websiteHtml: htmlContent
+  });
+
+  console.log('Request ID:', response.requestId);
+  console.log('Result:', response.result);
+} catch (error) {
+  console.error(error);
+} finally {
+  sgai_client.close();
+}
+```
+
+```curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/localscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: sgai-6a2...220f00e9' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_html": "<html>...</html>",
+  "user_prompt": "Extract the company description and contact information"
+}'
+```
+</CodeGroup>
 
 <Note>
 从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
@@ -163,6 +209,42 @@ const response = await localScraper(
 );
 ```
 
+```curl curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/localscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_html": "<html>...</html>",
+  "user_prompt": "提取产品信息",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "产品名称"
+      },
+      "price": {
+        "type": "string",
+        "description": "产品价格"
+      },
+      "description": {
+        "type": "string",
+        "description": "产品描述"
+      },
+      "specifications": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "产品规格"
+      }
+    },
+    "required": ["name", "price", "description", "specifications"]
+  }
+}'
+```
 </CodeGroup>
 
 ### 异步支持

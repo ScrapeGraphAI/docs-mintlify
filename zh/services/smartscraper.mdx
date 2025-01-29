@@ -61,17 +61,50 @@ SmartScraper是我们的旗舰LLM驱动的网络爬虫服务，可以智能地�
 
 ### 快速入门
 
-```python
+<CodeGroup>
+```python Python
 from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
 
 response = client.smartscraper(
     website_url="https://scrapegraphai.com/",
-    user_prompt="提取公司信息"
+    user_prompt="Extract info about the company"
 )
 ```
 
+```typescript TypeScript
+import { Client } from 'scrapegraph-js';
+// Initialize the client
+const sgai_client = new Client("sgai-6a2...220f00e9");
+
+try {
+  const response = await sgai_client.smartscraper({
+    websiteUrl: "https://scrapegraphai.com/",
+    userPrompt: "Extract info about the company"
+  });
+
+  console.log('Request ID:', response.requestId);
+  console.log('Result:', response.result);
+} catch (error) {
+  console.error(error);
+} finally {
+  sgai_client.close();
+}
+```
+
+```curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/smartscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: sgai-6a2...220f00e9' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "Extract info about the company"
+}'
+```
+</CodeGroup>
 <Note>
 从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
 </Note>
@@ -151,6 +184,39 @@ const response = await smartScraper(
 );
 ```
 
+```curl curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/smartscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://example.com/article",
+  "user_prompt": "提取文章信息",
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "文章标题"
+      },
+      "author": {
+        "type": "string",
+        "description": "作者姓名"
+      },
+      "content": {
+        "type": "string",
+        "description": "文章主要内容"
+      },
+      "publish_date": {
+        "type": "string",
+        "description": "发布日期"
+      }
+    },
+    "required": ["title", "author", "content", "publish_date"]
+  }
+}'
+```
 </CodeGroup>
 
 ### 异步支持

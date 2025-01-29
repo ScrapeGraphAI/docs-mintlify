@@ -61,7 +61,8 @@ Markdownify是我们的专业服务，可以将网页内容转换为清晰、格
 
 ### 快速入门
 
-```python
+<CodeGroup>
+```python Python
 from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
@@ -71,6 +72,37 @@ response = client.markdownify(
 )
 ```
 
+```typescript TypeScript
+import { Client } from 'scrapegraph-js';
+
+// Initialize the client
+const sgai_client = new Client("your-api-key");
+
+try {
+  const response = await sgai_client.markdownify({
+    websiteUrl: "https://example.com/article"
+  });
+
+  console.log('Request ID:', response.requestId);
+  console.log('Result:', response.result);
+} catch (error) {
+  console.error(error);
+} finally {
+  sgai_client.close();
+}
+```
+
+```curl curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/markdownify' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://example.com/article"
+}'
+```
+</CodeGroup>
 <Note>
 从[控制面板](https://dashboard.scrapegraphai.com)获取您的API密钥
 </Note>

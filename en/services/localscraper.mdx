@@ -60,8 +60,8 @@ Want to learn more about our AI-powered scraping technology? Visit our [main web
 ## Getting Started
 
 ### Quick Start
-
-```python
+<CodeGroup>
+```python Python
 from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
@@ -89,6 +89,51 @@ response = client.localscraper(
     user_prompt="Extract the company information and features"
 )
 ```
+
+```typescript JavaScript
+import { Client } from 'scrapegraph-js';
+// Initialize the client
+const sgai_client = new Client("sgai-6a2...220f00e9");
+
+// Your HTML content
+const htmlContent = `
+<html>
+    <body>
+        <h1>ScrapeGraphAI</h1>
+        <div class="description">
+            <p>AI-powered web scraping for modern applications.</p>
+        </div>
+    </body>
+</html>
+`;
+
+try {
+  const response = await sgai_client.localscraper({
+    userPrompt: "Extract the company description and contact information",
+    websiteHtml: htmlContent
+  });
+
+  console.log('Request ID:', response.requestId);
+  console.log('Result:', response.result);
+} catch (error) {
+  console.error(error);
+} finally {
+  sgai_client.close();
+}
+```
+
+```curl
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/localscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: sgai-6a2...220f00e9' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_html": "<html>...</html>",
+  "user_prompt": "Extract the company description and contact information"
+}'
+```
+</CodeGroup>
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)

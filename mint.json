@@ -23,14 +23,6 @@
   },
   "topbarLinks": [
     {
-      "name": "🇺🇸 EN",
-      "url": "/en/introduction"
-    },
-    {
-      "name": "🇨🇳 中文",
-      "url": "/zh/introduction"
-    },
-    {
       "name": "Status",
       "url": "https://scrapegraphapi.openstatus.dev/"
     },
