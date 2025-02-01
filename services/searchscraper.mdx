@@ -1,0 +1,309 @@
+---
+title: 'SearchScraper'
+description: 'Search and extract information from multiple web sources using AI'
+icon: 'magnifying-glass'
+---
+
+<Frame>
+  <img src="/services/images/searchscraper-banner.png" alt="SearchScraper Service" />
+</Frame>
+
+## Overview
+
+SearchScraper is our advanced LLM-powered search service that intelligently searches and aggregates information from multiple web sources. Using state-of-the-art language models, it understands your queries and extracts relevant information across the web, providing comprehensive answers with full source attribution.
+
+<Note>
+Try SearchScraper instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Execute search with schema
+response = client.searchscraper(
+    user_prompt="What are the key features and pricing of ChatGPT Plus?",
+)
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "request_id": "sg-req-abc123",
+  "status": "completed",
+  "user_prompt": "What are the key features and pricing of ChatGPT Plus?",
+  "result": {
+    "product": {
+      "name": "ChatGPT Plus",
+      "description": "Premium version of ChatGPT with advanced features and capabilities",
+      "target_audience": "Power users and professionals requiring advanced AI capabilities"
+    },
+    "features": [
+      {
+        "name": "GPT-4 Access",
+        "description": "Access to the latest GPT-4 language model"
+      },
+      {
+        "name": "Response Speed",
+        "description": "Faster response times compared to free tier"
+      },
+      {
+        "name": "Priority Access",
+        "description": "Guaranteed access during peak usage times"
+      },
+      {
+        "name": "New Features",
+        "description": "Early access to new features and improvements"
+      },
+      {
+        "name": "Plugin Support",
+        "description": "Access to third-party plugins and integrations"
+      }
+    ],
+    "pricing": {
+      "plans": [
+        {
+          "name": "Plus Subscription",
+          "price": {
+            "amount": 20,
+            "currency": "USD",
+            "period": "monthly"
+          },
+          "features": [
+            "GPT-4 access",
+            "Faster response speed",
+            "Priority access during peak times",
+            "Early feature access",
+            "Plugin support"
+          ]
+        }
+      ]
+    },
+    "availability": {
+      "regions": [
+        "United States",
+        "European Union",
+        "United Kingdom",
+        "Most other countries"
+      ],
+      "restrictions": [
+        "Not available in sanctioned countries",
+        "Requires credit card for subscription"
+      ]
+    }
+  },
+  "reference_urls": [
+    "https://openai.com/chatgpt",
+    "https://openai.com/blog/chatgpt-plus",
+    "https://help.openai.com/en/articles/6825453-chatgpt-plus-plan"
+  ],
+  "error": ""
+}
+```
+
+The response includes:
+- `request_id`: Unique identifier for tracking your request
+- `status`: Current status of the search ("completed", "running", "failed")
+- `result`: The extracted data in structured JSON format
+- `reference_urls`: Source URLs for verification
+- `error`: Error message (if any occurred during search)
+</Accordion>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Source Search" icon="globe">
+    Intelligent search across multiple reliable web sources
+  </Card>
+  <Card title="AI Understanding" icon="brain">
+    Advanced LLM models for accurate information extraction
+  </Card>
+  <Card title="Structured Output" icon="table">
+    Clean, structured data in your preferred format
+  </Card>
+  <Card title="Source Attribution" icon="link">
+    Full transparency with reference URLs
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+### Research & Analysis
+- Academic research and fact-finding
+- Market research and competitive analysis
+- Technology trend analysis
+- Industry insights gathering
+
+### Data Aggregation
+- Product research and comparison
+- Company information compilation
+- Price monitoring across sources
+- Technology stack analysis
+
+### Content Creation
+- Fact verification and citation
+- Content research and inspiration
+- Data-driven article writing
+- Knowledge base building
+
+<Note>
+Want to learn more about our AI-powered search technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web research.
+</Note>
+
+## Advanced Usage
+
+### Custom Schema Example
+
+Define exactly what data you want to extract using Pydantic or Zod:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+from typing import List
+
+class CompanyProfile(BaseModel):
+    name: str = Field(description="Company name")
+    description: str = Field(description="Brief company description")
+    founded_year: str = Field(description="Year the company was founded")
+    headquarters: str = Field(description="Company headquarters location")
+    employees: str = Field(description="Number of employees")
+    industry: str = Field(description="Primary industry")
+    products: List[str] = Field(description="Main products or services")
+    competitors: List[str] = Field(description="Major competitors")
+    market_share: str = Field(description="Company's market share")
+    revenue: str = Field(description="Annual revenue")
+    tech_stack: List[str] = Field(description="Technologies used by the company")
+
+response = client.searchscraper(
+    user_prompt="Find comprehensive information about OpenAI",
+    output_schema=CompanyProfile
+)
+```
+
+```typescript TypeScript
+import { z } from 'zod';
+
+const CompanyProfile = z.object({
+  name: z.string().describe('Company name'),
+  description: z.string().describe('Brief company description'),
+  foundedYear: z.string().describe('Year the company was founded'),
+  headquarters: z.string().describe('Company headquarters location'),
+  employees: z.string().describe('Number of employees'),
+  industry: z.string().describe('Primary industry'),
+  products: z.array(z.string()).describe('Main products or services'),
+  competitors: z.array(z.string()).describe('Major competitors'),
+  marketShare: z.string().describe('Company\'s market share'),
+  revenue: z.string().describe('Annual revenue'),
+  techStack: z.array(z.string()).describe('Technologies used by the company')
+});
+
+const response = await client.search({
+  userPrompt: 'Find comprehensive information about OpenAI',
+  outputSchema: CompanyProfile
+});
+```
+
+</CodeGroup>
+
+### Async Support
+
+For applications requiring asynchronous execution:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        
+        response = await client.searchscraper(
+            user_prompt="Analyze the current AI chip market",
+        )
+        
+        # Process the structured results
+        market_data = response.result
+        print(f"Market Size: {market_data['market_overview']['total_size']}")
+        print(f"Growth Rate: {market_data['market_overview']['growth_rate']}")
+        print("\nKey Players:")
+        for player in market_data['market_overview']['key_players']:
+            print(f"- {player}")
+
+# Run the async function
+asyncio.run(main())
+```
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use SearchScraper in your LLM workflows
+- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+- [CrewAI Integration](/integrations/crewai) - Create AI agents with search capabilities
+
+## Best Practices
+
+### Query Optimization
+1. Be specific in your prompts
+2. Use descriptive queries
+3. Include relevant context
+4. Specify time-sensitive requirements
+
+### Schema Design
+- Start with essential fields
+- Use appropriate data types
+- Add field descriptions
+- Make optional fields nullable
+- Group related information
+
+### Rate Limiting
+- Implement reasonable delays between requests
+- Use async clients for better performance
+- Monitor your [API usage](/dashboard/overview)
+
+## Example Projects
+
+Check out our [cookbook](/cookbook/introduction) for real-world examples:
+- [Company Research](/cookbook/examples/company-info)
+- [Market Analysis](/cookbook/examples/research-agent)
+- [Technology Trends](/cookbook/examples/github-trending)
+- [News Aggregation](/cookbook/examples/wired)
+
+## API Reference
+
+For detailed API documentation, see:
+- [Start Search](/api-reference/endpoint/searchscraper/start)
+- [Get Search Status](/api-reference/endpoint/searchscraper/get-status)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Ready to Start?" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  Sign up now and get your API key to begin searching and extracting data with SearchScraper!
+</Card> 

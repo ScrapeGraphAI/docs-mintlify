@@ -83,7 +83,7 @@
       "group": "Services",
       "pages": [
         "services/smartscraper",
-        "services/localscraper",
+        "services/searchscraper",
         "services/markdownify",
         {
           "group": "Browser Extensions",
@@ -141,12 +141,13 @@
       ]
     },
     {
-      "group": "LocalScraper",
+      "group": "SearchScraper",
       "pages": [
-        "api-reference/endpoint/localscraper/start",
-        "api-reference/endpoint/localscraper/get-status"
+        "api-reference/endpoint/searchscraper/start",
+        "api-reference/endpoint/searchscraper/get-status"
       ]
     },
+
     {
       "group": "Markdownify",
       "pages": [

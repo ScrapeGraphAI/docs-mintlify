@@ -1,0 +1,111 @@
+---
+title: 'Start SearchScraper'
+api: 'POST /v1/searchscraper'
+description: 'Start a new AI-powered web search request'
+---
+
+## Request Body
+
+<ParamField body="user_prompt" type="string" required>
+  The search query or question you want to ask. This should be a clear and specific prompt that will guide the AI in finding and extracting relevant information.
+  
+  Example: "What is the latest version of Python and what are its main features?"
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Optional headers to customize the search behavior. This can include user agent, cookies, or other HTTP headers.
+  
+  Example:
+  ```json
+  {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Cookie": "cookie1=value1; cookie2=value2"
+  }
+  ```
+</ParamField>
+
+<ParamField body="output_schema" type="object">
+  Optional schema to structure the output. If provided, the AI will attempt to format the results according to this schema.
+  
+  Example:
+  ```json
+  {
+    "properties": {
+      "version": {"type": "string"},
+      "release_date": {"type": "string"},
+      "major_features": {"type": "array", "items": {"type": "string"}}
+    },
+    "required": ["version", "release_date", "major_features"]
+  }
+  ```
+</ParamField>
+
+## Response
+
+<ResponseField name="request_id" type="string">
+  Unique identifier for the search request. Use this ID to check the status and retrieve results.
+</ResponseField>
+
+<ResponseField name="status" type="string">
+  Status of the request. One of: "queued", "processing", "completed", "failed"
+</ResponseField>
+
+<ResponseField name="user_prompt" type="string">
+  The original search query that was submitted.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  The search results. If an output_schema was provided, this will be structured according to that schema.
+</ResponseField>
+
+<ResponseField name="reference_urls" type="array">
+  List of URLs that were used as references for the answer.
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if the request failed. Empty string if successful.
+</ResponseField>
+
+## Example Request
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/searchscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "user_prompt": "What is the latest version of Python and what are its main features?",
+  "output_schema": {
+    "properties": {
+      "version": {"type": "string"},
+      "release_date": {"type": "string"},
+      "major_features": {"type": "array", "items": {"type": "string"}}
+    },
+    "required": ["version", "release_date", "major_features"]
+  }
+}'
+```
+
+## Example Response
+
+```json
+{
+  "request_id": "123e4567-e89b-12d3-a456-426614174000",
+  "status": "completed",
+  "user_prompt": "What is the latest version of Python and what are its main features?",
+  "result": {
+    "version": "3.12",
+    "release_date": "October 2, 2023",
+    "major_features": [
+      "Improved error messages",
+      "Per-interpreter GIL",
+      "Support for the Linux perf profiler",
+      "Faster startup time"
+    ]
+  },
+  "reference_urls": [
+    "https://www.python.org/downloads/",
+    "https://docs.python.org/3.12/whatsnew/3.12.html"
+  ],
+  "error": ""
+}
+``` 

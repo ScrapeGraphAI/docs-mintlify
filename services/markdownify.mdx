@@ -16,6 +16,42 @@ Markdownify is our specialized service that transforms web content into clean, w
 Try Markdownify instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
 </Note>
 
+## Getting Started
+
+### Quick Start
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.markdownify(
+    website_url="https://example.com/article"
+)
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "request_id": "sg-req-md456",
+  "status": "completed",
+  "website_url": "https://example.com/article",
+  "result": "# Understanding AI-Powered Web Scraping\n\nWeb scraping has evolved significantly with the advent of AI technologies...\n\n## Key Benefits\n\n- Improved accuracy\n- Intelligent extraction\n- Structured output\n\n![AI Scraping Process](https://example.com/images/ai-scraping.png)\n\n> AI-powered scraping represents the future of web data extraction.\n\n### Getting Started\n\n1. Choose your target website\n2. Define extraction goals\n3. Select appropriate tools\n",
+  "error": ""
+}
+```
+
+The response includes:
+- `request_id`: Unique identifier for tracking your request
+- `status`: Current status of the conversion
+- `result`: Object containing the markdown content and metadata
+- `error`: Error message (if any occurred during conversion)
+</Accordion>
+
 ## Key Features
 
 <CardGroup cols={2}>
@@ -57,41 +93,7 @@ Try Markdownify instantly in our [interactive playground](https://dashboard.scra
 Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
 </Note>
 
-## Getting Started
-
-### Quick Start
-
-```python
-from scrapegraph_py import Client
-
-client = Client(api_key="your-api-key")
-
-response = client.markdownify(
-    website_url="https://example.com/article"
-)
-```
-
-<Note>
-Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
-</Note>
-
-<Accordion title="Example Response" icon="terminal">
-```json
-{
-  "request_id": "sg-req-md456",
-  "status": "completed",
-  "website_url": "https://example.com/article",
-  "result": "# Understanding AI-Powered Web Scraping\n\nWeb scraping has evolved significantly with the advent of AI technologies...\n\n## Key Benefits\n\n- Improved accuracy\n- Intelligent extraction\n- Structured output\n\n![AI Scraping Process](https://example.com/images/ai-scraping.png)\n\n> AI-powered scraping represents the future of web data extraction.\n\n### Getting Started\n\n1. Choose your target website\n2. Define extraction goals\n3. Select appropriate tools\n",
-  "error": ""
-}
-```
-
-The response includes:
-- `request_id`: Unique identifier for tracking your request
-- `status`: Current status of the conversion
-- `result`: Object containing the markdown content and metadata
-- `error`: Error message (if any occurred during conversion)
-</Accordion>
+## Advanced Usage
 
 ### Async Support
 
