@@ -35,6 +35,7 @@ response = client.smartscraper(
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
 
+
 <Accordion title="Example Response" icon="terminal">
 ```json
 {
@@ -66,6 +67,46 @@ The response includes:
 - `status`: Current status of the extraction ("completed", "running", "failed")
 - `result`: The extracted data in structured JSON format
 - `error`: Error message (if any occurred during extraction)
+</Accordion>
+
+<Accordion title="Using Your Own HTML" icon="code">
+Instead of providing a URL, you can optionally pass your own HTML content:
+
+```python
+html_content = """
+<html>
+    <body>
+        <h1>ScrapeGraphAI</h1>
+        <div class="description">
+            <p>AI-powered web scraping for modern applications.</p>
+        </div>
+        <div class="features">
+            <ul>
+                <li>Smart Extraction</li>
+                <li>Local Processing</li>
+                <li>Schema Support</li>
+            </ul>
+        </div>
+    </body>
+</html>
+"""
+
+response = client.smartscraper(
+    website_html=html_content,  # This will override website_url if both are provided
+    user_prompt="Extract info about the company"
+)
+```
+
+This is useful when:
+- You already have the HTML content cached
+- You want to process modified HTML
+- You're working with dynamically generated content
+- You need to process content offline
+- You want to pre-process the HTML before extraction
+
+<Note>
+When both `website_url` and `website_html` are provided, `website_html` takes precedence and will be used for extraction.
+</Note>
 </Accordion>
 
 ## Key Features

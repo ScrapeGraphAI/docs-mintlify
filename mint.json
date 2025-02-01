@@ -86,8 +86,15 @@
         "services/searchscraper",
         "services/markdownify",
         {
+          "group": "Additional Parameters",
+          "pages": [
+            "services/additional-parameters/headers"
+          ]
+        },
+        {
           "group": "Browser Extensions",
           "pages": [
+
             "services/extensions/firefox"
           ]
         }
