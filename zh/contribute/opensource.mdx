@@ -1,0 +1,188 @@
+---
+title: '开源贡献'
+description: '如何为ScrapeGraph AI的开源项目做出贡献'
+icon: 'code-pull-request'
+---
+
+## 欢迎贡献
+
+我们非常感谢您对ScrapeGraph AI开源项目的兴趣！无论是修复bug、改进文档还是添加新功能，每一个贡献都很重要。本指南将帮助您了解如何参与贡献。
+
+## 开源项目
+
+<CardGroup cols={2}>
+  <Card title="Python SDK" icon="python" href="https://github.com/ScrapeGraphAI/scrapegraph-py">
+    Python语言的官方SDK
+  </Card>
+  <Card title="JavaScript SDK" icon="js" href="https://github.com/ScrapeGraphAI/scrapegraph-js">
+    JavaScript语言的官方SDK
+  </Card>
+  <Card title="示例集合" icon="code" href="https://github.com/ScrapeGraphAI/examples">
+    各种使用示例和教程
+  </Card>
+  <Card title="文档" icon="book" href="https://github.com/ScrapeGraphAI/docs">
+    官方文档和指南
+  </Card>
+</CardGroup>
+
+## 贡献流程
+
+### 1. 准备工作
+
+1. Fork目标仓库到您的GitHub账号
+2. Clone您的fork到本地机器
+3. 设置开发环境
+4. 创建新的分支
+
+```bash
+# Clone您的fork
+git clone https://github.com/YOUR_USERNAME/REPOSITORY_NAME.git
+
+# 进入项目目录
+cd REPOSITORY_NAME
+
+# 添加上游仓库
+git remote add upstream https://github.com/ScrapeGraphAI/REPOSITORY_NAME.git
+
+# 创建新分支
+git checkout -b feature/your-feature-name
+```
+
+### 2. 开发指南
+
+#### 代码风格
+- 遵循项目现有的代码风格
+- 使用清晰的变量和函数命名
+- 添加适当的注释
+- 编写单元测试
+
+#### 提交信息
+使用清晰的提交信息，格式如下：
+```
+类型(范围): 简短描述
+
+详细描述（如果需要）
+```
+
+类型包括：
+- `feat`: 新功能
+- `fix`: Bug修复
+- `docs`: 文档更新
+- `style`: 代码格式修改
+- `refactor`: 代码重构
+- `test`: 测试相关
+- `chore`: 构建过程或辅助工具变动
+
+### 3. 提交变更
+
+1. 确保代码通过所有测试
+2. 提交您的变更
+3. 推送到您的fork
+4. 创建Pull Request
+
+```bash
+# 添加变更
+git add .
+
+# 提交变更
+git commit -m "feat(component): add new feature"
+
+# 推送到您的fork
+git push origin feature/your-feature-name
+```
+
+### 4. Pull Request指南
+
+- 使用清晰的标题和描述
+- 链接相关的issue
+- 包含测试结果和截图（如适用）
+- 确保CI检查通过
+
+## 开发设置
+
+### Python SDK
+
+```bash
+# 创建虚拟环境
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate  # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 安装开发依赖
+pip install -r requirements-dev.txt
+
+# 运行测试
+pytest
+```
+
+### JavaScript SDK
+
+```bash
+# 安装依赖
+npm install
+
+# 运行测试
+npm test
+
+# 构建
+npm run build
+```
+
+## 最佳实践
+
+### 代码质量
+- 编写清晰的文档字符串
+- 保持代码简洁
+- 遵循SOLID原则
+- 避免重复代码
+
+### 测试
+- 为新功能编写单元测试
+- 确保测试覆盖率
+- 包含边界情况测试
+- 模拟外部依赖
+
+### 文档
+- 更新API文档
+- 添加使用示例
+- 说明配置选项
+- 记录重要更改
+
+## 社区准则
+
+### 行为准则
+- 尊重所有贡献者
+- 保持专业态度
+- 接受建设性批评
+- 帮助新成员
+
+### 沟通渠道
+- GitHub Issues和Pull Requests
+- [Discord社区](https://discord.gg/uJN7TYcpNa)
+- [开发者论坛](https://forum.scrapegraphai.com)
+
+## 获得帮助
+
+如果您在贡献过程中需要帮助：
+
+<CardGroup cols={2}>
+  <Card title="问题追踪" icon="bug" href="https://github.com/ScrapeGraphAI/REPOSITORY_NAME/issues">
+    报告bug或请求新功能
+  </Card>
+  <Card title="开发者文档" icon="book" href="/api-reference/introduction">
+    查看API文档
+  </Card>
+  <Card title="Discord" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    加入开发者社区
+  </Card>
+  <Card title="邮件支持" icon="envelope" href="mailto:dev@scrapegraphai.com">
+    联系开发团队
+  </Card>
+</CardGroup>
+
+## 致谢
+
+感谢所有为项目做出贡献的开发者！您的付出使ScrapeGraph AI变得更好。 

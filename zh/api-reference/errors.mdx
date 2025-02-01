@@ -1,0 +1,128 @@
+---
+title: '错误代码'
+description: 'ScrapeGraph AI API错误代码参考'
+icon: 'triangle-exclamation'
+---
+
+## 错误处理
+
+所有API错误都会返回一个包含以下字段的JSON响应：
+- `error_code`: 唯一的错误标识符
+- `message`: 人类可读的错误描述
+- `details`: 额外的错误详情（如果有）
+
+## 常见错误代码
+
+### 认证错误 (4xx)
+
+| 错误代码 | 描述 | 解决方案 |
+|---------|------|---------|
+| `401` | 未授权 | 检查API密钥是否有效 |
+| `403` | 禁止访问 | 确认您的订阅计划是否支持该功能 |
+| `429` | 请求过多 | 降低请求频率或升级您的计划 |
+
+### 输入错误 (4xx)
+
+| 错误代码 | 描述 | 解决方案 |
+|---------|------|---------|
+| `400` | 无效请求 | 检查请求参数是否正确 |
+| `422` | 无效输入 | 确保输入数据符合要求格式 |
+
+### 服务器错误 (5xx)
+
+| 错误代码 | 描述 | 解决方案 |
+|---------|------|---------|
+| `500` | 内部服务器错误 | 请稍后重试或联系支持 |
+| `503` | 服务不可用 | 检查服务状态页面 |
+
+## 错误示例
+
+### 认证错误
+```json
+{
+  "error_code": "401",
+  "message": "无效的API密钥",
+  "details": "提供的API密钥无效或已过期"
+}
+```
+
+### 速率限制
+```json
+{
+  "error_code": "429",
+  "message": "超出请求限制",
+  "details": {
+    "limit": "100",
+    "remaining": "0",
+    "reset": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+### 输入验证错误
+```json
+{
+  "error_code": "422",
+  "message": "无效的输入参数",
+  "details": {
+    "field": "website_url",
+    "error": "提供的URL格式无效"
+  }
+}
+```
+
+## 最佳实践
+
+### 错误处理建议
+1. 始终检查响应状态码
+2. 实现适当的重试机制
+3. 记录详细的错误信息
+4. 优雅地处理速率限制
+
+### 代码示例
+
+<CodeGroup>
+```python Python
+try:
+    response = client.markdownify(
+        website_url="https://example.com"
+    )
+except ApiError as e:
+    if e.error_code == "429":
+        # 处理速率限制
+        time.sleep(60)
+        retry_request()
+    else:
+        # 处理其他错误
+        log_error(e)
+```
+
+```typescript TypeScript
+try {
+  const response = await client.markdownify({
+    websiteUrl: "https://example.com"
+  });
+} catch (error) {
+  if (error.errorCode === "429") {
+    // 处理速率限制
+    await delay(60000);
+    await retryRequest();
+  } else {
+    // 处理其他错误
+    logError(error);
+  }
+}
+```
+</CodeGroup>
+
+## 故障排除
+
+### 常见问题解决
+- **API密钥问题**: 在控制面板中重新生成密钥
+- **速率限制**: 检查您的使用配额
+- **输入错误**: 参考API文档中的参数要求
+
+### 获取帮助
+- 查看我们的[API文档](/api-reference/introduction)
+- 加入[开发者社区](https://discord.gg/uJN7TYcpNa)
+- 联系[技术支持](mailto:support@scrapegraphai.com) 
