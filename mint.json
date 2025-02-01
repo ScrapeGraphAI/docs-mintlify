@@ -113,7 +113,7 @@
         "integrations/langchain",
         "integrations/llamaindex",
         "integrations/crewai",
-        "integrations/phidata"
+        "integrations/agno"
       ]
     },
     {
