@@ -133,28 +133,95 @@ for office in response.offices:
 ```
 </Accordion>
 
-### LocalScraper
+### SearchScraper
 
-Process local HTML content with AI extraction:
+Search and extract information from multiple web sources using AI:
 
 ```python
-html_content = """
-<html>
-    <body>
-        <h1>Company Name</h1>
-        <p>We are a technology company focused on AI solutions.</p>
-        <div class="contact">
-            <p>Email: contact@example.com</p>
-        </div>
-    </body>
-</html>
-"""
-
-response = client.localscraper(
-    user_prompt="Extract the company description",
-    website_html=html_content
+response = client.searchscraper(
+    user_prompt="What are the key features and pricing of ChatGPT Plus?"
 )
 ```
+
+<Accordion title="Basic Schema Example" icon="code">
+Define a simple schema for structured search results:
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+
+class ProductInfo(BaseModel):
+    name: str = Field(description="Product name")
+    description: str = Field(description="Product description")
+    price: str = Field(description="Product price")
+    features: List[str] = Field(description="List of key features")
+    availability: str = Field(description="Availability information")
+
+response = client.searchscraper(
+    user_prompt="Find information about iPhone 15 Pro",
+    output_schema=ProductInfo
+)
+
+print(f"Product: {response.name}")
+print(f"Price: {response.price}")
+print("\nFeatures:")
+for feature in response.features:
+    print(f"- {feature}")
+```
+</Accordion>
+
+<Accordion title="Advanced Schema Example" icon="code">
+Define a complex schema for comprehensive market research:
+
+```python
+from typing import List
+from pydantic import BaseModel, Field
+
+class MarketPlayer(BaseModel):
+    name: str = Field(description="Company name")
+    market_share: str = Field(description="Market share percentage")
+    key_products: List[str] = Field(description="Main products in market")
+    strengths: List[str] = Field(description="Company's market strengths")
+
+class MarketTrend(BaseModel):
+    name: str = Field(description="Trend name")
+    description: str = Field(description="Trend description")
+    impact: str = Field(description="Expected market impact")
+    timeframe: str = Field(description="Trend timeframe")
+
+class MarketAnalysis(BaseModel):
+    market_size: str = Field(description="Total market size")
+    growth_rate: str = Field(description="Annual growth rate")
+    key_players: List[MarketPlayer] = Field(description="Major market players")
+    trends: List[MarketTrend] = Field(description="Market trends")
+    challenges: List[str] = Field(description="Industry challenges")
+    opportunities: List[str] = Field(description="Market opportunities")
+
+# Perform comprehensive market research
+response = client.searchscraper(
+    user_prompt="Analyze the current AI chip market landscape",
+    output_schema=MarketAnalysis
+)
+
+# Access structured market data
+print(f"Market Size: {response.market_size}")
+print(f"Growth Rate: {response.growth_rate}")
+
+print("\nKey Players:")
+for player in response.key_players:
+    print(f"\n{player.name}")
+    print(f"Market Share: {player.market_share}")
+    print("Key Products:")
+    for product in player.key_products:
+        print(f"- {product}")
+
+print("\nMarket Trends:")
+for trend in response.trends:
+    print(f"\n{trend.name}")
+    print(f"Impact: {trend.impact}")
+    print(f"Timeframe: {trend.timeframe}")
+```
+</Accordion>
 
 ### Markdownify
 
