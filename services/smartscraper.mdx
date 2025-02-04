@@ -20,7 +20,9 @@ Try SmartScraper instantly in our [interactive playground](https://dashboard.scr
 
 ### Quick Start
 
-```python
+<CodeGroup>
+
+```python Python
 from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
@@ -30,6 +32,41 @@ response = client.smartscraper(
     user_prompt="Extract info about the company"
 )
 ```
+
+```javascript JavaScript
+import { Client } from 'scrapegraph-js';
+
+// Initialize the client
+const sgai_client = new Client("your-api-key");
+
+try {
+  const response = await sgai_client.smartscraper({
+    websiteUrl: "https://example-shop.com/products/456",
+    userPrompt: "Extract product details including name, price, availability, specifications, and customer ratings."
+  });
+
+  console.log('Request ID:', response.requestId);
+  console.log('Result:', response.result);
+} catch (error) {
+  console.error(error);
+} finally {
+  sgai_client.close();
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/smartscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://example-shop.com/products/456",
+  "user_prompt": "Extract product details including name, price, availability, specifications, and customer ratings."
+}'
+```
+
+</CodeGroup>
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)

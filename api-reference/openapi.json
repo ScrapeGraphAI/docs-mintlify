@@ -64,12 +64,12 @@
           {
             "lang": "python",
             "label": "Python",
-            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/smartscraper'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\npayload = {\n    'user_prompt': 'Extract info about the company',\n    'website_url': 'https://scrapegraphai.com/'\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\ndata = response.json()"
+            "source": "from scrapegraph_py import Client\n\nclient = Client(api_key=\"your-api-key\")\n\nresponse = client.smartscraper(\n    website_url=\"https://scrapegraphai.com/\",\n    user_prompt=\"Extract info about the company\"\n)"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const url = 'https://api.scrapegraphai.com/v1/smartscraper';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  user_prompt: 'Extract info about the company',\n  website_url: 'https://scrapegraphai.com/'\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
+            "source": "import { Client } from 'scrapegraph-js';\n\n   // Initialize the client\nconst sgai_client = new Client(\"your-api-key\");\n\n try {\n  const response = await sgai_client.smartscraper({\n    websiteUrl: \"https://example-shop.com/products/456\",\n    userPrompt: \"Extract product details including name, price, availability, specifications, and customer ratings.\"\n  });\n\n  console.log('Request ID:', response.requestId);\n  console.log('Result:', response.result);\n} catch (error) {\n  console.error(error);\n} finally {\n  sgai_client.close();\n}"
           }
         ]
       }
@@ -128,13 +128,14 @@
           {
             "lang": "python",
             "label": "Python",
-            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/smartscraper/YOUR_REQUEST_ID'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY'\n}\n\nresponse = requests.get(url, headers=headers)\ndata = response.json()"
-          },
+            "source": "ciao"
+            },
           {
             "lang": "javascript",
             "label": "JavaScript", 
             "source": "const url = 'https://api.scrapegraphai.com/v1/smartscraper/YOUR_REQUEST_ID';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY'\n};\n\nfetch(url, { headers })\n  .then(response => response.json())\n  .then(data => console.log(data));"
           }
+  
         ]
       }
     },
@@ -191,12 +192,12 @@
           {
             "lang": "python",
             "label": "Python",
-            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/markdownify'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\npayload = {\n    'website_url': 'https://scrapegraphai.com/'\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\ndata = response.json()"
+            "source": "from scrapegraph_py import Client\n\nclient = Client(api_key=\"your-api-key\")\n\nresponse = client.markdownify(\n    website_url=\"https://scrapegraphai.com/\"\n)"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const url = 'https://api.scrapegraphai.com/v1/markdownify';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  website_url: 'https://scrapegraphai.com/'\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
+            "source": "import { Client } from 'scrapegraph-js';\n\n// Initialize the client\nconst sgai_client = new Client(\"your-api-key\");\n\ntry {\n  const response = await sgai_client.markdownify({\n    websiteUrl: \"https://example-shop.com/products/456\",\n    userPrompt: \"Extract product details including name, price, availability, specifications, and customer ratings.\"\n  });\n\n  console.log('Request ID:', response.requestId);\n  console.log('Result:', response.result);\n} catch (error) {\n  console.error(error);\n} finally {\n  sgai_client.close();\n}"
           }
         ]
       }
@@ -372,6 +373,13 @@
       }
     },
     "/v1/searchscraper": {
+      "get": {
+        "tags": [
+          "SearchScraper"
+        ],
+        "summary": "Get Searchscraper Status",
+        "operationId": "get_searchscraper_status_v1_searchscraper__request_id__get",
+      },
       "post": {
         "tags": [
           "SearchScraper"
@@ -424,12 +432,12 @@
           {
             "lang": "python",
             "label": "Python",
-            "source": "import requests\nimport time\n\ndef search_and_wait(prompt, output_schema=None, max_retries=30, delay=2):\n    \"\"\"Search for information and wait for results\n    \n    Args:\n        prompt (str): Natural language query\n        output_schema (dict, optional): Schema to structure the response\n        max_retries (int): Maximum number of status checks\n        delay (int): Seconds to wait between status checks\n    \"\"\"\n    url = 'https://api.scrapegraphai.com/v1/searchscraper'\n    headers = {\n        'SGAI-APIKEY': 'YOUR_API_KEY',\n        'Content-Type': 'application/json'\n    }\n    \n    # Prepare the request payload\n    payload = {\n        'user_prompt': prompt,\n        'headers': {\n            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'\n        }\n    }\n    \n    # Add output schema if provided\n    if output_schema:\n        payload['output_schema'] = output_schema\n    \n    # Start the search\n    response = requests.post(url, json=payload, headers=headers)\n    \n    if response.status_code != 200:\n        raise Exception(f'Failed to start search: {response.text}')\n    \n    data = response.json()\n    request_id = data['request_id']\n    print(f'Search started with request ID: {request_id}')\n    \n    # Poll for results\n    for attempt in range(max_retries):\n        status_url = f'{url}/{request_id}'\n        status_response = requests.get(status_url, headers=headers)\n        status_data = status_response.json()\n        \n        if status_data['status'] == 'completed':\n            print('\\nSearch completed successfully!')\n            print('\\nResults:')\n            print('--------')\n            print(f\"Answer: {status_data['result'].get('answer')}\")\n            if 'details' in status_data['result']:\n                print('\\nDetails:')\n                for key, value in status_data['result']['details'].items():\n                    print(f'{key}: {value}')\n            print('\\nReference URLs:')\n            for url in status_data['reference_urls']:\n                print(f'- {url}')\n            return status_data\n            \n        elif status_data['status'] == 'failed':\n            raise Exception(f'Search failed: {status_data.get(\"error\", \"Unknown error\")}')\n        \n        print(f'Status: {status_data[\"status\"]}... (attempt {attempt + 1}/{max_retries})', end='\\r')\n        time.sleep(delay)\n    \n    raise TimeoutError(f'Search did not complete after {max_retries * delay} seconds')\n\n# Example usage\ntry:\n    # Define the output schema for structured results\n    schema = {\n        'answer': 'string',\n        'details': {\n            'version': 'string',\n            'release_date': 'string',\n            'download_url': 'string'\n        }\n    }\n    \n    # Run the search with the schema\n    results = search_and_wait(\n        prompt='What is the latest version of Python?',\n        output_schema=schema\n    )\n    \n    # Access specific fields from the structured response\n    version = results['result']['details']['version']\n    release_date = results['result']['details']['release_date']\n    \n    # Use the data in your application\n    print(f'\\nPython {version} was released on {release_date}')\n    \nexcept Exception as e:\n    print(f'Error: {str(e)}')"
+            "source": "from scrapegraph_py import Client\n\nclient = Client(api_key=\"your-api-key\")\n\nresponse = client.searchscraper(\n    user_prompt=\"What is the latest version of Python?\",\n    output_schema={\n        \"answer\": \"string\",\n        \"details\": {\n            \"version\": \"string\",\n            \"release_date\": \"string\",\n            \"download_url\": \"string\"\n        }\n    }\n)"
           },
           {
             "lang": "javascript",
             "label": "JavaScript",
-            "source": "const url = 'https://api.scrapegraphai.com/v1/searchscraper';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  user_prompt: 'What is the latest version of Python?',\n  output_schema: {\n    answer: 'string',\n    details: {\n      version: 'string',\n      release_date: 'string',\n      download_url: 'string'\n    }\n  }\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
+            "source": "import { Client } from 'scrapegraph-js';\n\n// Initialize the client\nconst sgai_client = new Client(\"your-api-key\");\n\ntry {\n  const response = await sgai_client.searchscraper({\n    userPrompt: \"What is the latest version of Python?\",\n    outputSchema: {\n      answer: \"string\",\n      details: {\n        version: \"string\",\n        release_date: \"string\",\n        download_url: \"string\"\n      }\n    }\n  });\n\n  console.log('Request ID:', response.requestId);\n  console.log('Result:', response.result);\n} catch (error) {\n  console.error(error);\n} finally {\n  sgai_client.close();\n}"
           }
         ]
       }

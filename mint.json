@@ -94,8 +94,8 @@
         {
           "group": "Browser Extensions",
           "pages": [
-
-            "services/extensions/firefox"
+            "services/extensions/firefox",
+            "services/extensions/chrome"
           ]
         }
       ]
