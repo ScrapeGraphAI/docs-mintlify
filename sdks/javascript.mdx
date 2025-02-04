@@ -154,29 +154,97 @@ response.result.offices.forEach(office => {
 ```
 </Accordion>
 
-### LocalScraper
+### SearchScraper
 
-Process local HTML content with AI extraction:
+Search and extract information from multiple web sources using AI:
+
 
 ```javascript
-const html = `
-<html>
-    <body>
-        <h1>Company Name</h1>
-        <p>We are a technology company focused on AI solutions.</p>
-        <div class="contact">
-            <p>Email: contact@example.com</p>
-        </div>
-    </body>
-</html>
-`;
 
-const response = await localScraper(
+const response = await searchScraper(
   apiKey,
-  html,
-  'Extract the company description'
+  'Find the best restaurants in San Francisco',
 );
 ```
+
+<Accordion title="Basic Schema Example" icon="code">
+Define a simple schema using Zod:
+
+```typescript
+import { z } from 'zod';
+
+const ArticleSchema = z.object({
+  title: z.string().describe('The article title'),
+  author: z.string().describe('The author\'s name'),
+  publishDate: z.string().describe('Article publication date'),
+  content: z.string().describe('Main article content'),
+  category: z.string().describe('Article category')
+});
+
+const response = await searchScraper(
+  apiKey,
+  'Find news about the latest trends in AI',
+  ArticleSchema
+);
+
+
+console.log(`Title: ${response.result.title}`);
+console.log(`Author: ${response.result.author}`);
+console.log(`Published: ${response.result.publishDate}`);
+```
+</Accordion>
+
+<Accordion title="Advanced Schema Example" icon="code">
+Define a complex schema for nested data structures:
+
+```typescript
+import { z } from 'zod';
+
+const EmployeeSchema = z.object({
+  name: z.string().describe('Employee\'s full name'),
+  position: z.string().describe('Job title'),
+  department: z.string().describe('Department name'),
+  email: z.string().describe('Email address')
+});
+
+const OfficeSchema = z.object({
+  location: z.string().describe('Office location/city'),
+  address: z.string().describe('Full address'),
+  phone: z.string().describe('Contact number')
+});
+
+const RestaurantSchema = z.object({
+  name: z.string().describe('Restaurant name'),
+  address: z.string().describe('Restaurant address'),
+  rating: z.number().describe('Restaurant rating'),
+  website: z.string().url().describe('Restaurant website URL')
+
+
+});
+
+// Extract comprehensive company information
+const response = await searchScraper(
+  apiKey,
+  'Find the best restaurants in San Francisco',
+  RestaurantSchema
+);
+
+
+
+// Access nested data
+console.log(`Restaurant: ${response.result.name}`);
+console.log('\nAddress:');
+response.result.address.forEach(address => {
+  console.log(`- ${address}`);
+});
+
+
+console.log('\nRating:');
+console.log(`- ${response.result.rating}`);
+```
+</Accordion>
+
+
 
 ### Markdownify
 

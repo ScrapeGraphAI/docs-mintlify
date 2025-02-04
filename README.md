@@ -41,7 +41,7 @@ The documentation will be available at `http://localhost:3000`.
 ├── introduction.mdx          # Main introduction page
 ├── services/                 # Core services documentation
 │   ├── smartscraper.mdx     # SmartScraper service
-│   ├── localscraper.mdx     # LocalScraper service
+│   ├── searchscraper.mdx     # SearchScraper service
 │   ├── markdownify.mdx      # Markdownify service
 │   └── extensions/          # Browser extensions
 │       └── firefox.mdx      # Firefox extension

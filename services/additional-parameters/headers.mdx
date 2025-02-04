@@ -1,0 +1,231 @@
+---
+title: 'Headers & Cookies'
+description: 'Customize request headers and cookies for web scraping'
+icon: 'gear'
+---
+
+<Frame>
+  <img src="/services/images/headers-banner.png" alt="Headers Configuration" />
+</Frame>
+
+## Overview
+
+All our services (SmartScraper, SearchScraper, and Markdownify) support custom headers and cookies to help you:
+- Bypass basic anti-bot protections
+- Access authenticated content
+- Maintain sessions
+- Customize request behavior
+
+## Headers
+
+### Common Headers
+
+You can set any of the following headers in your requests:
+
+```json
+{
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",  // Browser identification
+    "Accept": "*/*",                                                                // Accepted content types
+    "Accept-Encoding": "gzip, deflate, br",                                        // Supported encodings
+    "Accept-Language": "en-US,en;q=0.9",                                           // Preferred languages
+    "Cache-Control": "no-cache,no-cache",                                          // Caching behavior
+    "Sec-Ch-Ua": "\"Google Chrome\";v=\"107\", \"Chromium\";v=\"107\"",           // Browser details
+    "Sec-Ch-Ua-Mobile": "?0",                                                      // Mobile browser flag
+    "Sec-Ch-Ua-Platform": "\"macOS\"",                                            // Operating system
+    "Sec-Fetch-Dest": "document",                                                  // Request destination
+    "Sec-Fetch-Mode": "navigate",                                                  // Request mode
+    "Sec-Fetch-Site": "none",                                                      // Request origin
+    "Sec-Fetch-User": "?1",                                                        // User-initiated flag
+    "Upgrade-Insecure-Requests": "1"                                              // HTTPS upgrade
+}
+```
+
+### Usage Examples
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Define custom headers
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Sec-Ch-Ua-Platform": "\"Windows\""
+}
+
+# Use with SmartScraper
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the main content",
+    headers=headers
+)
+
+# Use with SearchScraper
+response = client.searchscraper(
+    user_prompt="Find information about...",
+    headers=headers
+)
+
+# Use with Markdownify
+response = client.markdownify(
+    website_url="https://example.com",
+    headers=headers
+)
+```
+
+```typescript TypeScript
+import { Client } from '@scrapegraph/sdk';
+
+const client = new Client('your-api-key');
+
+// Define custom headers
+const headers = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Sec-Ch-Ua-Platform': '"Windows"'
+};
+
+// Use with SmartScraper
+const response = await client.smartscraper({
+  websiteUrl: 'https://example.com',
+  userPrompt: 'Extract the main content',
+  headers: headers
+});
+```
+
+</CodeGroup>
+
+## Cookies
+
+### Overview
+
+Cookies are essential for:
+- Accessing authenticated content
+- Maintaining user sessions
+- Handling website preferences
+- Bypassing certain security measures
+
+### Setting Cookies
+
+Cookies are set using the `Cookie` header as a semicolon-separated string of key-value pairs:
+
+```python
+headers = {
+    "Cookie": "session_id=abc123; user_id=12345; theme=dark"
+}
+```
+
+### Examples
+
+<CodeGroup>
+
+```python Python
+# Example with session cookies
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Cookie": "session_id=abc123; user_id=12345; theme=dark"
+}
+
+response = client.smartscraper(
+    website_url="https://example.com/dashboard",
+    user_prompt="Extract user information",
+    headers=headers
+)
+```
+
+```typescript TypeScript
+// Example with session cookies
+const headers = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+  'Cookie': 'session_id=abc123; user_id=12345; theme=dark'
+};
+
+const response = await client.smartscraper({
+  websiteUrl: 'https://example.com/dashboard',
+  userPrompt: 'Extract user information',
+  headers: headers
+});
+```
+
+</CodeGroup>
+
+### Common Use Cases
+
+1. **Authentication**
+```python
+headers = {
+    "Cookie": "auth_token=xyz789; session_id=abc123"
+}
+```
+
+2. **Regional Settings**
+```python
+headers = {
+    "Cookie": "country=US; language=en; currency=USD"
+}
+```
+
+3. **User Preferences**
+```python
+headers = {
+    "Cookie": "theme=dark; notifications=enabled"
+}
+```
+
+## Best Practices
+
+1. **User Agent Best Practices**
+   - Use recent browser versions
+   - Match User-Agent with Sec-Ch-Ua headers
+   - Consider region-specific variations
+
+2. **Cookie Management**
+   - Keep cookies up to date
+   - Include all required session cookies
+   - Remove unnecessary cookies
+   - Handle cookie expiration
+
+3. **Security Considerations**
+   - Don't share sensitive cookies
+   - Rotate User-Agents when appropriate
+   - Use HTTPS when sending sensitive data
+
+## Common Issues
+
+<Accordion title="Cookie Expiration" icon="clock">
+Cookies may expire during scraping. Solutions:
+- Implement cookie refresh logic
+- Monitor session status
+- Handle re-authentication
+</Accordion>
+
+<Accordion title="Header Conflicts" icon="exclamation-triangle">
+Some headers may conflict. Common fixes:
+- Remove conflicting headers
+- Ensure header values match
+- Check case sensitivity
+</Accordion>
+
+## Support
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Need Help?" icon="question" href="mailto:support@scrapegraphai.com">
+  Contact our support team for assistance with headers, cookies, or any other questions!
+</Card>

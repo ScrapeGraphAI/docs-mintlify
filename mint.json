@@ -79,56 +79,26 @@
             "en/dashboard/jobs",
             "en/dashboard/settings"
           ]
-        },
+        }
+      ]
+    },
+    {
+      "group": "Services",
+      "pages": [
+        "services/smartscraper",
+        "services/searchscraper",
+        "services/markdownify",
         {
-          "group": "Services",
+          "group": "Additional Parameters",
           "pages": [
-            "en/services/smartscraper",
-            "en/services/localscraper",
-            "en/services/markdownify",
-            {
-              "group": "Browser Extensions",
-              "pages": [
-                "en/services/extensions/firefox"
-              ]
-            }
+            "services/additional-parameters/headers"
           ]
         },
         {
-          "group": "Official SDKs",
+          "group": "Browser Extensions",
           "pages": [
-            "en/sdks/python",
-            "en/sdks/javascript"
-          ]
-        },
-        {
-          "group": "Integrations",
-          "pages": [
-            "en/integrations/langchain",
-            "en/integrations/llamaindex",
-            "en/integrations/crewai",
-            "en/integrations/phidata"
-          ]
-        },
-        {
-          "group": "API Documentation",
-          "pages": [
-            "en/api-reference/introduction",
-            "en/api-reference/errors"
-          ]
-        },
-        {
-          "group": "Contribute",
-          "pages": [
-            "en/contribute/opensource",
-            "en/contribute/feedback"
-          ]
-        },
-        {
-          "group": "Resources",
-          "icon": "puzzle-piece",
-          "pages": [
-            "en/resources/badge"
+
+            "services/extensions/firefox"
           ]
         }
       ]
@@ -198,6 +168,84 @@
             "zh/resources/badge"
           ]
         }
+        "sdks/python",
+        "sdks/javascript"
+      ]
+    },
+    {
+      "group": "Integrations",
+      "pages": [
+        "integrations/langchain",
+        "integrations/llamaindex",
+        "integrations/crewai",
+        "integrations/agno"
+      ]
+    },
+    {
+      "group": "Cookbook",
+      "pages": [
+        "cookbook/introduction"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": [
+        "cookbook/examples/company-info",
+        "cookbook/examples/github-trending",
+        "cookbook/examples/wired",
+        "cookbook/examples/homes",
+        "cookbook/examples/research-agent",
+        "cookbook/examples/chat-webpage"
+      ]
+    },
+    {
+      "group": "API Documentation",
+      "pages": [
+        "api-reference/introduction",
+        "api-reference/errors"
+      ]
+    },
+    {
+      "group": "SmartScraper",
+      "pages": [
+        "api-reference/endpoint/smartscraper/start",
+        "api-reference/endpoint/smartscraper/get-status"
+      ]
+    },
+    {
+      "group": "SearchScraper",
+      "pages": [
+        "api-reference/endpoint/searchscraper/start",
+        "api-reference/endpoint/searchscraper/get-status"
+      ]
+    },
+
+    {
+      "group": "Markdownify",
+      "pages": [
+        "api-reference/endpoint/markdownify/start",
+        "api-reference/endpoint/markdownify/get-status"
+      ]
+    },
+    {
+      "group": "User",
+      "pages": [
+        "api-reference/endpoint/user/get-credits",
+        "api-reference/endpoint/user/submit-feedback"
+      ]
+    },
+    {
+      "group": "Contribute",
+      "pages": [
+        "contribute/opensource",
+        "contribute/feedback"
+      ]
+    },
+    {
+      "group": "Resources",
+      "icon": "puzzle-piece",
+      "pages": [
+        "resources/badge"
       ]
     }
   ],

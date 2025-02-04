@@ -11,153 +11,6 @@
     }
   ],
   "paths": {
-    "/v1/smartcrawler": {
-      "post": {
-        "tags": [
-          "SmartCrawler"
-        ],
-        "summary": "Start Smartcrawler",
-        "operationId": "start_smartcrawler_v1_smartcrawler_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CrawlRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InProgressCrawlSessionResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
-      }
-    },
-    "/v1/smartcrawler/{session_id}": {
-      "get": {
-        "tags": [
-          "SmartCrawler"
-        ],
-        "summary": "Get Smartcrawler Status",
-        "operationId": "get_smartcrawler_status_v1_smartcrawler__session_id__get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v1/smartcrawler/sessions/all": {
-      "get": {
-        "tags": [
-          "SmartCrawler"
-        ],
-        "summary": "Get All Sessions",
-        "operationId": "get_all_sessions_v1_smartcrawler_sessions_all_get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CrawlSessionsList"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/smartscraper": {
       "post": {
         "tags": [
@@ -200,6 +53,23 @@
         "security": [
           {
             "APIKeyHeader": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"user_prompt\": \"Extract info about the company\",\n    \"website_url\": \"https://scrapegraphai.com/\"\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/smartscraper'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\npayload = {\n    'user_prompt': 'Extract info about the company',\n    'website_url': 'https://scrapegraphai.com/'\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/smartscraper';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  user_prompt: 'Extract info about the company',\n  website_url: 'https://scrapegraphai.com/'\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
           }
         ]
       }
@@ -248,7 +118,24 @@
               }
             }
           }
-        }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl 'https://api.scrapegraphai.com/v1/smartscraper/YOUR_REQUEST_ID' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/smartscraper/YOUR_REQUEST_ID'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY'\n}\n\nresponse = requests.get(url, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript", 
+            "source": "const url = 'https://api.scrapegraphai.com/v1/smartscraper/YOUR_REQUEST_ID';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY'\n};\n\nfetch(url, { headers })\n  .then(response => response.json())\n  .then(data => console.log(data));"
+          }
+        ]
       }
     },
     "/v1/markdownify": {
@@ -293,6 +180,23 @@
         "security": [
           {
             "APIKeyHeader": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -X POST 'https://api.scrapegraphai.com/v1/markdownify' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"website_url\": \"https://scrapegraphai.com/\"\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/markdownify'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\npayload = {\n    'website_url': 'https://scrapegraphai.com/'\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/markdownify';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  website_url: 'https://scrapegraphai.com/'\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
           }
         ]
       }
@@ -341,100 +245,24 @@
               }
             }
           }
-        }
-      }
-    },
-    "/v1/localscraper": {
-      "post": {
-        "tags": [
-          "LocalScraper"
-        ],
-        "summary": "Start Localscraper",
-        "operationId": "start_localscraper_v1_localscraper_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LocalscraperRequest"
-              }
-            }
-          },
-          "required": true
         },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompletedLocalscraperResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
+        "x-codeSamples": [
           {
-            "APIKeyHeader": []
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl 'https://api.scrapegraphai.com/v1/markdownify/YOUR_REQUEST_ID' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/markdownify/YOUR_REQUEST_ID'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY'\n}\n\nresponse = requests.get(url, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/markdownify/YOUR_REQUEST_ID';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY'\n};\n\nfetch(url, { headers })\n  .then(response => response.json())\n  .then(data => console.log(data));"
           }
         ]
-      }
-    },
-    "/v1/localscraper/{request_id}": {
-      "get": {
-        "tags": [
-          "LocalScraper"
-        ],
-        "summary": "Get Localscraper Status",
-        "operationId": "get_localscraper_status_v1_localscraper__request_id__get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "request_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Request Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompletedLocalscraperResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/v1/credits": {
@@ -459,6 +287,23 @@
         "security": [
           {
             "APIKeyHeader": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl 'https://api.scrapegraphai.com/v1/credits' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/credits'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY'\n}\n\nresponse = requests.get(url, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/credits';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY'\n};\n\nfetch(url, { headers })\n  .then(response => response.json())\n  .then(data => console.log(data));"
           }
         ]
       }
@@ -506,50 +351,156 @@
           {
             "APIKeyHeader": []
           }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -X POST 'https://api.scrapegraphai.com/v1/feedback' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"request_id\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"rating\": 5,\n    \"feedback_text\": \"Great service!\"\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nurl = 'https://api.scrapegraphai.com/v1/feedback'\nheaders = {\n    'SGAI-APIKEY': 'YOUR_API_KEY',\n    'Content-Type': 'application/json'\n}\npayload = {\n    'request_id': '123e4567-e89b-12d3-a456-426614174000',\n    'rating': 5,\n    'feedback_text': 'Great service!'\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\ndata = response.json()"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/feedback';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  request_id: '123e4567-e89b-12d3-a456-426614174000',\n  rating: 5,\n  feedback_text: 'Great service!'\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
+          }
+        ]
+      }
+    },
+    "/v1/searchscraper": {
+      "post": {
+        "tags": [
+          "SearchScraper"
+        ],
+        "summary": "Start Searchscraper",
+        "operationId": "start_searchscraper_v1_searchscraper_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchScraperRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedSearchScraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -X POST 'https://api.scrapegraphai.com/v1/searchscraper' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"user_prompt\": \"What is the latest version of Python?\",\n    \"output_schema\": {\n      \"answer\": \"string\",\n      \"details\": {\n        \"version\": \"string\",\n        \"release_date\": \"string\",\n        \"download_url\": \"string\"\n      }\n    }\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\nimport time\n\ndef search_and_wait(prompt, output_schema=None, max_retries=30, delay=2):\n    \"\"\"Search for information and wait for results\n    \n    Args:\n        prompt (str): Natural language query\n        output_schema (dict, optional): Schema to structure the response\n        max_retries (int): Maximum number of status checks\n        delay (int): Seconds to wait between status checks\n    \"\"\"\n    url = 'https://api.scrapegraphai.com/v1/searchscraper'\n    headers = {\n        'SGAI-APIKEY': 'YOUR_API_KEY',\n        'Content-Type': 'application/json'\n    }\n    \n    # Prepare the request payload\n    payload = {\n        'user_prompt': prompt,\n        'headers': {\n            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'\n        }\n    }\n    \n    # Add output schema if provided\n    if output_schema:\n        payload['output_schema'] = output_schema\n    \n    # Start the search\n    response = requests.post(url, json=payload, headers=headers)\n    \n    if response.status_code != 200:\n        raise Exception(f'Failed to start search: {response.text}')\n    \n    data = response.json()\n    request_id = data['request_id']\n    print(f'Search started with request ID: {request_id}')\n    \n    # Poll for results\n    for attempt in range(max_retries):\n        status_url = f'{url}/{request_id}'\n        status_response = requests.get(status_url, headers=headers)\n        status_data = status_response.json()\n        \n        if status_data['status'] == 'completed':\n            print('\\nSearch completed successfully!')\n            print('\\nResults:')\n            print('--------')\n            print(f\"Answer: {status_data['result'].get('answer')}\")\n            if 'details' in status_data['result']:\n                print('\\nDetails:')\n                for key, value in status_data['result']['details'].items():\n                    print(f'{key}: {value}')\n            print('\\nReference URLs:')\n            for url in status_data['reference_urls']:\n                print(f'- {url}')\n            return status_data\n            \n        elif status_data['status'] == 'failed':\n            raise Exception(f'Search failed: {status_data.get(\"error\", \"Unknown error\")}')\n        \n        print(f'Status: {status_data[\"status\"]}... (attempt {attempt + 1}/{max_retries})', end='\\r')\n        time.sleep(delay)\n    \n    raise TimeoutError(f'Search did not complete after {max_retries * delay} seconds')\n\n# Example usage\ntry:\n    # Define the output schema for structured results\n    schema = {\n        'answer': 'string',\n        'details': {\n            'version': 'string',\n            'release_date': 'string',\n            'download_url': 'string'\n        }\n    }\n    \n    # Run the search with the schema\n    results = search_and_wait(\n        prompt='What is the latest version of Python?',\n        output_schema=schema\n    )\n    \n    # Access specific fields from the structured response\n    version = results['result']['details']['version']\n    release_date = results['result']['details']['release_date']\n    \n    # Use the data in your application\n    print(f'\\nPython {version} was released on {release_date}')\n    \nexcept Exception as e:\n    print(f'Error: {str(e)}')"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/searchscraper';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY',\n  'Content-Type': 'application/json'\n};\nconst payload = {\n  user_prompt: 'What is the latest version of Python?',\n  output_schema: {\n    answer: 'string',\n    details: {\n      version: 'string',\n      release_date: 'string',\n      download_url: 'string'\n    }\n  }\n};\n\nfetch(url, {\n  method: 'POST',\n  headers: headers,\n  body: JSON.stringify(payload)\n})\n  .then(response => response.json())\n  .then(data => console.log(data));"
+          }
+        ]
+      }
+    },
+    "/v1/searchscraper/{request_id}": {
+      "get": {
+        "tags": [
+          "SearchScraper"
+        ],
+        "summary": "Get Searchscraper Status",
+        "operationId": "get_searchscraper_status_v1_searchscraper__request_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletedSearchScraperResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl 'https://api.scrapegraphai.com/v1/searchscraper/YOUR_REQUEST_ID' \\\n  -H 'SGAI-APIKEY: YOUR_API_KEY'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\ndef get_search_status(request_id):\n    url = f'https://api.scrapegraphai.com/v1/searchscraper/{request_id}'\n    headers = {\n        'SGAI-APIKEY': 'YOUR_API_KEY'\n    }\n\n    response = requests.get(url, headers=headers)\n    \n    if response.status_code == 200:\n        data = response.json()\n        status = data['status']\n        \n        if status == 'completed':\n            return {\n                'success': True,\n                'status': status,\n                'result': data['result'],\n                'reference_urls': data['reference_urls']\n            }\n        elif status == 'failed':\n            return {\n                'success': False,\n                'status': status,\n                'error': data['error']\n            }\n        else:\n            return {\n                'success': None,\n                'status': status\n            }\n    else:\n        return {\n            'success': False,\n            'error': f'Request failed with status code: {response.status_code}'\n        }\n\n# Example usage\nrequest_id = 'YOUR_REQUEST_ID'\nstatus = get_search_status(request_id)\n\nif status['success'] is True:\n    print('Search completed successfully!')\n    print('Results:', status['result'])\n    print('Reference URLs:', status['reference_urls'])\nelif status['success'] is False:\n    print('Search failed:', status.get('error', 'Unknown error'))\nelse:\n    print(f'Search is {status[\"status\"]}...')"
+          },
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const url = 'https://api.scrapegraphai.com/v1/searchscraper/YOUR_REQUEST_ID';\nconst headers = {\n  'SGAI-APIKEY': 'YOUR_API_KEY'\n};\n\nfetch(url, { headers })\n  .then(response => response.json())\n  .then(data => console.log(data));"
+          }
         ]
       }
     }
   },
   "components": {
     "schemas": {
-      "CompletedLocalscraperResponse": {
-        "properties": {
-          "request_id": {
-            "type": "string",
-            "title": "Request Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/LocalscraperStatus"
-          },
-          "user_prompt": {
-            "type": "string",
-            "title": "User Prompt"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result"
-          },
-          "error": {
-            "type": "string",
-            "title": "Error",
-            "default": ""
-          }
-        },
-        "type": "object",
-        "required": [
-          "request_id",
-          "status",
-          "user_prompt"
-        ],
-        "title": "CompletedLocalscraperResponse"
-      },
       "CompletedMarkdownifyResponse": {
         "properties": {
           "request_id": {
@@ -630,103 +581,6 @@
           "user_prompt"
         ],
         "title": "CompletedSmartscraperResponse"
-      },
-      "CrawlRequest": {
-        "properties": {
-          "website_url": {
-            "type": "string",
-            "title": "Website Url",
-            "example": "https://scrapegraphai.com/"
-          },
-          "input_queries": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "maxItems": 50,
-            "title": "Input Queries",
-            "example": [
-              "What does the company do?",
-              "What are the company's core products?",
-              "In which sectors does the company operate?"
-            ]
-          }
-        },
-        "type": "object",
-        "required": [
-          "website_url",
-          "input_queries"
-        ],
-        "title": "CrawlRequest"
-      },
-      "CrawlSessionResponseBase": {
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "title": "Session Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/CrawlStatus"
-          },
-          "website_url": {
-            "type": "string",
-            "title": "Website Url"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Timestamp"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "session_id",
-          "status",
-          "website_url",
-          "timestamp",
-          "message"
-        ],
-        "title": "CrawlSessionResponseBase"
-      },
-      "CrawlSessionsList": {
-        "properties": {
-          "sessions": {
-            "items": {
-              "$ref": "#/components/schemas/CrawlSessionResponseBase"
-            },
-            "type": "array",
-            "title": "Sessions"
-          },
-          "total_sessions": {
-            "type": "integer",
-            "title": "Total Sessions"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "default": "Sessions retrieved successfully"
-          }
-        },
-        "type": "object",
-        "required": [
-          "sessions",
-          "total_sessions"
-        ],
-        "title": "CrawlSessionsList"
-      },
-      "CrawlStatus": {
-        "type": "string",
-        "enum": [
-          "queued",
-          "processing",
-          "completed",
-          "failed"
-        ],
-        "title": "CrawlStatus"
       },
       "CreditsResponse": {
         "properties": {
@@ -823,87 +677,24 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
-      "InProgressCrawlSessionResponse": {
-        "properties": {
-          "session_id": {
-            "type": "string",
-            "title": "Session Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/CrawlStatus"
-          },
-          "website_url": {
-            "type": "string",
-            "title": "Website Url"
-          },
-          "timestamp": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Timestamp"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message"
-          }
-        },
-        "type": "object",
-        "required": [
-          "session_id",
-          "status",
-          "website_url",
-          "timestamp",
-          "message"
-        ],
-        "title": "InProgressCrawlSessionResponse"
-      },
-      "LocalscraperRequest": {
-        "properties": {
-          "user_prompt": {
-            "type": "string",
-            "title": "User Prompt",
-            "example": "Extract info about the company"
-          },
-          "website_html": {
-            "type": "string",
-            "title": "Website Html",
-            "description": "HTML content, maximum size 2MB",
-            "example": "\u003Chtml\u003E\u003Cbody\u003E\u003Ch1\u003ETitle\u003C/h1\u003E\u003Cp\u003EContent\u003C/p\u003E\u003C/body\u003E\u003C/html\u003E"
-          },
-          "output_schema": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Output Schema"
-          }
-        },
-        "type": "object",
-        "required": [
-          "user_prompt",
-          "website_html"
-        ],
-        "title": "LocalscraperRequest"
-      },
-      "LocalscraperStatus": {
-        "type": "string",
-        "enum": [
-          "queued",
-          "processing",
-          "completed",
-          "failed"
-        ],
-        "title": "LocalscraperStatus"
-      },
       "MarkdownifyRequest": {
         "properties": {
           "website_url": {
             "type": "string",
             "title": "Website Url",
             "example": "https://scrapegraphai.com/"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Headers",
+            "description": "Optional headers to send with the request, including cookies and user agent",
+            "example": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+              "Cookie": "cookie1=value1; cookie2=value2"
+            }
           }
         },
         "type": "object",
@@ -934,6 +725,24 @@
             "title": "Website Url",
             "example": "https://scrapegraphai.com/"
           },
+          "website_html": {
+            "type": "string",
+            "title": "Website Html",
+            "description": "HTML content, maximum size 2MB",
+            "example": "<html><body><h1>Title</h1><p>Content</p></body></html>"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Headers",
+            "description": "Optional headers to send with the request, including cookies and user agent",
+            "example": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+              "Cookie": "cookie1=value1; cookie2=value2"
+            }
+          },
           "output_schema": {
             "anyOf": [
               {
@@ -948,10 +757,10 @@
         },
         "type": "object",
         "required": [
-          "user_prompt",
-          "website_url"
+          "user_prompt"
         ],
-        "title": "ScrapeRequest"
+        "title": "ScrapeRequest",
+        "description": "Either website_url or website_html must be provided"
       },
       "SmartscraperStatus": {
         "type": "string",
@@ -995,6 +804,127 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "SearchScraperRequest": {
+        "properties": {
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt",
+            "example": "What is the latest version of Python?",
+            "description": "Natural language query to search for information on the web"
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Headers",
+            "description": "Optional headers to send with the request, including cookies and user agent",
+            "example": {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+              "Cookie": "cookie1=value1; cookie2=value2"
+            }
+          },
+          "output_schema": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Schema",
+            "description": "Optional schema to structure the response data",
+            "example": {
+              "answer": "string",
+              "details": {
+                "version": "string",
+                "release_date": "string",
+                "download_url": "string"
+              }
+            }
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_prompt"
+        ],
+        "title": "SearchScraperRequest",
+        "description": "Request to search and extract information from multiple web sources"
+      },
+      "CompletedSearchScraperResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SearchScraperStatus",
+            "example": "completed"
+          },
+          "user_prompt": {
+            "type": "string",
+            "title": "User Prompt",
+            "example": "What is the latest version of Python?"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result",
+            "example": {
+              "answer": "The latest version of Python is 3.12.1",
+              "details": {
+                "version": "3.12.1",
+                "release_date": "December 7, 2023",
+                "download_url": "https://www.python.org/downloads/"
+              }
+            }
+          },
+          "reference_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "title": "Reference URLs",
+            "description": "List of URLs used as references for the answer",
+            "example": [
+              "https://www.python.org/downloads/",
+              "https://docs.python.org/release/3.12.1/whatsnew/3.12.html"
+            ]
+          },
+          "error": {
+            "type": "string",
+            "title": "Error",
+            "default": "",
+            "example": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "user_prompt"
+        ],
+        "title": "CompletedSearchScraperResponse",
+        "description": "Response containing the search results and extracted information"
+      },
+      "SearchScraperStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "processing",
+          "completed",
+          "failed"
+        ],
+        "title": "SearchScraperStatus"
       }
     },
     "securitySchemes": {

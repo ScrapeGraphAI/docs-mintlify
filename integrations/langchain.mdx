@@ -65,51 +65,39 @@ result = tool.invoke({
 ```
 </Accordion>
 
-### LocalScraperTool
+### SearchScraperTool
 
 Process HTML content directly with AI extraction:
 
 ```python
-from langchain_scrapegraph.tools import LocalScraperTool
+from langchain_scrapegraph.tools import SearchScraperTool
 
-tool = LocalScraperTool()
+
+tool = SearchScraperTool()
 result = tool.invoke({
-    "user_prompt": "Extract all contact information",
-    "website_html": "<html>...</html>"
+    "user_prompt": "Find the best restaurants in San Francisco",
 })
+
 ```
 
 <Accordion title="Using Output Schemas" icon="code">
 ```python
 from typing import Optional
 from pydantic import BaseModel, Field
-from langchain_scrapegraph.tools import LocalScraperTool
+from langchain_scrapegraph.tools import SearchScraperTool
 
-class CompanyInfo(BaseModel):
-    name: str = Field(description="The company name")
-    description: str = Field(description="The company description")
-    email: Optional[str] = Field(description="Contact email if available")
-    phone: Optional[str] = Field(description="Contact phone if available")
+class RestaurantInfo(BaseModel):
+    name: str = Field(description="The restaurant name")
+    address: str = Field(description="The restaurant address")
+    rating: float = Field(description="The restaurant rating")
 
-tool = LocalScraperTool(llm_output_schema=CompanyInfo)
 
-html_content = """
-<html>
-    <body>
-        <h1>TechCorp Solutions</h1>
-        <p>We are a leading AI technology company.</p>
-        <div class="contact">
-            <p>Email: contact@techcorp.com</p>
-            <p>Phone: (555) 123-4567</p>
-        </div>
-    </body>
-</html>
-"""
+tool = SearchScraperTool(llm_output_schema=RestaurantInfo)
 
 result = tool.invoke({
-    "website_html": html_content,
-    "user_prompt": "Extract the company information"
+    "user_prompt": "Find the best restaurants in San Francisco"
 })
+
 ```
 </Accordion>
 

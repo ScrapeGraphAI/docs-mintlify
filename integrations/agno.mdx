@@ -1,18 +1,21 @@
 ---
-title: '🦐 Phidata'
-description: 'Build AI Assistants with ScrapeGraph using Phidata'
+title: '🦐 Agno'
+description: 'Build AI Assistants with ScrapeGraphAI and Agno'
 ---
+
 
 ## Overview
 
-[Phidata](https://www.phidata.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Phidata-powered AI agents.
+[Agno](https://www.agno.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Agno-powered AI agents.
 
 <Card
-  title="Official Phidata Documentation"
+
+  title="Official Agno Documentation"
   icon="book"
-  href="https://docs.phidata.com/introduction"
+
+  href="https://docs.agno.com/introduction"
 >
-  Learn more about building AI Assistants with Phidata
+  Learn more about building AI Assistants with Agno
 </Card>
 
 ## Installation
@@ -20,22 +23,25 @@ description: 'Build AI Assistants with ScrapeGraph using Phidata'
 Install the required packages:
 
 ```bash
-pip install -U phidata
+
+pip install -U agno
 
 pip install scrapegraph-py
 ```
 
 ## Usage
 
+
 ### Basic Example
 
 Create an AI Assistant with ScrapeGraph tools:
 
 ```python
-from phi.agent import Agent
-from phi.tools.scrapegraph_tools import ScrapeGraphTools
+from agno.agent import Agent
+from agno.tools.scrapegraph_tools import ScrapeGraphTools
 
 # Initialize with smartscraper enabled
+
 scrapegraph = ScrapeGraphTools(smartscraper=True)
 
 # Create an agent with the tools
@@ -62,8 +68,9 @@ Use smartscraper to extract the following from https://www.wired.com/category/sc
 You can also use ScrapeGraph to convert web pages to markdown:
 
 ```python
-from phi.agent import Agent
-from phi.tools.scrapegraph_tools import ScrapeGraphTools
+from agno.agent import Agent
+from agno.tools.scrapegraph_tools import ScrapeGraphTools
+
 
 # Initialize with only markdownify enabled
 scrapegraph_md = ScrapeGraphTools(smartscraper=False)
@@ -104,16 +111,18 @@ Need help with the integration?
 
 <CardGroup cols={2}>
   <Card
-    title="Phidata Discord"
+    title="Agno Discord"
     icon="discord"
     href="https://discord.gg/4MtYHHrgA8"
   >
-    Join the Phidata community
+
+    Join the Agno community
   </Card>
   <Card
     title="GitHub Cookbook"
+
     icon="github"
-    href="https://github.com/phidatahq/phidata/blob/main/cookbook/tools/scrapegraph_tools.py"
+    href="https://github.com/agno-agi/agno/blob/main/cookbook/tools/scrapegraph_tools.py"
   >
     Check out the source code
   </Card>

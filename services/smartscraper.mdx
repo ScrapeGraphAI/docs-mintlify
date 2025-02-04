@@ -16,6 +16,99 @@ SmartScraper is our flagship LLM-powered web scraping service that intelligently
 Try SmartScraper instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
 </Note>
 
+## Getting Started
+
+### Quick Start
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://scrapegraphai.com/",
+    user_prompt="Extract info about the company"
+)
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "request_id": "sg-req-abc123",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "Extract info about the company",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI is a powerful AI scraping API designed for efficient web data extraction to power LLM applications and AI agents...",
+    "features": [
+      "Effortless, cost-effective, and AI-powered data extraction",
+      "Handles proxy rotation and rate limits",
+      "Supports a wide variety of websites"
+    ],
+    "contact_email": "contact@scrapegraphai.com",
+    "social_links": {
+      "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+      "linkedin": "https://www.linkedin.com/company/101881123",
+      "twitter": "https://x.com/scrapegraphai"
+    }
+  },
+  "error": ""
+}
+```
+
+The response includes:
+- `request_id`: Unique identifier for tracking your request
+- `status`: Current status of the extraction ("completed", "running", "failed")
+- `result`: The extracted data in structured JSON format
+- `error`: Error message (if any occurred during extraction)
+</Accordion>
+
+<Accordion title="Using Your Own HTML" icon="code">
+Instead of providing a URL, you can optionally pass your own HTML content:
+
+```python
+html_content = """
+<html>
+    <body>
+        <h1>ScrapeGraphAI</h1>
+        <div class="description">
+            <p>AI-powered web scraping for modern applications.</p>
+        </div>
+        <div class="features">
+            <ul>
+                <li>Smart Extraction</li>
+                <li>Local Processing</li>
+                <li>Schema Support</li>
+            </ul>
+        </div>
+    </body>
+</html>
+"""
+
+response = client.smartscraper(
+    website_html=html_content,  # This will override website_url if both are provided
+    user_prompt="Extract info about the company"
+)
+```
+
+This is useful when:
+- You already have the HTML content cached
+- You want to process modified HTML
+- You're working with dynamically generated content
+- You need to process content offline
+- You want to pre-process the HTML before extraction
+
+<Note>
+When both `website_url` and `website_html` are provided, `website_html` takes precedence and will be used for extraction.
+</Note>
+</Accordion>
+
 ## Key Features
 
 <CardGroup cols={2}>
@@ -56,58 +149,6 @@ Try SmartScraper instantly in our [interactive playground](https://dashboard.scr
 <Note>
 Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
 </Note>
-
-## Getting Started
-
-### Quick Start
-
-```python
-from scrapegraph_py import Client
-
-client = Client(api_key="your-api-key")
-
-response = client.smartscraper(
-    website_url="https://scrapegraphai.com/",
-    user_prompt="Extract info about the company"
-)
-```
-
-<Note>
-Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
-</Note>
-
-<Accordion title="Example Response" icon="terminal">
-```json
-{
-  "request_id": "sg-req-abc123",
-  "status": "completed",
-  "website_url": "https://scrapegraphai.com/",
-  "user_prompt": "Extract info about the company",
-  "result": {
-    "company_name": "ScrapeGraphAI",
-    "description": "ScrapeGraphAI is a powerful AI scraping API designed for efficient web data extraction to power LLM applications and AI agents...",
-    "features": [
-      "Effortless, cost-effective, and AI-powered data extraction",
-      "Handles proxy rotation and rate limits",
-      "Supports a wide variety of websites"
-    ],
-    "contact_email": "contact@scrapegraphai.com",
-    "social_links": {
-      "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
-      "linkedin": "https://www.linkedin.com/company/101881123",
-      "twitter": "https://x.com/scrapegraphai"
-    }
-  },
-  "error": ""
-}
-```
-
-The response includes:
-- `request_id`: Unique identifier for tracking your request
-- `status`: Current status of the extraction ("completed", "running", "failed")
-- `result`: The extracted data in structured JSON format
-- `error`: Error message (if any occurred during extraction)
-</Accordion>
 
 ## Advanced Usage
 
