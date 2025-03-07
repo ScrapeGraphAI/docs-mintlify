@@ -1,0 +1,158 @@
+---
+title: '🌊 Langflow'
+description: 'Build LangChain flows with a drag-and-drop interface and advanced web scraping integration'
+---
+
+## Overview
+
+Langflow is a powerful UI tool for building LangChain applications through a drag-and-drop interface. It provides an intuitive way to prototype and experiment with various LangChain components, enabling you to create complex AI workflows with ease. A standout feature is its seamless integration with advanced web scraping tools like **ScrapeGraph**, which significantly enhances the ability to fetch, analyze, and utilize web data dynamically.
+
+<Card
+  title="Official Langflow Documentation"
+  icon="book"
+  href="https://docs.langflow.org"
+>
+  View Langflow's official documentation
+</Card>
+
+<video 
+  controls
+  className="w-full aspect-video"
+  src="/integrations/images/langflow.mp4"
+/>
+
+## Installation
+
+Install Langflow using pip:
+
+```bash
+pip install langflow
+```
+
+Or run it using Docker:
+
+```bash
+docker run -p 7860:7860 logspace/langflow
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Drag & Drop Interface" icon="hand">
+    Build LangChain flows visually without coding.
+  </Card>
+  <Card title="Component Library" icon="boxes-stacked">
+    Access a wide range of LangChain components including powerful integrations like ScrapeGraph.
+  </Card>
+  <Card title="Real-time Preview" icon="eye">
+    Test your flows as you build them.
+  </Card>
+  <Card title="Export & Share" icon="share-nodes">
+    Export flows as JSON or Python code.
+  </Card>
+</CardGroup>
+
+## Example: Search Agent with ScrapeGraph Integration
+
+Langflow's Search Agent Flow showcases how to integrate advanced web scraping directly into your AI workflows. This flow leverages the ScrapeGraph Search API to fetch and analyze data from the web based on a given search prompt.
+
+### Why ScrapeGraph Matters
+
+Integrating ScrapeGraph into Langflow is a game changer because it:
+
+- **Dynamically Retrieves Information**: Empowers your agent to perform real-time web searches and scraping, ensuring access to the latest data.
+- **Enhances Decision Making**: Supplies rich, up-to-date information that agents can use to generate more accurate and context-aware responses.
+- **Simplifies Workflow Development**: Offers a plug-and-play component that bridges web scraping with LangChain workflows, reducing the need for manual data integration.
+
+Below is an excerpt of the integration, which is defined as a node in the flow:
+
+```json
+{
+  "description": "A search agent that can find and analyze information from the internet using ScrapeGraph.",
+  "name": "Search Agent Flow",
+  "data": {
+    "nodes": [
+      // ... nodes configuration from the example, including the ScrapeGraphSearchApi node
+    ]
+  }
+}
+```
+
+For the complete integration details, visit the Search Agent JSON file on GitHub.
+
+## Getting Started
+
+1. **Install and Launch Langflow**: Follow the installation steps above.
+2. **Access the UI**: Open your browser and navigate to http://localhost:7860.
+3. **Build Your Flow**: Start dragging components from the sidebar, including the ScrapeGraph node.
+4. **Connect Components**: Link nodes to create a workflow that incorporates web search and data processing.
+5. **Test Your Flow**: Use the chat interface to simulate queries and see real-time responses.
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Chatbots" icon="comments">
+    Create conversational AI agents enhanced with real-time web data.
+  </Card>
+  <Card title="Data Processing" icon="database">
+    Build pipelines to extract, process, and analyze data from websites.
+  </Card>
+  <Card title="Research Tools" icon="magnifying-glass">
+    Develop research assistants that fetch current information directly from the web.
+  </Card>
+  <Card title="Content Generation" icon="pen-fancy">
+    Create dynamic content generation pipelines powered by live data scraping.
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with Langflow?
+
+<CardGroup cols={2}>
+  <Card 
+    title="GitHub Issues" 
+    icon="github" 
+    href="https://github.com/logspace-ai/langflow/issues"
+  >
+    Report bugs and request features.
+  </Card>
+  <Card 
+    title="Discord Community" 
+    icon="discord" 
+    href="https://discord.gg/EqksyE2EX9"
+  >
+    Join the Langflow community.
+  </Card>
+</CardGroup>
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card 
+    title="GitHub Repository" 
+    icon="github" 
+    href="https://github.com/logspace-ai/langflow"
+  >
+    View the source code.
+  </Card>
+  <Card 
+    title="Examples Gallery" 
+    icon="images" 
+    href="https://github.com/logspace-ai/langflow/tree/main/src/backend/base/langflow/initial_setup/starter_projects"
+  >
+    Explore example flows.
+  </Card>
+</CardGroup>
+
+## Langflow Online
+
+Langflow is not only available for local installation—you can also use it online! With the online version, you can access the intuitive drag-and-drop interface directly from your browser, build and test AI workflows in real time, and experiment with powerful integrations like ScrapeGraph without installing any software.
+
+Simply visit our online demo to get started quickly and explore all the features that Langflow offers.
+
+## Search Agent Template
+
+You can download the Search Agent template JSON file from the following link:
+
+[Search Agent JSON Template]() 

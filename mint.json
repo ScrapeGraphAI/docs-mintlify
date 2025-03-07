@@ -113,7 +113,8 @@
         "integrations/langchain",
         "integrations/llamaindex",
         "integrations/crewai",
-        "integrations/agno"
+        "integrations/agno",
+        "integrations/langflow"
       ]
     },
     {
