@@ -195,6 +195,210 @@ Want to learn more about our AI-powered search technology? Visit our [main websi
 
 ## Advanced Usage
 
+### Request Helper Function
+
+The `getSearchScraperRequest` function helps create properly formatted request objects for the SearchScraper service:
+
+```javascript
+import { getSearchScraperRequest } from 'scrapegraph-js';
+
+const request = getSearchScraperRequest({
+  userPrompt: "What is the latest version of Python and its main features?",
+  outputSchema: {
+    version: { type: "string" },
+    release_date: { type: "string" },
+    major_features: { type: "array", items: { type: "string" } }
+  }
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| userPrompt | string | Yes | The search query or question to answer. |
+| headers | object | No | Custom headers for the request. |
+| outputSchema | object | No | Schema defining the structure of the search results. |
+
+#### Return Value
+
+Returns an object with the following structure:
+
+```typescript
+{
+  request_id: string;
+  status: "queued" | "processing" | "completed" | "failed";
+  user_prompt: string;
+  result?: object | null;
+  reference_urls: string[];
+  error: string;
+}
+```
+
+#### Error Handling
+
+The function includes comprehensive error handling:
+
+```javascript
+try {
+  const request = getSearchScraperRequest({
+    userPrompt: "What are the latest AI chip developments?",
+    outputSchema: {
+      manufacturers: { type: "array" },
+      technologies: { type: "object" }
+    }
+  });
+} catch (error) {
+  if (error.code === 'INVALID_PROMPT') {
+    console.error('The search prompt is invalid or empty');
+  } else if (error.code === 'SCHEMA_VALIDATION') {
+    console.error('The output schema is invalid:', error.details);
+  } else if (error.code === 'MISSING_REQUIRED') {
+    console.error('Required parameters are missing');
+  } else {
+    console.error('An unexpected error occurred:', error);
+  }
+}
+```
+
+#### Advanced Examples
+
+##### Complex Search Queries
+
+```javascript
+const request = getSearchScraperRequest({
+  userPrompt: "Compare the top 3 cloud providers (AWS, Azure, GCP) focusing on ML services pricing and features",
+  outputSchema: {
+    providers: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          ml_services: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                pricing: { type: "string" },
+                features: { type: "array", items: { type: "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    comparison_matrix: { type: "object" },
+    recommendation: { type: "string" }
+  }
+});
+```
+
+##### Time-Sensitive Searches
+
+```javascript
+const request = getSearchScraperRequest({
+  userPrompt: "Latest cryptocurrency market trends in the past 24 hours",
+  headers: {
+    // Headers for real-time data sources
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache"
+  },
+  outputSchema: {
+    timestamp: { type: "string" },
+    trends: { type: "array" },
+    market_summary: { type: "object" }
+  }
+});
+```
+
+#### Best Practices
+
+1. **Query Optimization**
+   - Be specific and clear in your prompts
+   - Include relevant context
+   - Use appropriate keywords
+
+```javascript
+// Good prompt example
+const request = getSearchScraperRequest({
+  userPrompt: "Compare iPhone 15 Pro Max and Samsung S24 Ultra specifications, focusing on camera capabilities, battery life, and performance benchmarks"
+});
+
+// Less effective prompt
+const badRequest = getSearchScraperRequest({
+  userPrompt: "Compare phones" // Too vague
+});
+```
+
+2. **Schema Design**
+   - Start with essential fields
+   - Use appropriate data types
+   - Include field descriptions
+   - Handle nested data properly
+
+```javascript
+const schema = {
+  comparison: {
+    type: "object",
+    properties: {
+      date: { type: "string", description: "Comparison date" },
+      devices: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            specs: { type: "object" },
+            pros: { type: "array" },
+            cons: { type: "array" }
+          }
+        }
+      }
+    }
+  }
+};
+```
+
+3. **Error Recovery**
+   - Implement retry logic
+   - Handle rate limits
+   - Cache results when appropriate
+
+```javascript
+import { getSearchScraperRequest, retry } from 'scrapegraph-js';
+
+const searchWithRetry = retry(async (prompt) => {
+  const request = await getSearchScraperRequest({
+    userPrompt: prompt
+  });
+  return request;
+}, {
+  retries: 3,
+  backoff: {
+    initial: 1000,
+    multiplier: 2,
+    maxDelay: 10000
+  }
+});
+```
+
+4. **Performance Optimization**
+   - Use caching for repeated searches
+   - Batch related queries
+   - Monitor API usage
+
+```javascript
+import { cache } from 'scrapegraph-js/utils';
+
+const cachedSearch = cache(getSearchScraperRequest, {
+  ttl: 1800, // Cache for 30 minutes
+  maxSize: 50, // Cache up to 50 requests
+  keyGenerator: (params) => params.userPrompt // Cache key based on prompt
+});
+```
+
 ### Custom Schema Example
 
 Define exactly what data you want to extract using Pydantic or Zod:

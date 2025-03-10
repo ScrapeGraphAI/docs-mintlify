@@ -130,6 +130,151 @@ Want to learn more about our AI-powered scraping technology? Visit our [main web
 
 ## Advanced Usage
 
+### Request Helper Function
+
+The `getMarkdownifyRequest` function helps create properly formatted request objects for the Markdownify service:
+
+```javascript
+import { getMarkdownifyRequest } from 'scrapegraph-js';
+
+const request = getMarkdownifyRequest({
+  websiteUrl: "https://example.com/article",
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  }
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
+| headers | object | No | Custom headers for the request (e.g., User-Agent, cookies). |
+
+#### Return Value
+
+Returns an object with the following structure:
+
+```typescript
+{
+  request_id: string;
+  status: "queued" | "processing" | "completed" | "failed";
+  website_url: string;
+  result?: string | null;
+  error: string;
+}
+```
+
+#### Error Handling
+
+The function includes built-in error handling for common scenarios:
+
+```javascript
+try {
+  const request = getMarkdownifyRequest({
+    websiteUrl: "https://example.com/article"
+  });
+} catch (error) {
+  if (error.code === 'INVALID_URL') {
+    console.error('The provided URL is not valid');
+  } else if (error.code === 'MISSING_REQUIRED') {
+    console.error('Required parameters are missing');
+  } else {
+    console.error('An unexpected error occurred:', error);
+  }
+}
+```
+
+#### Advanced Examples
+
+##### Using Custom Headers
+
+```javascript
+const request = getMarkdownifyRequest({
+  websiteUrl: "https://example.com/article",
+  headers: {
+    "User-Agent": "Custom User Agent",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cookie": "session=abc123; user=john",
+    "Authorization": "Bearer your-auth-token"
+  }
+});
+```
+
+##### Handling Dynamic Content
+
+For websites with dynamic content, you might need to adjust the request:
+
+```javascript
+const request = getMarkdownifyRequest({
+  websiteUrl: "https://example.com/dynamic-content",
+  headers: {
+    // Headers to handle dynamic content
+    "X-Requested-With": "XMLHttpRequest",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
+    // Add any required session cookies
+    "Cookie": "dynamicContent=enabled; sessionId=xyz789"
+  }
+});
+```
+
+#### Best Practices
+
+1. **URL Validation**
+   - Always validate URLs before making requests
+   - Ensure URLs use HTTPS when possible
+   - Handle URL encoding properly
+
+```javascript
+import { isValidUrl } from 'scrapegraph-js/utils';
+
+const url = "https://example.com/article with spaces";
+const encodedUrl = encodeURI(url);
+
+if (isValidUrl(encodedUrl)) {
+  const request = getMarkdownifyRequest({ websiteUrl: encodedUrl });
+}
+```
+
+2. **Header Management**
+   - Use appropriate User-Agent strings
+   - Include necessary cookies for authenticated content
+   - Set proper Accept headers
+
+3. **Error Recovery**
+   - Implement retry logic for transient failures
+   - Cache successful responses when appropriate
+   - Log errors for debugging
+
+```javascript
+import { getMarkdownifyRequest, retry } from 'scrapegraph-js';
+
+const makeRequest = retry(async () => {
+  const request = await getMarkdownifyRequest({
+    websiteUrl: "https://example.com/article"
+  });
+  return request;
+}, {
+  retries: 3,
+  backoff: true
+});
+```
+
+4. **Performance Optimization**
+   - Batch requests when possible
+   - Use caching strategies
+   - Monitor API usage
+
+```javascript
+import { cache } from 'scrapegraph-js/utils';
+
+const cachedRequest = cache(getMarkdownifyRequest, {
+  ttl: 3600, // Cache for 1 hour
+  maxSize: 100 // Cache up to 100 requests
+});
+```
+
 ### Async Support
 
 For applications requiring asynchronous execution, Markdownify provides async support through the `AsyncClient`:

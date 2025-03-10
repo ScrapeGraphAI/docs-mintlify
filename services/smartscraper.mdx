@@ -189,6 +189,234 @@ Want to learn more about our AI-powered scraping technology? Visit our [main web
 
 ## Advanced Usage
 
+### Request Helper Function
+
+The `getSmartScraperRequest` function helps create properly formatted request objects for the SmartScraper service:
+
+```javascript
+import { getSmartScraperRequest } from 'scrapegraph-js';
+
+const request = getSmartScraperRequest({
+  websiteUrl: "https://example.com",
+  userPrompt: "Extract product details including name, price, and description",
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  outputSchema: {
+    name: { type: "string" },
+    price: { type: "number" },
+    description: { type: "string" }
+  }
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| websiteUrl | string | Yes* | The URL of the website to scrape. Either websiteUrl or websiteHtml must be provided. |
+| userPrompt | string | Yes | Natural language description of what data to extract. |
+| websiteHtml | string | No | HTML content to process instead of fetching from URL. |
+| headers | object | No | Custom headers for the request (e.g., User-Agent, cookies). |
+| outputSchema | object | No | Schema defining the structure of the extracted data. |
+
+\* Either websiteUrl or websiteHtml must be provided.
+
+#### Return Value
+
+Returns an object with the following structure:
+
+```typescript
+{
+  request_id: string;
+  status: "queued" | "processing" | "completed" | "failed";
+  website_url?: string;
+  user_prompt: string;
+  result?: object | null;
+  error: string;
+}
+```
+
+#### Error Handling
+
+The function includes robust error handling for various scenarios:
+
+```javascript
+try {
+  const request = getSmartScraperRequest({
+    websiteUrl: "https://example.com/products",
+    userPrompt: "Extract all product information"
+  });
+} catch (error) {
+  switch (error.code) {
+    case 'INVALID_URL':
+      console.error('The provided URL is not valid');
+      break;
+    case 'INVALID_HTML':
+      console.error('The provided HTML content is invalid');
+      break;
+    case 'SCHEMA_VALIDATION':
+      console.error('Output schema validation failed:', error.details);
+      break;
+    case 'MISSING_REQUIRED':
+      console.error('Required parameters are missing');
+      break;
+    default:
+      console.error('An unexpected error occurred:', error);
+  }
+}
+```
+
+#### Advanced Examples
+
+##### E-commerce Product Extraction
+
+```javascript
+const request = getSmartScraperRequest({
+  websiteUrl: "https://example.com/products/category",
+  userPrompt: "Extract all products from this category page",
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cookie": "currency=USD; country=US"
+  },
+  outputSchema: {
+    category: { type: "string" },
+    products: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          price: { type: "number" },
+          currency: { type: "string" },
+          availability: { type: "boolean" },
+          variants: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                size: { type: "string" },
+                color: { type: "string" },
+                stock: { type: "number" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+});
+```
+
+##### Processing Dynamic Content
+
+```javascript
+// First, get the dynamic content
+const dynamicHtml = await fetchDynamicContent("https://example.com/spa");
+
+const request = getSmartScraperRequest({
+  websiteHtml: dynamicHtml,
+  userPrompt: "Extract the main content section",
+  headers: {
+    "X-Requested-With": "XMLHttpRequest",
+    "Accept": "application/json"
+  }
+});
+```
+
+#### Best Practices
+
+1. **Input Validation**
+   - Validate URLs and HTML content
+   - Check prompt quality and clarity
+   - Verify schema structure
+
+```javascript
+import { validateInput } from 'scrapegraph-js/utils';
+
+const { isValid, errors } = validateInput({
+  url: "https://example.com",
+  html: "<div>content</div>",
+  prompt: "Extract data",
+  schema: { type: "object" }
+});
+
+if (!isValid) {
+  console.error('Validation errors:', errors);
+}
+```
+
+2. **HTML Content Handling**
+   - Clean and normalize HTML
+   - Handle encoding properly
+   - Remove unnecessary scripts
+
+```javascript
+import { cleanHtml } from 'scrapegraph-js/utils';
+
+const cleanedHtml = cleanHtml(rawHtml, {
+  removeScripts: true,
+  removeStyles: true,
+  normalizeWhitespace: true
+});
+
+const request = getSmartScraperRequest({
+  websiteHtml: cleanedHtml,
+  userPrompt: "Extract the content"
+});
+```
+
+3. **Error Recovery**
+   - Implement retry logic
+   - Handle rate limiting
+   - Log errors for debugging
+
+```javascript
+import { getSmartScraperRequest, retry } from 'scrapegraph-js';
+
+const scrapeWithRetry = retry(async (url, prompt) => {
+  const request = await getSmartScraperRequest({
+    websiteUrl: url,
+    userPrompt: prompt
+  });
+  return request;
+}, {
+  retries: 3,
+  backoff: {
+    initial: 1000,
+    multiplier: 2,
+    maxDelay: 10000
+  },
+  onRetry: (error, attempt) => {
+    console.log(`Retry attempt ${attempt} due to: ${error.message}`);
+  }
+});
+```
+
+4. **Performance Optimization**
+   - Use caching strategies
+   - Batch similar requests
+   - Monitor resource usage
+
+```javascript
+import { cache, batch } from 'scrapegraph-js/utils';
+
+// Cache requests
+const cachedScraper = cache(getSmartScraperRequest, {
+  ttl: 3600,
+  maxSize: 100,
+  keyGenerator: (params) => `${params.websiteUrl}-${params.userPrompt}`
+});
+
+// Batch requests
+const batchScraper = batch(getSmartScraperRequest, {
+  maxBatchSize: 10,
+  batchDelay: 1000
+});
+```
+
 ### Custom Schema Example
 
 Define exactly what data you want to extract:
