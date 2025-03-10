@@ -90,11 +90,13 @@ const ArticleSchema = z.object({
   category: z.string().describe('Article category')
 });
 
+const ArticlesArraySchema = z.array(ArticleSchema).describe('Array of articles');
+
 const response = await smartScraper(
   apiKey,
   'https://example.com/blog/article',
   'Extract the article information',
-  ArticleSchema
+  ArticlesArraySchema
 );
 
 console.log(`Title: ${response.result.title}`);
