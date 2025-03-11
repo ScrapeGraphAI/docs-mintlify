@@ -33,23 +33,18 @@ response = client.markdownify(
 ```
 
 ```javascript JavaScript
-import { Client } from 'scrapegraph-js';
+import { markdownify } from 'scrapegraph-js';
 
-// Initialize the client
-const sgai_client = new Client("your-api-key");
+const apiKey = 'your-api-key';
+const url = 'https://scrapegraphai.com/';
 
 try {
-  const response = await sgai_client.markdownify({
-    websiteUrl: "https://example.com"
-  });
-
-  console.log('Request ID:', response.requestId);
-  console.log('Result:', response.result);
+  const response = await markdownify(apiKey, url);
+  console.log(response);
 } catch (error) {
   console.error(error);
-} finally {
-  sgai_client.close();
 }
+
 ```
 
 ```bash cURL
@@ -64,6 +59,13 @@ curl -X 'POST' \
 ```
 
 </CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -128,152 +130,45 @@ The response includes:
 Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
 </Note>
 
-## Advanced Usage
+## Other Functionality
 
-### Request Helper Function
+### Retrieve a previous request
 
-The `getMarkdownifyRequest` function helps create properly formatted request objects for the Markdownify service:
+If you know the response id of a previous request you made, you can retrieve all the information.
 
-```javascript
+<CodeGroup>
+
+```python Python
+// TODO
+```
+
+```javascript JavaScript
 import { getMarkdownifyRequest } from 'scrapegraph-js';
 
-const request = getMarkdownifyRequest({
-  websiteUrl: "https://example.com/article",
-  headers: {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  }
-});
+const apiKey = 'your_api_key';
+const requestId = 'ID_of_previous_request';
+
+try {
+  const requestInfo = await getMarkdownifyRequest(apiKey, requestId);
+  console.log(requestInfo);
+} catch (error) {
+  console.error(error);
+}
 ```
+
+```bash cURL
+// TODO
+```
+
+</CodeGroup>
 
 #### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
-| headers | object | No | Custom headers for the request (e.g., User-Agent, cookies). |
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| requestId | string | Yes | The request ID associated with the output of a previous searchScraper request. |
 
-#### Return Value
-
-Returns an object with the following structure:
-
-```typescript
-{
-  request_id: string;
-  status: "queued" | "processing" | "completed" | "failed";
-  website_url: string;
-  result?: string | null;
-  error: string;
-}
-```
-
-#### Error Handling
-
-The function includes built-in error handling for common scenarios:
-
-```javascript
-try {
-  const request = getMarkdownifyRequest({
-    websiteUrl: "https://example.com/article"
-  });
-} catch (error) {
-  if (error.code === 'INVALID_URL') {
-    console.error('The provided URL is not valid');
-  } else if (error.code === 'MISSING_REQUIRED') {
-    console.error('Required parameters are missing');
-  } else {
-    console.error('An unexpected error occurred:', error);
-  }
-}
-```
-
-#### Advanced Examples
-
-##### Using Custom Headers
-
-```javascript
-const request = getMarkdownifyRequest({
-  websiteUrl: "https://example.com/article",
-  headers: {
-    "User-Agent": "Custom User Agent",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Cookie": "session=abc123; user=john",
-    "Authorization": "Bearer your-auth-token"
-  }
-});
-```
-
-##### Handling Dynamic Content
-
-For websites with dynamic content, you might need to adjust the request:
-
-```javascript
-const request = getMarkdownifyRequest({
-  websiteUrl: "https://example.com/dynamic-content",
-  headers: {
-    // Headers to handle dynamic content
-    "X-Requested-With": "XMLHttpRequest",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
-    // Add any required session cookies
-    "Cookie": "dynamicContent=enabled; sessionId=xyz789"
-  }
-});
-```
-
-#### Best Practices
-
-1. **URL Validation**
-   - Always validate URLs before making requests
-   - Ensure URLs use HTTPS when possible
-   - Handle URL encoding properly
-
-```javascript
-import { isValidUrl } from 'scrapegraph-js/utils';
-
-const url = "https://example.com/article with spaces";
-const encodedUrl = encodeURI(url);
-
-if (isValidUrl(encodedUrl)) {
-  const request = getMarkdownifyRequest({ websiteUrl: encodedUrl });
-}
-```
-
-2. **Header Management**
-   - Use appropriate User-Agent strings
-   - Include necessary cookies for authenticated content
-   - Set proper Accept headers
-
-3. **Error Recovery**
-   - Implement retry logic for transient failures
-   - Cache successful responses when appropriate
-   - Log errors for debugging
-
-```javascript
-import { getMarkdownifyRequest, retry } from 'scrapegraph-js';
-
-const makeRequest = retry(async () => {
-  const request = await getMarkdownifyRequest({
-    websiteUrl: "https://example.com/article"
-  });
-  return request;
-}, {
-  retries: 3,
-  backoff: true
-});
-```
-
-4. **Performance Optimization**
-   - Batch requests when possible
-   - Use caching strategies
-   - Monitor API usage
-
-```javascript
-import { cache } from 'scrapegraph-js/utils';
-
-const cachedRequest = cache(getMarkdownifyRequest, {
-  ttl: 3600, // Cache for 1 hour
-  maxSize: 100 // Cache up to 100 requests
-});
-```
 
 ### Async Support
 
