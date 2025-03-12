@@ -41,26 +41,29 @@ yarn add scrapegraph-js
 
 ## Quick Start
 
-Initialize with your API key:
-
-```javascript
-import { smartScraper } from 'scrapegraph-js';
-
-const apiKey = process.env.SGAI_APIKEY;
-const websiteUrl = 'https://example.com';
-const prompt = 'Extract the main heading and description';
-
-try {
-  const response = await smartScraper(apiKey, websiteUrl, prompt);
-  console.log(response.result);
-} catch (error) {
-  console.error('Error:', error);
-}
-```
+### Basic example
 
 <Note>
 Store your API keys securely in environment variables. Use `.env` files and libraries like `dotenv` to load them into your app.
 </Note>
+
+```javascript
+import { smartScraper } from 'scrapegraph-js';
+import 'dotenv/config';
+
+// Initialize variables
+const apiKey = process.env.SGAI_APIKEY; // Set your API key as an environment variable
+const websiteUrl = 'https://example.com';
+const prompt = 'What does the company do?';
+
+try {
+  const response = await smartScraper(apiKey, websiteUrl, prompt); // call SmartScraper function
+  console.log(response.result);
+} catch (error) {
+  console.error('Error:', error);
+}
+;
+```
 
 ## Services
 
@@ -76,10 +79,19 @@ const response = await smartScraper(
 );
 ```
 
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| websiteUrl | string | Yes | The URL of the webpage that needs to be scraped. |
+| prompt | string | Yes | A textual description of what you want to achieve. |
+| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response. |
+
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
 
-```typescript
+```javascript
 import { z } from 'zod';
 
 const ArticleSchema = z.object({
@@ -108,7 +120,7 @@ console.log(`Published: ${response.result.publishDate}`);
 <Accordion title="Advanced Schema Example" icon="code">
 Define a complex schema for nested data structures:
 
-```typescript
+```javascript
 import { z } from 'zod';
 
 const EmployeeSchema = z.object({
@@ -169,10 +181,18 @@ const response = await searchScraper(
 );
 ```
 
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| prompt | string | Yes | A textual description of what you want to achieve. |
+| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response |
+
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
 
-```typescript
+```javascript
 import { z } from 'zod';
 
 const ArticleSchema = z.object({
@@ -199,7 +219,7 @@ console.log(`Published: ${response.result.publishDate}`);
 <Accordion title="Advanced Schema Example" icon="code">
 Define a complex schema for nested data structures:
 
-```typescript
+```javascript
 import { z } from 'zod';
 
 const EmployeeSchema = z.object({
@@ -230,19 +250,6 @@ const response = await searchScraper(
   'Find the best restaurants in San Francisco',
   RestaurantSchema
 );
-
-
-
-// Access nested data
-console.log(`Restaurant: ${response.result.name}`);
-console.log('\nAddress:');
-response.result.address.forEach(address => {
-  console.log(`- ${address}`);
-});
-
-
-console.log('\nRating:');
-console.log(`- ${response.result.rating}`);
 ```
 </Accordion>
 
@@ -258,6 +265,12 @@ const response = await markdownify(
   'https://example.com'
 );
 ```
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
 
 ## API Credits
 
