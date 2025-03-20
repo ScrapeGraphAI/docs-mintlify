@@ -218,7 +218,14 @@ try {
 ```
 
 ```bash cURL
-// TODO
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/searchscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: sgai-********************' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "user_prompt": "Search for information"
+}'
 ```
 
 </CodeGroup>
@@ -291,31 +298,238 @@ try {
 
 </CodeGroup>
 
-### Async Support
+### Advanced Schema Usage
 
-For applications requiring asynchronous execution:
+The schema system in SearchScraper is a powerful way to ensure you get exactly the data structure you need. Here are some advanced techniques for using schemas effectively:
+
+#### Nested Schemas
+
+You can create complex nested structures to capture hierarchical data:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class Author(BaseModel):
+    name: str = Field(description="Author's full name")
+    bio: Optional[str] = Field(description="Author's biography")
+    expertise: List[str] = Field(description="Areas of expertise")
+
+class Article(BaseModel):
+    title: str = Field(description="Article title")
+    content: str = Field(description="Main article content")
+    author: Author = Field(description="Article author information")
+    publication_date: str = Field(description="Date of publication")
+    tags: List[str] = Field(description="Article tags or categories")
+
+response = client.searchscraper(
+    user_prompt="Find the latest AI research articles",
+    output_schema=Article
+)
+```
+
+```typescript JavaScript
+import { z } from 'zod';
+
+const Author = z.object({
+  name: z.string().describe("Author's full name"),
+  bio: z.string().optional().describe("Author's biography"),
+  expertise: z.array(z.string()).describe("Areas of expertise")
+});
+
+const Article = z.object({
+  title: z.string().describe("Article title"),
+  content: z.string().describe("Main article content"),
+  author: Author.describe("Article author information"),
+  publicationDate: z.string().describe("Date of publication"),
+  tags: z.array(z.string()).describe("Article tags or categories")
+});
+
+const response = await searchScraper(apiKey, prompt, Article);
+```
+
+</CodeGroup>
+
+#### Schema Validation Rules
+
+Enhance data quality by adding validation rules to your schema:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field, validator
+from typing import List
+from datetime import datetime
+
+class ProductInfo(BaseModel):
+    name: str = Field(description="Product name")
+    price: float = Field(description="Product price", gt=0)
+    currency: str = Field(description="Currency code", max_length=3)
+    release_date: str = Field(description="Product release date")
+    
+    @validator('currency')
+    def validate_currency(cls, v):
+        if len(v) != 3 or not v.isupper():
+            raise ValueError('Currency must be a 3-letter uppercase code')
+        return v
+        
+    @validator('release_date')
+    def validate_date(cls, v):
+        try:
+            datetime.strptime(v, '%Y-%m-%d')
+            return v
+        except ValueError:
+            raise ValueError('Date must be in YYYY-MM-DD format')
+```
+
+```typescript JavaScript
+import { z } from 'zod';
+
+const ProductInfo = z.object({
+  name: z.string().min(1).describe("Product name"),
+  price: z.number().positive().describe("Product price"),
+  currency: z.string().length(3).toUpperCase()
+    .describe("Currency code"),
+  releaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+    .describe("Product release date")
+});
+```
+
+</CodeGroup>
+
+### Quality Improvement Tips
+
+To get the highest quality results from SearchScraper, follow these best practices:
+
+#### 1. Detailed Field Descriptions
+
+Always provide clear, detailed descriptions for each field in your schema:
 
 ```python
-from scrapegraph_py import AsyncClient
+class CompanyInfo(BaseModel):
+    revenue: str = Field(
+        description="Annual revenue in USD, including the year of reporting"
+        # Good: "Annual revenue in USD, including the year of reporting"
+        # Bad: "Revenue"
+    )
+    market_position: str = Field(
+        description="Company's market position including market share percentage and rank among competitors"
+        # Good: "Company's market position including market share percentage and rank among competitors"
+        # Bad: "Position"
+    )
+```
+
+#### 2. Structured Prompts
+
+Combine schemas with well-structured prompts for better results:
+
+```python
+response = client.searchscraper(
+    user_prompt="""
+    Find information about Tesla's electric vehicles with specific focus on:
+    - Latest Model 3 and Model Y specifications
+    - Current pricing structure
+    - Available customization options
+    - Delivery timeframes
+    Please include only verified information from official sources.
+    """,
+    output_schema=TeslaVehicleInfo
+)
+```
+
+#### 3. Data Validation
+
+Implement comprehensive validation to ensure data quality:
+
+```python
+from pydantic import BaseModel, Field, validator
+from typing import List, Optional
+from datetime import datetime
+
+class MarketData(BaseModel):
+    timestamp: str = Field(description="Data timestamp in ISO format")
+    value: float = Field(description="Market value")
+    confidence_score: float = Field(description="Confidence score between 0 and 1")
+    
+    @validator('timestamp')
+    def validate_timestamp(cls, v):
+        try:
+            datetime.fromisoformat(v)
+            return v
+        except ValueError:
+            raise ValueError('Invalid ISO timestamp format')
+    
+    @validator('confidence_score')
+    def validate_confidence(cls, v):
+        if not 0 <= v <= 1:
+            raise ValueError('Confidence score must be between 0 and 1')
+        return v
+```
+
+#### 4. Error Handling
+
+Implement robust error handling for schema validation:
+
+```python
+try:
+    response = client.searchscraper(
+        user_prompt="Find market data for NASDAQ:AAPL",
+        output_schema=MarketData
+    )
+    validated_data = MarketData(**response.result)
+except ValidationError as e:
+    print(f"Data validation failed: {e.json()}")
+    # Implement fallback logic or error reporting
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
+```
+
+### Async Support
+
+Example of using the async searchscraper functionality to search for information concurrently:
+
+```python
 import asyncio
+from scrapegraph_py import AsyncClient
+from scrapegraph_py.logger import sgai_logger
+
+sgai_logger.set_logging(level="INFO")
 
 async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        
-        response = await client.searchscraper(
-            user_prompt="Analyze the current AI chip market",
-        )
-        
-        # Process the structured results
-        market_data = response.result
-        print(f"Market Size: {market_data['market_overview']['total_size']}")
-        print(f"Growth Rate: {market_data['market_overview']['growth_rate']}")
-        print("\nKey Players:")
-        for player in market_data['market_overview']['key_players']:
-            print(f"- {player}")
+    # Initialize async client
+    sgai_client = AsyncClient(api_key="your-api-key-here")
 
-# Run the async function
-asyncio.run(main())
+    # List of search queries
+    queries = [
+        "What is the latest version of Python and what are its main features?",
+        "What are the key differences between Python 2 and Python 3?",
+        "What is Python's GIL and how does it work?",
+    ]
+
+    # Create tasks for concurrent execution
+    tasks = [sgai_client.searchscraper(user_prompt=query) for query in queries]
+
+    # Execute requests concurrently
+    responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Process results
+    for i, response in enumerate(responses):
+        if isinstance(response, Exception):
+            print(f"\nError for query {i+1}: {response}")
+        else:
+            print(f"\nSearch {i+1}:")
+            print(f"Query: {queries[i]}")
+            print(f"Result: {response['result']}")
+            print("Reference URLs:")
+            for url in response["reference_urls"]:
+                print(f"- {url}")
+
+    await sgai_client.close()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Integration Options

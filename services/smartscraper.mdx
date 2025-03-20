@@ -270,23 +270,159 @@ try {
 
 ### Async Support
 
-For applications requiring asynchronous execution, SmartScraper provides async support through the `AsyncClient`:
+For applications requiring asynchronous execution, SmartScraper provides comprehensive async support through the `AsyncClient`:
 
-```python
-from scrapegraph_py import AsyncClient
+<CodeGroup>
+
+```python Python
 import asyncio
+from scrapegraph_py import AsyncClient
+from pydantic import BaseModel, Field
+
+# Define your schema
+class WebpageSchema(BaseModel):
+    title: str = Field(description="The title of the webpage")
+    description: str = Field(description="The description of the webpage")
+    summary: str = Field(description="A brief summary of the webpage")
 
 async def main():
+    # Initialize the async client
     async with AsyncClient(api_key="your-api-key") as client:
-        response = await client.smartscraper(
-            website_url="https://example.com",
-            user_prompt="Extract the main content"
-        )
-        print(response)
+        # List of URLs to analyze
+        urls = [
+            "https://scrapegraphai.com/",
+            "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+        ]
+
+        # Create scraping tasks for each URL
+        tasks = [
+            client.smartscraper(
+                website_url=url,
+                user_prompt="Summarize the main content",
+                output_schema=WebpageSchema
+            )
+            for url in urls
+        ]
+
+        # Execute requests concurrently
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Process results
+        for i, response in enumerate(responses):
+            if isinstance(response, Exception):
+                print(f"Error for {urls[i]}: {response}")
+            else:
+                print(f"Result for {urls[i]}: {response['result']}")
 
 # Run the async function
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
+
+```javascript JavaScript
+import { AsyncSmartScraper } from 'scrapegraph-js';
+import { z } from 'zod';
+
+// Define schema using Zod
+const WebpageSchema = z.object({
+  title: z.string().describe('The title of the webpage'),
+  description: z.string().describe('The description of the webpage'),
+  summary: z.string().describe('A brief summary of the webpage')
+});
+
+async function scrapeMultiplePages() {
+  const apiKey = 'your-api-key';
+  const scraper = new AsyncSmartScraper(apiKey);
+  
+  const urls = [
+    'https://scrapegraphai.com/',
+    'https://github.com/ScrapeGraphAI/Scrapegraph-ai'
+  ];
+
+  try {
+    const results = await Promise.all(
+      urls.map(url => 
+        scraper.extract({
+          url,
+          prompt: 'Summarize the main content',
+          schema: WebpageSchema
+        })
+      )
+    );
+    
+    results.forEach((result, index) => {
+      console.log(`Results for ${urls[index]}:`, result);
+    });
+  } catch (error) {
+    console.error('Error during scraping:', error);
+  }
+}
+
+scrapeMultiplePages();
+```
+
+</CodeGroup>
+
+### SmartScraper Endpoint
+
+The SmartScraper endpoint is our core service for extracting structured data from any webpage using advanced language models. It automatically adapts to different website layouts and content types, enabling quick and reliable data extraction.
+
+#### Key Capabilities
+
+- **Universal Compatibility**: Works with any website structure, including JavaScript-rendered content
+- **Schema Validation**: Supports both Pydantic (Python) and Zod (JavaScript) schemas
+- **Concurrent Processing**: Efficient handling of multiple URLs through async support
+- **Custom Extraction**: Flexible user prompts for targeted data extraction
+
+#### Endpoint Details
+
+```bash
+POST https://api.scrapegraphai.com/v1/smartscraper
+```
+
+##### Required Headers
+| Header | Description |
+|--------|-------------|
+| SGAI-APIKEY | Your API authentication key |
+| Content-Type | application/json |
+
+##### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| website_url | string | Yes* | URL to scrape (*either this or website_html required) |
+| website_html | string | No | Raw HTML content to process |
+| user_prompt | string | Yes | Instructions for data extraction |
+| output_schema | object | No | Pydantic or Zod schema for response validation |
+
+##### Response Format
+```json
+{
+  "request_id": "sg-req-abc123",
+  "status": "completed",
+  "website_url": "https://example.com",
+  "result": {
+    // Structured data based on schema or extraction prompt
+  },
+  "error": null
+}
+```
+
+#### Best Practices
+
+1. **Schema Definition**:
+   - Define schemas to ensure consistent data structure
+   - Use descriptive field names and types
+   - Include field descriptions for better extraction accuracy
+
+2. **Async Processing**:
+   - Use async clients for concurrent requests
+   - Implement proper error handling
+   - Monitor rate limits and implement backoff strategies
+
+3. **Error Handling**:
+   - Always wrap requests in try-catch blocks
+   - Check response status before processing
+   - Implement retry logic for failed requests
 
 ## Integration Options
 
