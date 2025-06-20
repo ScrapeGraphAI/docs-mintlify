@@ -363,6 +363,95 @@ scrapeMultiplePages();
 
 </CodeGroup>
 
+### Infinite Scroll Support
+
+SmartScraper can handle infinite scroll pages by automatically scrolling to load more content before extraction. This is perfect for social media feeds, e-commerce product listings, and other dynamic content.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+from scrapegraph_py.logger import sgai_logger
+from pydantic import BaseModel
+from typing import List
+
+sgai_logger.set_logging(level="INFO")
+
+# Define the output schema
+class Company(BaseModel):
+    name: str
+    category: str
+    location: str
+
+class CompaniesResponse(BaseModel):
+    companies: List[Company]
+
+# Initialize the client with explicit API key
+sgai_client = Client(api_key="sgai-api-key")
+
+try:
+    # SmartScraper request with infinite scroll
+    response = sgai_client.smartscraper(
+        website_url="https://www.ycombinator.com/companies?batch=Spring%202025",
+        user_prompt="Extract all company names and their categories from the page",
+        output_schema=CompaniesResponse,
+        number_of_scrolls=10  # Scroll 10 times to load more companies
+    )
+
+    # Print the response
+    print(f"Request ID: {response['request_id']}")
+    
+    # Parse and print the results in a structured way
+    result = CompaniesResponse.model_validate(response['result'])
+    print("\nExtracted Companies:")
+    print("-" * 80)
+    for company in result.companies:
+        print(f"Name: {company.name}")
+        print(f"Category: {company.category}")
+        print(f"Location: {company.location}")
+        print("-" * 80)
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+
+finally:
+    sgai_client.close()
+```
+
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+import 'dotenv/config';
+
+const apiKey = process.env.SGAI_APIKEY;
+// Example URL that requires scrolling (e.g., a social media feed or infinite scroll page)
+const url = 'https://example.com/infinite-scroll-page';
+const prompt = 'Extract all the posts from the feed';
+const numberOfScrolls = 10; // Will scroll 10 times to load more content
+
+try {
+  const response = await smartScraper(apiKey, url, prompt, null, numberOfScrolls);
+  console.log('Extracted data from scrolled page:', response);
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+</CodeGroup>
+
+#### Parameters for Infinite Scroll
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| number_of_scrolls | number | No | Number of times to scroll down to load more content (default: 0) |
+
+<Note>
+Infinite scroll is particularly useful for:
+- Social media feeds (Twitter, Instagram, LinkedIn)
+- E-commerce product listings
+- News websites with continuous scrolling
+- Any page that loads content dynamically as you scroll
+</Note>
+
 ### SmartScraper Endpoint
 
 The SmartScraper endpoint is our core service for extracting structured data from any webpage using advanced language models. It automatically adapts to different website layouts and content types, enabling quick and reliable data extraction.
