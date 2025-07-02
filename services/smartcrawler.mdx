@@ -1,0 +1,378 @@
+---
+title: 'SmartCrawler'
+description: 'AI-powered website crawling and multi-page extraction'
+icon: 'spider'
+---
+
+<Frame>
+  <img src="/services/images/searchscraper-banner.png" alt="SmartCrawler Service" />
+</Frame>
+
+## Overview
+
+SmartCrawler is our advanced LLM-powered web crawling and extraction service. Unlike SmartScraper, which extracts data from a single page, SmartCrawler can traverse multiple pages, follow links, and extract structured data from entire websites or sections, all guided by your prompt and schema.
+
+<Note>
+Try SmartCrawler instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartcrawler(
+    url="https://scrapegraphai.com/",
+    prompt="Extract info about the company",
+    depth=2,
+    max_pages=10
+)
+```
+
+```javascript JavaScript
+import { smartCrawler } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+const url = 'https://scrapegraphai.com';
+const prompt = 'Extract info about the company';
+const depth = 2;
+const maxPages = 10;
+
+try {
+  const response = await smartCrawler(apiKey, url, prompt, depth, maxPages);
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/crawl' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "url": "https://scrapegraphai.com/",
+  "prompt": "Extract info about the company",
+  "depth": 2,
+  "max_pages": 10
+}'
+```
+
+</CodeGroup>
+
+##### Required Headers
+| Header | Description |
+|--------|-------------|
+| SGAI-APIKEY | Your API authentication key |
+| Content-Type | application/json |
+
+#### Parameters
+
+| Parameter         | Type    | Required | Description |
+|-------------------|---------|----------|-------------|
+| url               | string  | Yes      | The starting URL for the crawl. |
+| prompt            | string  | Yes      | Instructions for what to extract. |
+| depth             | int     | No       | How many link levels to follow (default: 1). |
+| max_pages         | int     | No       | Maximum number of pages to crawl (default: 20). |
+| schema            | object  | No       | Pydantic or Zod schema for structured output. |
+| rules             | object  | No       | Crawl rules (see below). |
+| sitemap           | bool    | No       | Use sitemap.xml for discovery (default: false). |
+
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+### Crawl Rules
+
+You can control the crawl behavior with the `rules` object:
+
+```python Python
+rules = {
+    "exclude": ["/logout", "/private"],  # List of URL patterns to exclude
+    "same_domain": True  # Only crawl links on the same domain
+}
+```
+
+| Field        | Type    | Default | Description |
+|--------------|---------|---------|-------------|
+| exclude      | list    | []      | List of URL substrings to skip |
+| same_domain  | bool    | True    | Restrict crawl to the same domain |
+
+### Example Response
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "status": "success",
+  "result": {
+    "status": "done",
+    "llm_result": {
+      "company": {
+        "name": "ScrapeGraphAI, Inc",
+        "description": "ScrapeGraphAI is a company that provides web scraping services using artificial intelligence...",
+        "features": ["AI Agent Ready", "Universal Data Extraction", ...],
+        "contact_email": "contact@scrapegraphai.com",
+        "social_links": {
+          "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+          "linkedin": "https://www.linkedin.com/company/101881123",
+          "twitter": "https://x.com/scrapegraphai"
+        }
+      },
+      "services": [
+        {"service_name": "Markdownify", ...},
+        {"service_name": "Smart Scraper", ...}
+      ],
+      "legal": {
+        "privacy_policy": "https://scrapegraphai.com/privacy",
+        "terms_of_service": "https://scrapegraphai.com/terms"
+      }
+    },
+    "crawled_urls": [
+      "https://scrapegraphai.com/", ...
+    ],
+    "pages": [
+      {
+        "url": "https://scrapegraphai.com/",
+        "markdown": "# Transform Websites into Structured Data\n..."
+      },
+      ...
+    ]
+  }
+}
+```
+
+- `llm_result`: Structured extraction based on your prompt/schema
+- `crawled_urls`: List of all URLs visited
+- `pages`: List of objects with `url` and extracted `markdown` content
+</Accordion>
+
+### Retrieve a Previous Crawl
+
+You can retrieve the result of a crawl job by its task ID:
+
+<CodeGroup>
+
+```python Python
+result = client.get_crawl_result(task_id="your-task-id")
+```
+
+```javascript JavaScript
+import { getCrawlResult } from 'scrapegraph-js';
+const apiKey = 'your_api_key';
+const taskId = 'your-task-id';
+const result = await getCrawlResult(apiKey, taskId);
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type   | Required | Description |
+|-----------|--------|----------|-------------|
+| apiKey    | string | Yes      | The ScrapeGraph API Key. |
+| taskId    | string | Yes      | The crawl job task ID. |
+
+### Custom Schema Example
+
+Define exactly what data you want to extract from every page:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+
+class CompanyData(BaseModel):
+    name: str = Field(description="Company name")
+    description: str = Field(description="Description")
+    features: list[str] = Field(description="Features")
+
+response = client.smartcrawler(
+    url="https://example.com",
+    prompt="Extract company info",
+    schema=CompanyData,
+    depth=1,
+    max_pages=5
+)
+```
+
+```javascript JavaScript
+import { smartCrawler } from 'scrapegraph-js';
+import { z } from 'zod';
+
+const CompanySchema = z.object({
+  name: z.string().describe('Company name'),
+  description: z.string().describe('Description'),
+  features: z.array(z.string()).describe('Features')
+});
+
+const response = await smartCrawler(apiKey, url, prompt, 1, 5, CompanySchema);
+```
+
+</CodeGroup>
+
+### Async Support
+
+SmartCrawler supports async execution for large crawls:
+
+<CodeGroup>
+
+```python Python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        task = await client.smartcrawler(
+            url="https://scrapegraphai.com/",
+            prompt="Extract info about the company",
+            depth=2,
+            max_pages=10
+        )
+        # Poll for result
+        result = await client.get_crawl_result(task["task_id"])
+        print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+```javascript JavaScript
+import { AsyncSmartCrawler } from 'scrapegraph-js';
+const scraper = new AsyncSmartCrawler(apiKey);
+const task = await scraper.crawl({ url, prompt, depth: 2, maxPages: 10 });
+const result = await scraper.getResult(task.taskId);
+```
+
+</CodeGroup>
+
+### Infinite Scroll Support
+
+SmartCrawler can handle infinite scroll pages by scrolling on each page before extraction. Use `number_of_scrolls` to control this.
+
+| Parameter         | Type    | Required | Description |
+|-------------------|---------|----------|-------------|
+| number_of_scrolls | int     | No       | Number of scrolls per page (default: 0) |
+
+<Note>
+Infinite scroll is useful for:
+- Social media feeds
+- E-commerce listings
+- News sites with continuous scroll
+</Note>
+
+### Validation & Error Handling
+
+SmartCrawler performs advanced validation:
+- Ensures either `url` or `website_html` is provided
+- Validates HTML size (max 2MB)
+- Checks for valid URLs and HTML structure
+- Handles empty or invalid prompts
+- Returns clear error messages for all validation failures
+
+### Endpoint Details
+
+```bash
+POST https://api.scrapegraphai.com/v1/crawl
+```
+
+##### Required Headers
+| Header        | Description                  |
+|---------------|-----------------------------|
+| SGAI-APIKEY   | Your API authentication key |
+| Content-Type  | application/json            |
+
+#### Request Body
+| Field            | Type    | Required | Description |
+|------------------|---------|----------|-------------|
+| url              | string  | Yes*     | Starting URL (*or website_html required) |
+| website_html     | string  | No       | Raw HTML content (max 2MB) |
+| prompt           | string  | Yes      | Extraction instructions |
+| schema           | object  | No       | Output schema |
+| headers          | object  | No       | Custom headers |
+| number_of_scrolls| int     | No       | Infinite scroll per page |
+| depth            | int     | No       | Crawl depth |
+| max_pages        | int     | No       | Max pages to crawl |
+| rules            | object  | No       | Crawl rules |
+| sitemap          | bool    | No       | Use sitemap.xml |
+
+#### Response Format
+```json
+{
+  "status": "success",
+  "result": {
+    "status": "done",
+    "llm_result": { /* Structured extraction */ },
+    "crawled_urls": ["..."],
+    "pages": [ { "url": "...", "markdown": "..." }, ... ]
+  }
+}
+```
+
+### Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Page Extraction" icon="layers">
+    Crawl and extract from entire sites, not just single pages
+  </Card>
+  <Card title="AI Understanding" icon="brain">
+    Contextual extraction across multiple pages
+  </Card>
+  <Card title="Crawl Rules" icon="filter">
+    Fine-tune what gets crawled and extracted
+  </Card>
+  <Card title="Schema Support" icon="code">
+    Define custom output schemas for structured results
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+- Site-wide data extraction
+- Product catalog crawling
+- Legal/Privacy/Terms aggregation
+- Research and competitive analysis
+- Multi-page blog/news scraping
+
+## Best Practices
+
+- Be specific in your prompts
+- Use schemas for structured output
+- Set reasonable `max_pages` and `depth`
+- Use `rules` to avoid unwanted pages
+- Handle errors and poll for results
+
+## API Reference
+
+For detailed API documentation, see:
+- [Start Crawl Job](/api-reference/endpoint/smartcrawler/start)
+- [Get Crawl Status](/api-reference/endpoint/smartcrawler/get-status)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Ready to Start Crawling?" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  Sign up now and get your API key to begin extracting data with SmartCrawler!
+</Card> 
