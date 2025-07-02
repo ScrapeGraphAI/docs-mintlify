@@ -28,7 +28,8 @@ from scrapegraph_py import Client
 client = Client(api_key="your-api-key")
 
 response = client.searchscraper(
-    user_prompt="What are the key features and pricing of ChatGPT Plus?"
+    user_prompt="What are the key features and pricing of ChatGPT Plus?",
+    num_results=5  # Search 5 websites (default is 3)
 )
 ```
 
@@ -37,9 +38,10 @@ import { searchScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
 const prompt = 'What is the latest version of Python and what are its main features?';
+const numResults = 5; // Search 5 websites (default is 3)
 
 try {
-  const response = await searchScraper(apiKey, prompt);
+  const response = await searchScraper(apiKey, prompt, numResults);
   console.log(response);
 } catch (error) {
   console.error(error);
@@ -53,7 +55,8 @@ curl -X 'POST' \
   -H 'SGAI-APIKEY: your-api-key' \
   -H 'Content-Type: application/json' \
   -d '{
-  "user_prompt": "Search for information"
+  "user_prompt": "Search for information",
+  "num_results": 5
 }'
 ```
 
@@ -61,15 +64,35 @@ curl -X 'POST' \
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| prompt | string | Yes | A textual description of what you want to achieve. |
-| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response |
+| Parameter   | Type   | Required | Description                                                                 |
+|-------------|--------|----------|-----------------------------------------------------------------------------|
+| apiKey      | string | Yes      | The ScrapeGraph API Key.                                                    |
+| prompt      | string | Yes      | A textual description of what you want to achieve.                          |
+| numResults  | number | No       | Number of websites to search (3-20). Default: 3. Higher = deeper research.  |
+| schema      | object | No       | The Pydantic or Zod object that describes the structure and format of the response |
 
 <Note>
-Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+<b>NEW:</b> You can now control the number of websites to search (3-20) for deeper research. More sites = more credits. See advanced usage below!
 </Note>
+
+<Accordion title="Advanced: Website Limits & Credit Costs" icon="chart-bar">
+You can now configure how many websites SearchScraper will search (from 3 up to 20). This allows you to balance research depth and credit usage.
+
+- <b>Default:</b> 3 websites (30 credits)
+- <b>Enhanced:</b> 5 websites (50 credits)
+- <b>Maximum:</b> 20 websites (200 credits)
+
+<b>Credit Calculation:</b> 30 credits base + 10 credits for each website above 3.
+
+Example costs:
+- 3 websites: 30 credits
+- 5 websites: 50 credits
+- 10 websites: 100 credits
+- 20 websites: 200 credits
+
+<b>How to use:</b> Set <code>num_results</code> (Python) or <code>numResults</code> (JS) in your request.
+
+</Accordion>
 
 <Accordion title="Example Response" icon="terminal">
 ```json
@@ -596,4 +619,72 @@ For detailed API documentation, see:
 
 <Card title="Ready to Start?" icon="rocket" href="https://dashboard.scrapegraphai.com">
   Sign up now and get your API key to begin searching and extracting data with SearchScraper!
-</Card> 
+</Card>
+
+### Example: Configurable Website Limits
+
+<CodeGroup>
+
+```python Python
+import os
+from dotenv import load_dotenv
+from scrapegraph_py import Client
+from scrapegraph_py.logger import sgai_logger
+
+load_dotenv()
+sgai_logger.set_logging(level="INFO")
+api_key = os.getenv("SGAI_API_KEY")
+if not api_key:
+    raise ValueError("SGAI_API_KEY not found in environment variables. Please create a .env file with: SGAI_API_KEY=your_api_key_here")
+
+client = Client(api_key=api_key)
+
+response = client.searchscraper(
+    user_prompt="What is the latest version of Python and what are its main features?",
+    num_results=5  # Try 3, 5, 10, or 20 for different research depth
+)
+
+print("\nResults:")
+print(f"Answer: {response['result']}")
+print("\nReference URLs:")
+for url in response["reference_urls"]:
+    print(f"- {url}")
+
+client.close()
+```
+
+```javascript JavaScript
+import { searchScraper } from 'scrapegraph-js';
+import 'dotenv/config';
+
+const apiKey = process.env.SGAI_APIKEY;
+const prompt = 'What is the latest version of Python and what are its main features?';
+const numResults = 5; // Try 3, 5, 10, or 20 for different research depth
+
+try {
+  console.log(`🔍 Searching ${numResults} websites for: ${prompt}`);
+  const response = await searchScraper(apiKey, prompt, numResults);
+  console.log('✅ Search completed successfully!');
+  console.log(`Result: ${response.result}`);
+  console.log('\n🔗 Reference URLs:');
+  response.reference_urls?.forEach((url, index) => {
+    console.log(`${index + 1}. ${url}`);
+  });
+} catch (error) {
+  console.error('❌ Error:', error.message);
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/searchscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "user_prompt": "What is the latest version of Python and what are its main features?",
+  "num_results": 5
+}'
+```
+
+</CodeGroup> 
