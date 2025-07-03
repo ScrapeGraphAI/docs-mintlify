@@ -190,7 +190,8 @@
       "group": "Resources",
       "icon": "puzzle-piece",
       "pages": [
-        "resources/badge"
+        "resources/badge",
+        "resources/blog"
       ]
     }
   ],
