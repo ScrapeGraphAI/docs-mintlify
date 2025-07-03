@@ -1,0 +1,175 @@
+---
+title: 'Get SmartCrawler Status'
+api: 'GET /v1/crawl/{task_id}'
+description: 'Get the status and results of a previous smartcrawl request'
+# Get SmartCrawl Result
+---
+
+**GET** `/v1/crawl/{task_id}`
+
+Retrieve the result and status of a crawl job by its task ID.
+
+---
+
+## Path Parameters
+
+- `task_id` (string, required): The ID of the crawl job task.
+
+---
+
+## Response
+
+- **200 OK**: Returns the crawl job status, result, crawled URLs, and pages.
+- **422 Unprocessable Entity**: Validation error.
+
+### Example Response
+```json
+{
+  "status": "success",
+  "result": {
+    "status": "done",
+    "llm_result": {
+      "company": {
+        "name": "ScrapeGraphAI, Inc",
+        "description": "ScrapeGraphAI is a company that provides web scraping services using artificial intelligence, and also offers a powerful AI-driven API for web scraping. They transform websites into structured data, making it easy for AI agents and developers to collect data from websites.",
+        "features": [
+          "AI Agent Ready",
+          "Universal Data Extraction",
+          "Intelligent Processing",
+          "Lightning Fast Setup",
+          "Enterprise Ready",
+          "Web scraping",
+          "Artificial intelligence",
+          "Data extraction",
+          "AI-driven web scraping",
+          "Structured data output",
+          "Easy integration with Python, JavaScript, and TypeScript",
+          "Handles website changes and maintenance",
+          "High performance, reliability, and scalability"
+        ],
+        "contact_email": "contact@scrapegraphai.com",
+        "social_links": {
+          "github": "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+          "linkedin": "https://www.linkedin.com/company/101881123",
+          "twitter": "https://x.com/scrapegraphai"
+        }
+      },
+      "services": [
+        {
+          "service_name": "Markdownify",
+          "description": "Convert webpage to markdown format",
+          "features": [
+            "2 credits / Web page"
+          ]
+        },
+        {
+          "service_name": "Smart Scraper",
+          "description": "Structured AI web scraping given an URL or html content",
+          "features": [
+            "10 credits / Web page"
+          ]
+        },
+        {
+          "service_name": "Search Scraper",
+          "description": "Structured AI scraping given a search query",
+          "features": [
+            "30 credits / query"
+          ]
+        },
+        {
+          "service_name": "Spidy Agent",
+          "description": "Generate code for Markdownify, Smart Scraper and Search Scraper services",
+          "features": []
+        },
+        {
+          "service_name": "Web Scraping",
+          "description": "ScrapeGraphAI provides web scraping services to extract data from websites.",
+          "features": [
+            "Data extraction",
+            "Web crawling",
+            "Artificial intelligence"
+          ]
+        },
+        {
+          "service_name": "Data Extraction",
+          "description": "ScrapeGraphAI provides data extraction services to extract specific data from websites. They also offer high-quality data extraction using AI to ensure accuracy and completeness.",
+          "features": [
+            "Data mining",
+            "Web scraping",
+            "Artificial intelligence",
+            "High-quality data extraction",
+            "Handles large volumes of data",
+            "Customizable data output"
+          ]
+        },
+        {
+          "service_name": "Web Scraping API",
+          "description": "ScrapeGraphAI's API provides a simple and efficient way to extract data from websites, using AI to handle complex web pages and structures.",
+          "features": [
+            "Handles complex web pages and structures",
+            "Extracts data in a structured format",
+            "Easy to integrate with existing applications"
+          ]
+        }
+      ],
+      "legal": {
+        "privacy_policy": "https://scrapegraphai.com/privacy",
+        "terms_of_service": "https://scrapegraphai.com/terms"
+      }
+    },
+    "crawled_urls": [
+      "https://scrapegraphai.com/privacy/",
+      "https://scrapegraphai.com/privacy",
+      "https://scrapegraphai.com/welcome",
+      "https://scrapegraphai.com/",
+      "https://scrapegraphai.com/playground",
+      "https://scrapegraphai.com/pricing",
+      "https://scrapegraphai.com/terms/",
+      "https://scrapegraphai.com/terms",
+      "https://scrapegraphai.com/affiliate",
+      "https://scrapegraphai.com/oss"
+    ],
+    "pages": [
+      {
+        "url": "https://scrapegraphai.com/",
+        "markdown": "# Transform Websites into Structured Data\n\n### Just One Prompt Away\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/affiliate",
+        "markdown": "# Join Our Affiliate Program\n\nPartner with ScrapeGraphAI and earn generous commissions by promoting our powerful web scraping solutions\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/terms",
+        "markdown": "# Terms of Service\n\nLast updated: March 15, 2024\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/terms/",
+        "markdown": "# Terms of Service\n\nLast updated: March 15, 2024\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/pricing",
+        "markdown": "## Simple, transparent pricing\n\nPay only for what you use. No hidden fees, no surprises. Start with our free tier and scale as you grow.\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/oss",
+        "markdown": "# Transform Websites into Structured Data\n\n### Just One Prompt Away\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/privacy",
+        "markdown": "# Privacy Policy\n\nLast updated: March 15, 2024\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/privacy/",
+        "markdown": "# Privacy Policy\n\nLast updated: March 15, 2024\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/welcome",
+        "markdown": "🎉\n\nWelcome to the ScrapeGraphai's Referral Program\n..."
+      },
+      {
+        "url": "https://scrapegraphai.com/playground",
+        "markdown": "Loading...\n\n![ScrapeGraphAI Spider Logo](https://scrapegraphai.com/images/scrapegraphai_logo.svg)ScrapeGraphAI\n..."
+      }
+    ]
+  }
+}

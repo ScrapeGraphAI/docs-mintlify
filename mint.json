@@ -84,6 +84,7 @@
       "pages": [
         "services/smartscraper",
         "services/searchscraper",
+        "services/smartcrawler",
         "services/markdownify",
         {
           "group": "Additional Parameters",
@@ -148,11 +149,19 @@
         "api-reference/endpoint/smartscraper/get-status"
       ]
     },
+    
     {
       "group": "SearchScraper",
       "pages": [
         "api-reference/endpoint/searchscraper/start",
         "api-reference/endpoint/searchscraper/get-status"
+      ]
+    },
+    {
+      "group": "SmartCrawler",
+      "pages": [
+        "api-reference/endpoint/smartcrawler/start",
+        "api-reference/endpoint/smartcrawler/get-status"
       ]
     },
 
