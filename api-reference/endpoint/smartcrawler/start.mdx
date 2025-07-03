@@ -1,0 +1,106 @@
+---
+title: 'Start SmartCrawler'
+api: 'POST /v1/crawl'
+description: 'Start a new AI-powered web crawl request'
+---
+
+# Start Crawl
+
+**POST** `/v1/crawl`
+
+Start a new crawl job using SmartCrawler.
+
+---
+
+## Request Body
+
+Content-Type: `application/json`
+
+### Schema
+```json
+{
+  "url": "string",
+  "prompt": "string",
+  "cache_website": "boolean",
+  "depth": "integer",
+  "max_pages": "integer",
+  "same_domain_only": "boolean",
+  "batch_size": "integer",
+  "schema": { /* JSON Schema object */ }
+}
+```
+
+### Example
+```json
+{
+  "url": "https://scrapegraphai.com/",
+  "prompt": "What does the company do? and I need text content from there privacy and terms",
+  "cache_website": true,
+  "depth": 2,
+  "max_pages": 2,
+  "same_domain_only": true,
+  "batch_size": 1,
+  "schema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ScrapeGraphAI Website Content",
+    "type": "object",
+    "properties": {
+      "company": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "features": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "contact_email": { "type": "string", "format": "email" },
+          "social_links": {
+            "type": "object",
+            "properties": {
+              "github": { "type": "string", "format": "uri" },
+              "linkedin": { "type": "string", "format": "uri" },
+              "twitter": { "type": "string", "format": "uri" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": ["name", "description"]
+      },
+      "services": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "service_name": { "type": "string" },
+            "description": { "type": "string" },
+            "features": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "required": ["service_name", "description"]
+        }
+      },
+      "legal": {
+        "type": "object",
+        "properties": {
+          "privacy_policy": { "type": "string" },
+          "terms_of_service": { "type": "string" }
+        },
+        "required": ["privacy_policy", "terms_of_service"]
+      }
+    },
+    "required": ["company", "services", "legal"]
+  }
+}
+```
+
+---
+
+## Response
+
+- **200 OK**: Crawl started successfully. Returns `{ "task_id": "<task_id>" }`. Use this `task_id` to retrieve the crawl result from the [Get Crawl Result](./get-status) endpoint.
+- **422 Unprocessable Entity**: Validation error.
+
+See the [Get Crawl Result](./get-status) endpoint for the full response structure.

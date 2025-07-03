@@ -254,21 +254,6 @@ const result = await scraper.getResult(task.taskId);
 
 </CodeGroup>
 
-### Infinite Scroll Support
-
-SmartCrawler can handle infinite scroll pages by scrolling on each page before extraction. Use `number_of_scrolls` to control this.
-
-| Parameter         | Type    | Required | Description |
-|-------------------|---------|----------|-------------|
-| number_of_scrolls | int     | No       | Number of scrolls per page (default: 0) |
-
-<Note>
-Infinite scroll is useful for:
-- Social media feeds
-- E-commerce listings
-- News sites with continuous scroll
-</Note>
-
 ### Validation & Error Handling
 
 SmartCrawler performs advanced validation:
