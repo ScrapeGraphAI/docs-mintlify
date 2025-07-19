@@ -86,6 +86,7 @@
         "services/searchscraper",
         "services/smartcrawler",
         "services/markdownify",
+        "services/pagination",
         {
           "group": "Additional Parameters",
           "pages": [
@@ -132,7 +133,8 @@
         "cookbook/examples/wired",
         "cookbook/examples/homes",
         "cookbook/examples/research-agent",
-        "cookbook/examples/chat-webpage"
+        "cookbook/examples/chat-webpage",
+        "cookbook/examples/pagination"
       ]
     },
     {
