@@ -134,7 +134,8 @@
         "cookbook/examples/homes",
         "cookbook/examples/research-agent",
         "cookbook/examples/chat-webpage",
-        "cookbook/examples/pagination"
+        "cookbook/examples/pagination",
+        "cookbook/examples/cookies"
       ]
     },
     {

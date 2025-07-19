@@ -1,0 +1,658 @@
+---
+title: '🍪 Cookie Integration'
+description: 'Learn how to use cookies with SmartScraper API for authentication and session management'
+---
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/cookbook/images/company-banner.png"
+/>
+
+Learn how to use cookies with ScrapeGraphAI's SmartScraper to access authenticated content, maintain sessions, and bypass basic anti-bot protections. This example demonstrates how to extract data from protected pages, user dashboards, and personalized content.
+
+<Note>
+Try it yourself in our interactive notebooks:
+- [Python SDK](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/cookies/cookies_example.py)
+- [JavaScript SDK](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/cookies/cookies_example.js)
+</Note>
+
+## The Goal
+
+We'll demonstrate how to use cookies for:
+
+| Use Case | Description |
+| -------- | ----------- |
+| Authentication | Access protected pages and user dashboards |
+| Session Management | Maintain user sessions across requests |
+| Personalization | Access personalized content and preferences |
+| Anti-Bot Bypass | Bypass basic bot detection mechanisms |
+
+## Python SDK Examples
+
+### Basic Cookie Usage
+
+```python
+"""
+Example demonstrating how to use the SmartScraper API with cookies.
+
+This example shows how to:
+1. Set up the API request with cookies for authentication
+2. Use cookies with infinite scrolling
+3. Define a Pydantic model for structured output
+4. Make the API call and handle the response
+5. Process the extracted data
+
+Requirements:
+- Python 3.7+
+- scrapegraph-py
+- A .env file with your SGAI_API_KEY
+
+Example .env file:
+SGAI_API_KEY=your_api_key_here
+"""
+
+import json
+import os
+from typing import Dict, Optional
+
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+
+from scrapegraph_py import Client
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Define the data models for structured output
+class CookieInfo(BaseModel):
+    """Model representing cookie information."""
+    cookies: Dict[str, str] = Field(description="Dictionary of cookie key-value pairs")
+
+def main():
+    """Example usage of the cookies scraper."""
+    # Check if API key is available
+    if not os.getenv("SGAI_API_KEY"):
+        print("Error: SGAI_API_KEY not found in .env file")
+        print("Please create a .env file with your API key:")
+        print("SGAI_API_KEY=your_api_key_here")
+        return
+
+    # Initialize the client
+    client = Client.from_env()
+
+    # Example 1: Basic cookies example (httpbin.org/cookies)
+    print("=" * 60)
+    print("EXAMPLE 1: Basic Cookies Example")
+    print("=" * 60)
+
+    website_url = "https://httpbin.org/cookies"
+    user_prompt = "Extract all cookies info"
+    cookies = {"cookies_key": "cookies_value"}
+
+    try:
+        # Perform the scraping with cookies
+        response = client.smartscraper(
+            website_url=website_url,
+            user_prompt=user_prompt,
+            cookies=cookies,
+            output_schema=CookieInfo,
+        )
+
+        # Print the results
+        print("\nExtracted Cookie Information:")
+        print(json.dumps(response, indent=2))
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+
+    # Example 2: Cookies with infinite scrolling
+    print("\n" + "=" * 60)
+    print("EXAMPLE 2: Cookies with Infinite Scrolling")
+    print("=" * 60)
+
+    website_url = "https://httpbin.org/cookies"
+    user_prompt = "Extract all cookies and scroll information"
+    cookies = {"session_id": "abc123", "user_token": "xyz789"}
+
+    try:
+        # Perform the scraping with cookies and infinite scrolling
+        response = client.smartscraper(
+            website_url=website_url,
+            user_prompt=user_prompt,
+            cookies=cookies,
+            number_of_scrolls=3,
+            output_schema=CookieInfo,
+        )
+
+        # Print the results
+        print("\nExtracted Cookie Information with Scrolling:")
+        print(json.dumps(response, indent=2))
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+
+    # Example 3: Cookies with pagination
+    print("\n" + "=" * 60)
+    print("EXAMPLE 3: Cookies with Pagination")
+    print("=" * 60)
+
+    website_url = "https://httpbin.org/cookies"
+    user_prompt = "Extract all cookies from multiple pages"
+    cookies = {"auth_token": "secret123", "preferences": "dark_mode"}
+
+    try:
+        # Perform the scraping with cookies and pagination
+        response = client.smartscraper(
+            website_url=website_url,
+            user_prompt=user_prompt,
+            cookies=cookies,
+            total_pages=3,
+            output_schema=CookieInfo,
+        )
+
+        # Print the results
+        print("\nExtracted Cookie Information with Pagination:")
+        print(json.dumps(response, indent=2))
+
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+
+    # Close the client
+    client.close()
+
+if __name__ == "__main__":
+    main()
+```
+
+### Advanced Cookie Examples
+
+```python
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
+
+class UserProfile(BaseModel):
+    """Schema for user profile information"""
+    username: str = Field(description="User's username")
+    email: str = Field(description="User's email address")
+    profile_picture: Optional[str] = Field(description="Profile picture URL")
+    bio: Optional[str] = Field(description="User's bio")
+    followers_count: Optional[int] = Field(description="Number of followers")
+    following_count: Optional[int] = Field(description="Number of following")
+
+class DashboardData(BaseModel):
+    """Schema for dashboard data"""
+    user_profile: UserProfile = Field(description="User profile information")
+    recent_activity: List[str] = Field(description="Recent user activity")
+    notifications: List[str] = Field(description="User notifications")
+    preferences: Dict[str, str] = Field(description="User preferences")
+
+# Initialize client
+client = Client(api_key="your-api-key")
+
+# Example 1: Accessing user dashboard with authentication cookies
+dashboard_cookies = {
+    "session_id": "abc123def456",
+    "auth_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user_id": "12345",
+    "csrf_token": "xyz789"
+}
+
+response = client.smartscraper(
+    website_url="https://example.com/dashboard",
+    user_prompt="Extract my dashboard information including profile, recent activity, and notifications",
+    cookies=dashboard_cookies,
+    output_schema=DashboardData
+)
+```
+
+### E-commerce with Shopping Cart Cookies
+
+```python
+class Product(BaseModel):
+    """Schema for product information"""
+    name: str = Field(description="Product name")
+    price: str = Field(description="Product price")
+    quantity: int = Field(description="Quantity in cart")
+    total: str = Field(description="Total price for this item")
+
+class ShoppingCart(BaseModel):
+    """Schema for shopping cart"""
+    items: List[Product] = Field(description="Items in the cart")
+    subtotal: str = Field(description="Cart subtotal")
+    tax: str = Field(description="Tax amount")
+    total: str = Field(description="Total amount")
+    item_count: int = Field(description="Total number of items")
+
+# Shopping cart cookies
+cart_cookies = {
+    "session_id": "cart_session_123",
+    "cart_id": "cart_456",
+    "user_preferences": "currency=USD,language=en",
+    "shipping_address": "encoded_address_data"
+}
+
+# Extract shopping cart information
+response = client.smartscraper(
+    website_url="https://example-store.com/cart",
+    user_prompt="Extract all items in my shopping cart with their details",
+    cookies=cart_cookies,
+    output_schema=ShoppingCart
+)
+```
+
+## JavaScript SDK Examples
+
+### Basic Cookie Usage
+
+```javascript
+/**
+ * Simple example demonstrating cookies usage with SmartScraper.
+ * 
+ * This example shows the basic pattern for using cookies with the API.
+ */
+
+import { smartScraper } from 'scrapegraph-js';
+import 'dotenv/config';
+
+const apiKey = process.env.SGAI_APIKEY;
+
+// Example cookies for authentication
+const cookies = {
+  session_id: 'abc123def456',
+  auth_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  user_preferences: 'dark_mode,usd'
+};
+
+async function scrapeWithCookies() {
+  try {
+    const response = await smartScraper(
+      apiKey,
+      'https://example.com/dashboard',
+      'Extract user profile information',
+      null, // schema
+      null, // numberOfScrolls
+      null, // totalPages
+      cookies // cookies parameter
+    );
+    
+    console.log('✅ Scraping with cookies completed successfully');
+    console.log(JSON.stringify(response, null, 2));
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+  }
+}
+
+// Run the example
+scrapeWithCookies();
+```
+
+### Advanced Cookie Examples
+
+```javascript
+// Example with structured schema
+const userProfileSchema = {
+  type: 'object',
+  properties: {
+    username: { type: 'string', description: "User's username" },
+    email: { type: 'string', description: "User's email address" },
+    profile_picture: { type: 'string', description: "Profile picture URL" },
+    bio: { type: 'string', description: "User's bio" },
+    followers_count: { type: 'number', description: "Number of followers" },
+    following_count: { type: 'number', description: "Number of following" }
+  },
+  required: ['username', 'email']
+};
+
+// Authentication cookies
+const authCookies = {
+  session_id: 'abc123def456',
+  auth_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  user_id: '12345',
+  csrf_token: 'xyz789'
+};
+
+async function scrapeUserProfile() {
+  try {
+    const response = await smartScraper(
+      apiKey,
+      'https://example.com/profile',
+      'Extract my user profile information',
+      userProfileSchema,
+      null, // numberOfScrolls
+      null, // totalPages
+      authCookies
+    );
+    
+    console.log('✅ User profile extracted successfully');
+    console.log(JSON.stringify(response, null, 2));
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+  }
+}
+
+// Example with pagination and cookies
+async function scrapeWithPaginationAndCookies() {
+  try {
+    const response = await smartScraper(
+      apiKey,
+      'https://example.com/orders',
+      'Extract all my order history',
+      null, // schema
+      null, // numberOfScrolls
+      5, // totalPages - scrape 5 pages
+      authCookies
+    );
+    
+    console.log('✅ Order history extracted successfully');
+    console.log(JSON.stringify(response, null, 2));
+    
+  } catch (error) {
+    console.error('❌ Error:', error.message);
+  }
+}
+```
+
+## Common Cookie Use Cases
+
+### 1. Social Media Authentication
+
+```python
+# Social media platform cookies
+social_cookies = {
+    "session_id": "social_session_789",
+    "auth_token": "social_auth_456",
+    "user_id": "user_123",
+    "csrf_token": "csrf_abc",
+    "language": "en",
+    "timezone": "UTC"
+}
+
+# Extract user's social media feed
+response = client.smartscraper(
+    website_url="https://social-platform.com/feed",
+    user_prompt="Extract all posts from my feed with author, content, and engagement metrics",
+    cookies=social_cookies,
+    number_of_scrolls=10  # Scroll to load more posts
+)
+```
+
+### 2. Banking/Financial Dashboard
+
+```python
+# Banking session cookies
+banking_cookies = {
+    "session_token": "bank_session_secure",
+    "auth_token": "bank_auth_secure",
+    "user_id": "user_456",
+    "security_level": "high",
+    "last_activity": "timestamp"
+}
+
+# Extract banking information
+response = client.smartscraper(
+    website_url="https://bank.com/dashboard",
+    user_prompt="Extract my account balances, recent transactions, and pending payments",
+    cookies=banking_cookies,
+    output_schema=BankingData
+)
+```
+
+### 3. E-commerce with User Preferences
+
+```python
+# E-commerce user cookies
+ecommerce_cookies = {
+    "session_id": "shop_session_123",
+    "user_id": "customer_789",
+    "cart_id": "cart_456",
+    "currency": "USD",
+    "language": "en",
+    "shipping_country": "US",
+    "wishlist_id": "wishlist_123"
+}
+
+# Extract personalized recommendations
+response = client.smartscraper(
+    website_url="https://shop.com/recommendations",
+    user_prompt="Extract personalized product recommendations based on my preferences",
+    cookies=ecommerce_cookies,
+    output_schema=Recommendations
+)
+```
+
+## Cookie Management Best Practices
+
+### 1. Secure Cookie Handling
+
+```python
+import os
+from cryptography.fernet import Fernet
+
+class SecureCookieManager:
+    def __init__(self, encryption_key=None):
+        if encryption_key is None:
+            encryption_key = Fernet.generate_key()
+        self.cipher = Fernet(encryption_key)
+    
+    def encrypt_cookies(self, cookies: dict) -> str:
+        """Encrypt cookies for secure storage"""
+        cookies_str = json.dumps(cookies)
+        encrypted = self.cipher.encrypt(cookies_str.encode())
+        return encrypted.decode()
+    
+    def decrypt_cookies(self, encrypted_cookies: str) -> dict:
+        """Decrypt cookies for use"""
+        decrypted = self.cipher.decrypt(encrypted_cookies.encode())
+        return json.loads(decrypted.decode())
+    
+    def store_cookies(self, cookies: dict, filename: str):
+        """Store encrypted cookies to file"""
+        encrypted = self.encrypt_cookies(cookies)
+        with open(filename, 'w') as f:
+            f.write(encrypted)
+    
+    def load_cookies(self, filename: str) -> dict:
+        """Load encrypted cookies from file"""
+        with open(filename, 'r') as f:
+            encrypted = f.read()
+        return self.decrypt_cookies(encrypted)
+
+# Usage
+cookie_manager = SecureCookieManager()
+
+# Store cookies securely
+cookies = {"session_id": "abc123", "auth_token": "xyz789"}
+cookie_manager.store_cookies(cookies, "secure_cookies.txt")
+
+# Load cookies when needed
+loaded_cookies = cookie_manager.load_cookies("secure_cookies.txt")
+```
+
+### 2. Cookie Validation and Refresh
+
+```python
+import time
+from datetime import datetime, timedelta
+
+class CookieValidator:
+    def __init__(self):
+        self.cookie_expiry = {}
+    
+    def validate_cookies(self, cookies: dict) -> bool:
+        """Validate if cookies are still valid"""
+        current_time = datetime.now()
+        
+        for cookie_name, expiry_time in self.cookie_expiry.items():
+            if cookie_name in cookies:
+                if current_time > expiry_time:
+                    print(f"Cookie {cookie_name} has expired")
+                    return False
+        
+        return True
+    
+    def set_cookie_expiry(self, cookie_name: str, expiry_hours: int):
+        """Set expiry time for a cookie"""
+        expiry_time = datetime.now() + timedelta(hours=expiry_hours)
+        self.cookie_expiry[cookie_name] = expiry_time
+    
+    def refresh_cookies_if_needed(self, cookies: dict) -> dict:
+        """Refresh cookies if they're expired"""
+        if not self.validate_cookies(cookies):
+            print("Cookies expired, refreshing...")
+            # Implement cookie refresh logic here
+            # This might involve re-authentication
+            return self.refresh_authentication()
+        return cookies
+    
+    def refresh_authentication(self) -> dict:
+        """Refresh authentication and get new cookies"""
+        # Implement your authentication refresh logic
+        # This is a placeholder
+        return {"session_id": "new_session", "auth_token": "new_token"}
+```
+
+### 3. Cookie Rotation and Management
+
+```python
+class CookieRotator:
+    def __init__(self):
+        self.cookie_pools = {}
+        self.current_index = 0
+    
+    def add_cookie_pool(self, name: str, cookies_list: list):
+        """Add a pool of cookies for rotation"""
+        self.cookie_pools[name] = cookies_list
+    
+    def get_next_cookies(self, pool_name: str) -> dict:
+        """Get next cookies from the pool"""
+        if pool_name not in self.cookie_pools:
+            raise ValueError(f"Cookie pool '{pool_name}' not found")
+        
+        cookies_list = self.cookie_pools[pool_name]
+        cookies = cookies_list[self.current_index % len(cookies_list)]
+        self.current_index += 1
+        return cookies
+    
+    def mark_cookies_invalid(self, pool_name: str, cookies: dict):
+        """Mark specific cookies as invalid"""
+        if pool_name in self.cookie_pools:
+            # Remove invalid cookies from pool
+            self.cookie_pools[pool_name] = [
+                c for c in self.cookie_pools[pool_name] 
+                if c != cookies
+            ]
+
+# Usage
+rotator = CookieRotator()
+
+# Add multiple cookie sets for rotation
+rotator.add_cookie_pool("social_media", [
+    {"session_id": "session1", "auth_token": "token1"},
+    {"session_id": "session2", "auth_token": "token2"},
+    {"session_id": "session3", "auth_token": "token3"}
+])
+
+# Use cookies in rotation
+cookies = rotator.get_next_cookies("social_media")
+```
+
+## Example Output
+
+```json
+{
+  "user_profile": {
+    "username": "john_doe",
+    "email": "john@example.com",
+    "profile_picture": "https://example.com/avatar.jpg",
+    "bio": "Software developer and tech enthusiast",
+    "followers_count": 1250,
+    "following_count": 890
+  },
+  "recent_activity": [
+    "Posted a new photo 2 hours ago",
+    "Liked 5 posts yesterday",
+    "Commented on a friend's post 1 day ago"
+  ],
+  "notifications": [
+    "You have 3 new followers",
+    "Your post received 15 new likes",
+    "New message from @jane_smith"
+  ],
+  "preferences": {
+    "theme": "dark",
+    "language": "en",
+    "notifications": "enabled",
+    "privacy": "public"
+  }
+}
+```
+
+## Troubleshooting
+
+### Common Cookie Issues
+
+<Accordion title="Authentication Failed" icon="exclamation-triangle">
+**Problem**: Getting authentication errors even with cookies.
+
+**Solutions**:
+- Verify cookies are not expired
+- Check if cookies are properly formatted
+- Ensure all required cookies are included
+- Try refreshing the authentication session
+</Accordion>
+
+<Accordion title="Session Expired" icon="clock">
+**Problem**: Session cookies have expired.
+
+**Solutions**:
+- Implement cookie refresh logic
+- Store cookie expiry times
+- Automatically re-authenticate when needed
+- Use persistent session management
+</Accordion>
+
+<Accordion title="CSRF Token Issues" icon="shield">
+**Problem**: CSRF token validation failures.
+
+**Solutions**:
+- Include CSRF tokens in cookies
+- Refresh CSRF tokens before requests
+- Handle token rotation properly
+- Implement proper token validation
+</Accordion>
+
+<Accordion title="Cookie Format Errors" icon="bug">
+**Problem**: Malformed cookie data.
+
+**Solutions**:
+- Validate cookie format before use
+- Handle special characters properly
+- Use proper encoding for cookie values
+- Implement cookie sanitization
+</Accordion>
+
+<CardGroup cols={2}>
+  <Card
+    title="SmartScraper"
+    icon="robot"
+    href="/services/smartscraper"
+  >
+    Learn more about our AI-powered extraction service
+  </Card>
+  <Card
+    title="Headers & Cookies"
+    icon="gear"
+    href="/services/additional-parameters/headers"
+  >
+    Explore advanced header and cookie configurations
+  </Card>
+</CardGroup>
+
+---
+
+<Note>
+Have a suggestion for a new example? [Contact us](mailto:contact@scrapegraphai.com) with your use case or contribute directly on [GitHub](https://github.com/ScrapeGraphAI/scrapegraph-sdk).
+</Note> 
