@@ -3,16 +3,13 @@ title: '🦐 Agno'
 description: 'Build AI Assistants with ScrapeGraphAI and Agno'
 ---
 
-
 ## Overview
 
-[Agno](https://www.agno.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Agno-powered AI agents.
+[Agno](https://www.agno.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Agno-powered AI agents, enabling them to extract data from websites, convert content to markdown, and perform intelligent web searches.
 
 <Card
-
   title="Official Agno Documentation"
   icon="book"
-
   href="https://docs.agno.com/introduction"
 >
   Learn more about building AI Assistants with Agno
@@ -23,29 +20,46 @@ description: 'Build AI Assistants with ScrapeGraphAI and Agno'
 Install the required packages:
 
 ```bash
-
 pip install -U agno
-
 pip install scrapegraph-py
 ```
 
-## Usage
+## Quick Start
 
-
-### Basic Example
-
-Create an AI Assistant with ScrapeGraph tools:
+Import the necessary modules and create your first ScrapeGraph-powered agent:
 
 ```python
 from agno.agent import Agent
 from agno.tools.scrapegraph import ScrapeGraphTools
 
-# Example 1: Default behavior - only smartscraper enabled
+# Create a ScrapeGraph tools instance with default settings
+scrapegraph = ScrapeGraphTools(smartscraper=True)
+
+# Initialize your AI agent with ScrapeGraph tools
+agent = Agent(
+    tools=[scrapegraph], 
+    show_tool_calls=True, 
+    markdown=True, 
+    stream=True
+)
+```
+
+## Usage Examples
+
+### Example 1: Smart Scraping (Default)
+
+Extract structured data from websites using natural language:
+
+```python
+from agno.agent import Agent
+from agno.tools.scrapegraph import ScrapeGraphTools
+
+# Default behavior - only smartscraper enabled
 scrapegraph = ScrapeGraphTools(smartscraper=True)
 
 agent = Agent(tools=[scrapegraph], show_tool_calls=True, markdown=True, stream=True)
 
-# Use smartscraper
+# Use smartscraper to extract specific information
 agent.print_response("""
 Use smartscraper to extract the following from https://www.wired.com/category/science/:
 - News articles
@@ -54,56 +68,128 @@ Use smartscraper to extract the following from https://www.wired.com/category/sc
 - Links
 - Author
 """)
+```
 
-# Example 2: Only markdownify enabled (by setting smartscraper=False)
+### Example 2: Markdown Conversion
+
+Convert web pages to clean markdown format:
+
+```python
+# Only markdownify enabled (by setting smartscraper=False)
 scrapegraph_md = ScrapeGraphTools(smartscraper=False)
 
 agent_md = Agent(tools=[scrapegraph_md], show_tool_calls=True, markdown=True)
 
-# Use markdownify
+# Use markdownify to convert webpage to markdown
 agent_md.print_response(
     "Fetch and convert https://www.wired.com/category/science/ to markdown format"
 )
+```
 
-# Example 3: Enable searchscraper
+### Example 3: Search Scraping
+
+Enable intelligent search capabilities:
+
+```python
+# Enable searchscraper for finding specific information
 scrapegraph_search = ScrapeGraphTools(searchscraper=True)
 
 agent_search = Agent(tools=[scrapegraph_search], show_tool_calls=True, markdown=True)
 
-# Use searchscraper
+# Use searchscraper to find specific information
 agent_search.print_response(
     "Use searchscraper to find the CEO of company X and their contact details from https://example.com"
 )
+```
 
-# Example 4: Enable crawl
+### Example 4: Smart Crawling
+
+Enable advanced crawling with custom schemas:
+
+```python
+# Enable crawl for structured data extraction
 scrapegraph_crawl = ScrapeGraphTools(crawl=True)
 
 agent_crawl = Agent(tools=[scrapegraph_crawl], show_tool_calls=True, markdown=True)
 
-# Use crawl (schema must be provided as a dict in the tool call)
+# Use crawl with custom schema for structured extraction
 agent_crawl.print_response(
     "Use crawl to extract what the company does and get text content from privacy and terms from https://scrapegraphai.com/ with a suitable schema."
 )
 ```
 
+## Configuration Options
 
+The `ScrapeGraphTools` class accepts several parameters to customize behavior:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `smartscraper` | bool | `True` | Enable smart scraping capabilities |
+| `searchscraper` | bool | `False` | Enable search scraping functionality |
+| `crawl` | bool | `False` | Enable smart crawling with schema support |
+| `markdownify` | bool | `False` | Enable markdown conversion |
+
+## Advanced Usage
+
+### Combining Multiple Tools
+
+You can enable multiple ScrapeGraph tools simultaneously:
+
+```python
+# Enable multiple tools at once
+scrapegraph_multi = ScrapeGraphTools(
+    smartscraper=True,
+    searchscraper=True,
+    crawl=True
+)
+
+agent_multi = Agent(tools=[scrapegraph_multi], show_tool_calls=True, markdown=True)
+```
+
+### Custom Agent Configuration
+
+Configure your agent with additional options:
+
+```python
+agent = Agent(
+    tools=[scrapegraph],
+    show_tool_calls=True,  # Debug tool calls
+    markdown=True,         # Enable markdown rendering
+    stream=True,           # Enable streaming responses
+    temperature=0.7        # Control response creativity
+)
+```
 
 ## Features
 
 <CardGroup cols={2}>
   <Card title="Smart Scraping" icon="robot">
-    Extract structured data using natural language
+    Extract structured data using natural language queries
   </Card>
   <Card title="Markdown Conversion" icon="file-code">
-    Convert web pages to clean markdown
+    Convert web pages to clean, readable markdown format
+  </Card>
+  <Card title="Search Scraping" icon="search">
+    Intelligent search and data extraction from websites
+  </Card>
+  <Card title="Smart Crawling" icon="spider">
+    Advanced crawling with custom schema support
   </Card>
   <Card title="Streaming Support" icon="stream">
-    Real-time responses with streaming
+    Real-time responses with streaming capabilities
   </Card>
   <Card title="Tool Visibility" icon="eye">
-    Debug with visible tool calls
+    Debug and monitor tool calls for better development
   </Card>
 </CardGroup>
+
+## Best Practices
+
+- **Tool Selection**: Only enable the tools you need to optimize performance
+- **Error Handling**: Implement proper error handling for web scraping operations
+- **Rate Limiting**: Be mindful of website rate limits when scraping
+- **Schema Design**: Design clear schemas for crawling operations
+- **Testing**: Test your agents locally before deployment
 
 ## Support
 
@@ -115,15 +201,27 @@ Need help with the integration?
     icon="discord"
     href="https://discord.gg/4MtYHHrgA8"
   >
-
-    Join the Agno community
+    Join the Agno community for support and discussions
   </Card>
   <Card
     title="GitHub Cookbook"
-
     icon="github"
     href="https://github.com/agno-agi/agno/blob/main/cookbook/tools/scrapegraph_tools.py"
   >
-    Check out the source code
+    Check out the source code and examples
+  </Card>
+  <Card
+    title="ScrapeGraphAI Discord"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help with ScrapeGraphAI features
+  </Card>
+  <Card
+    title="Documentation"
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Explore the full API reference
   </Card>
 </CardGroup>
