@@ -76,7 +76,7 @@ const ArticlesArraySchema = z
 const result = await generateText({
   model: openai("gpt-4.1-mini"),
   tools: {
-    weather: tool({
+    scrape: tool({
       description: "Get articles information for a given url.",
       parameters: z.object({
         url: z.string().describe("The exact url."),
