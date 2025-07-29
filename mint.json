@@ -89,25 +89,17 @@
         "services/pagination",
         {
           "group": "Additional Parameters",
-          "pages": [
-            "services/additional-parameters/headers"
-          ]
+          "pages": ["services/additional-parameters/headers"]
         },
         {
           "group": "Browser Extensions",
-          "pages": [
-            "services/extensions/firefox",
-            "services/extensions/chrome"
-          ]
+          "pages": ["services/extensions/firefox", "services/extensions/chrome"]
         }
       ]
     },
     {
       "group": "Official SDKs",
-      "pages": [
-        "sdks/python",
-        "sdks/javascript"
-      ]
+      "pages": ["sdks/python", "sdks/javascript"]
     },
     {
       "group": "Integrations",
@@ -116,14 +108,13 @@
         "integrations/llamaindex",
         "integrations/crewai",
         "integrations/agno",
-        "integrations/langflow"
+        "integrations/langflow",
+        "integrations/vercel_ai"
       ]
     },
     {
       "group": "Cookbook",
-      "pages": [
-        "cookbook/introduction"
-      ]
+      "pages": ["cookbook/introduction"]
     },
     {
       "group": "Examples",
@@ -140,10 +131,7 @@
     },
     {
       "group": "API Documentation",
-      "pages": [
-        "api-reference/introduction",
-        "api-reference/errors"
-      ]
+      "pages": ["api-reference/introduction", "api-reference/errors"]
     },
     {
       "group": "SmartScraper",
@@ -152,7 +140,7 @@
         "api-reference/endpoint/smartscraper/get-status"
       ]
     },
-    
+
     {
       "group": "SearchScraper",
       "pages": [
@@ -184,18 +172,12 @@
     },
     {
       "group": "Contribute",
-      "pages": [
-        "contribute/opensource",
-        "contribute/feedback"
-      ]
+      "pages": ["contribute/opensource", "contribute/feedback"]
     },
     {
       "group": "Resources",
       "icon": "puzzle-piece",
-      "pages": [
-        "resources/badge",
-        "resources/mastering-prompts"
-      ]
+      "pages": ["resources/badge", "resources/mastering-prompts"]
     }
   ],
   "footerSocials": {
