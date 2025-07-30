@@ -1,18 +1,19 @@
 ---
-title: 'JavaScript SDK'
-description: 'Official JavaScript/TypeScript SDK for ScrapeGraphAI'
-icon: 'js'
+title: "JavaScript SDK"
+description: "Official JavaScript/TypeScript SDK for ScrapeGraphAI"
+icon: "js"
 ---
 
 <img
-  style={{ borderRadius: '0.5rem' }}
+  style={{ borderRadius: "0.5rem" }}
   src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
   alt="ScrapeGraph API Banner"
 />
 
 <CardGroup cols={2}>
   <Card title="NPM Package" icon="box">
-    [![npm version](https://badge.fury.io/js/scrapegraph-js.svg)](https://badge.fury.io/js/scrapegraph-js)
+    [![npm
+    version](https://badge.fury.io/js/scrapegraph-js.svg)](https://badge.fury.io/js/scrapegraph-js)
   </Card>
   <Card title="License" icon="scale">
     [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -21,14 +22,20 @@ icon: 'js'
 
 ## Installation
 
-Install the package using npm or yarn:
+Install the package using npm, pnpm, yarn or bun:
 
 ```bash
 # Using npm
 npm i scrapegraph-js
 
+# Using pnpm
+pnpm i scrapegraph-js
+
 # Using yarn
 yarn add scrapegraph-js
+
+# Using bun
+bun add scrapegraph-js
 ```
 
 ## Features
@@ -44,25 +51,25 @@ yarn add scrapegraph-js
 ### Basic example
 
 <Note>
-Store your API keys securely in environment variables. Use `.env` files and libraries like `dotenv` to load them into your app.
+  Store your API keys securely in environment variables. Use `.env` files and
+  libraries like `dotenv` to load them into your app.
 </Note>
 
 ```javascript
-import { smartScraper } from 'scrapegraph-js';
-import 'dotenv/config';
+import { smartScraper } from "scrapegraph-js";
+import "dotenv/config";
 
 // Initialize variables
 const apiKey = process.env.SGAI_APIKEY; // Set your API key as an environment variable
-const websiteUrl = 'https://example.com';
-const prompt = 'What does the company do?';
+const websiteUrl = "https://example.com";
+const prompt = "What does the company do?";
 
 try {
   const response = await smartScraper(apiKey, websiteUrl, prompt); // call SmartScraper function
   console.log(response.result);
 } catch (error) {
-  console.error('Error:', error);
+  console.error("Error:", error);
 }
-;
 ```
 
 ## Services
@@ -74,40 +81,42 @@ Extract specific information from any webpage using AI:
 ```javascript
 const response = await smartScraper(
   apiKey,
-  'https://example.com',
-  'Extract the main content'
+  "https://example.com",
+  "Extract the main content"
 );
 ```
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage that needs to be scraped. |
-| prompt | string | Yes | A textual description of what you want to achieve. |
-| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response. |
+| Parameter  | Type   | Required | Description                                                                         |
+| ---------- | ------ | -------- | ----------------------------------------------------------------------------------- |
+| apiKey     | string | Yes      | The ScrapeGraph API Key.                                                            |
+| websiteUrl | string | Yes      | The URL of the webpage that needs to be scraped.                                    |
+| prompt     | string | Yes      | A textual description of what you want to achieve.                                  |
+| schema     | object | No       | The Pydantic or Zod object that describes the structure and format of the response. |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
 
 ```javascript
-import { z } from 'zod';
+import { z } from "zod";
 
 const ArticleSchema = z.object({
-  title: z.string().describe('The article title'),
-  author: z.string().describe('The author\'s name'),
-  publishDate: z.string().describe('Article publication date'),
-  content: z.string().describe('Main article content'),
-  category: z.string().describe('Article category')
+  title: z.string().describe("The article title"),
+  author: z.string().describe("The author's name"),
+  publishDate: z.string().describe("Article publication date"),
+  content: z.string().describe("Main article content"),
+  category: z.string().describe("Article category"),
 });
 
-const ArticlesArraySchema = z.array(ArticleSchema).describe('Array of articles');
+const ArticlesArraySchema = z
+  .array(ArticleSchema)
+  .describe("Array of articles");
 
 const response = await smartScraper(
   apiKey,
-  'https://example.com/blog/article',
-  'Extract the article information',
+  "https://example.com/blog/article",
+  "Extract the article information",
   ArticlesArraySchema
 );
 
@@ -115,175 +124,170 @@ console.log(`Title: ${response.result.title}`);
 console.log(`Author: ${response.result.author}`);
 console.log(`Published: ${response.result.publishDate}`);
 ```
+
 </Accordion>
 
 <Accordion title="Advanced Schema Example" icon="code">
 Define a complex schema for nested data structures:
 
 ```javascript
-import { z } from 'zod';
+import { z } from "zod";
 
 const EmployeeSchema = z.object({
-  name: z.string().describe('Employee\'s full name'),
-  position: z.string().describe('Job title'),
-  department: z.string().describe('Department name'),
-  email: z.string().describe('Email address')
+  name: z.string().describe("Employee's full name"),
+  position: z.string().describe("Job title"),
+  department: z.string().describe("Department name"),
+  email: z.string().describe("Email address"),
 });
 
 const OfficeSchema = z.object({
-  location: z.string().describe('Office location/city'),
-  address: z.string().describe('Full address'),
-  phone: z.string().describe('Contact number')
+  location: z.string().describe("Office location/city"),
+  address: z.string().describe("Full address"),
+  phone: z.string().describe("Contact number"),
 });
 
 const CompanySchema = z.object({
-  name: z.string().describe('Company name'),
-  description: z.string().describe('Company description'),
-  industry: z.string().describe('Industry sector'),
-  foundedYear: z.number().describe('Year company was founded'),
-  employees: z.array(EmployeeSchema).describe('List of key employees'),
-  offices: z.array(OfficeSchema).describe('Company office locations'),
-  website: z.string().url().describe('Company website URL')
+  name: z.string().describe("Company name"),
+  description: z.string().describe("Company description"),
+  industry: z.string().describe("Industry sector"),
+  foundedYear: z.number().describe("Year company was founded"),
+  employees: z.array(EmployeeSchema).describe("List of key employees"),
+  offices: z.array(OfficeSchema).describe("Company office locations"),
+  website: z.string().url().describe("Company website URL"),
 });
 
 // Extract comprehensive company information
 const response = await smartScraper(
   apiKey,
-  'https://example.com/about',
-  'Extract detailed company information including employees and offices',
+  "https://example.com/about",
+  "Extract detailed company information including employees and offices",
   CompanySchema
 );
 
 // Access nested data
 console.log(`Company: ${response.result.name}`);
-console.log('\nKey Employees:');
-response.result.employees.forEach(employee => {
+console.log("\nKey Employees:");
+response.result.employees.forEach((employee) => {
   console.log(`- ${employee.name} (${employee.position})`);
 });
 
-console.log('\nOffice Locations:');
-response.result.offices.forEach(office => {
+console.log("\nOffice Locations:");
+response.result.offices.forEach((office) => {
   console.log(`- ${office.location}: ${office.address}`);
 });
 ```
+
 </Accordion>
 
 ### SearchScraper
 
 Search and extract information from multiple web sources using AI:
 
-
 ```javascript
-
 const response = await searchScraper(
   apiKey,
-  'Find the best restaurants in San Francisco',
+  "Find the best restaurants in San Francisco"
 );
 ```
 
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| prompt | string | Yes | A textual description of what you want to achieve. |
-| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response |
+| Parameter | Type   | Required | Description                                                                        |
+| --------- | ------ | -------- | ---------------------------------------------------------------------------------- |
+| apiKey    | string | Yes      | The ScrapeGraph API Key.                                                           |
+| prompt    | string | Yes      | A textual description of what you want to achieve.                                 |
+| schema    | object | No       | The Pydantic or Zod object that describes the structure and format of the response |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
 
 ```javascript
-import { z } from 'zod';
+import { z } from "zod";
 
 const ArticleSchema = z.object({
-  title: z.string().describe('The article title'),
-  author: z.string().describe('The author\'s name'),
-  publishDate: z.string().describe('Article publication date'),
-  content: z.string().describe('Main article content'),
-  category: z.string().describe('Article category')
+  title: z.string().describe("The article title"),
+  author: z.string().describe("The author's name"),
+  publishDate: z.string().describe("Article publication date"),
+  content: z.string().describe("Main article content"),
+  category: z.string().describe("Article category"),
 });
 
 const response = await searchScraper(
   apiKey,
-  'Find news about the latest trends in AI',
+  "Find news about the latest trends in AI",
   ArticleSchema
 );
-
 
 console.log(`Title: ${response.result.title}`);
 console.log(`Author: ${response.result.author}`);
 console.log(`Published: ${response.result.publishDate}`);
 ```
+
 </Accordion>
 
 <Accordion title="Advanced Schema Example" icon="code">
 Define a complex schema for nested data structures:
 
 ```javascript
-import { z } from 'zod';
+import { z } from "zod";
 
 const EmployeeSchema = z.object({
-  name: z.string().describe('Employee\'s full name'),
-  position: z.string().describe('Job title'),
-  department: z.string().describe('Department name'),
-  email: z.string().describe('Email address')
+  name: z.string().describe("Employee's full name"),
+  position: z.string().describe("Job title"),
+  department: z.string().describe("Department name"),
+  email: z.string().describe("Email address"),
 });
 
 const OfficeSchema = z.object({
-  location: z.string().describe('Office location/city'),
-  address: z.string().describe('Full address'),
-  phone: z.string().describe('Contact number')
+  location: z.string().describe("Office location/city"),
+  address: z.string().describe("Full address"),
+  phone: z.string().describe("Contact number"),
 });
 
 const RestaurantSchema = z.object({
-  name: z.string().describe('Restaurant name'),
-  address: z.string().describe('Restaurant address'),
-  rating: z.number().describe('Restaurant rating'),
-  website: z.string().url().describe('Restaurant website URL')
-
-
+  name: z.string().describe("Restaurant name"),
+  address: z.string().describe("Restaurant address"),
+  rating: z.number().describe("Restaurant rating"),
+  website: z.string().url().describe("Restaurant website URL"),
 });
 
 // Extract comprehensive company information
 const response = await searchScraper(
   apiKey,
-  'Find the best restaurants in San Francisco',
+  "Find the best restaurants in San Francisco",
   RestaurantSchema
 );
 ```
+
 </Accordion>
-
-
 
 ### Markdownify
 
 Convert any webpage into clean, formatted markdown:
 
 ```javascript
-const response = await markdownify(
-  apiKey,
-  'https://example.com'
-);
+const response = await markdownify(apiKey, "https://example.com");
 ```
+
 #### Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
+| Parameter  | Type   | Required | Description                                    |
+| ---------- | ------ | -------- | ---------------------------------------------- |
+| apiKey     | string | Yes      | The ScrapeGraph API Key.                       |
+| websiteUrl | string | Yes      | The URL of the webpage to convert to markdown. |
 
 ## API Credits
 
 Check your available API credits:
 
 ```javascript
-import { getCredits } from 'scrapegraph-js';
+import { getCredits } from "scrapegraph-js";
 
 try {
   const credits = await getCredits(apiKey);
-  console.log('Available credits:', credits);
+  console.log("Available credits:", credits);
 } catch (error) {
-  console.error('Error fetching credits:', error);
+  console.error("Error fetching credits:", error);
 }
 ```
 
@@ -292,31 +296,36 @@ try {
 Help us improve by submitting feedback programmatically:
 
 ```javascript
-import { sendFeedback } from 'scrapegraph-js';
+import { sendFeedback } from "scrapegraph-js";
 
 try {
-  await sendFeedback(
-    apiKey,
-    'request-id',
-    5,
-    'Great results!'
-  );
+  await sendFeedback(apiKey, "request-id", 5, "Great results!");
 } catch (error) {
-  console.error('Error sending feedback:', error);
+  console.error("Error sending feedback:", error);
 }
 ```
 
 ## Support
 
 <CardGroup cols={2}>
-  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk">
+  <Card
+    title="GitHub"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-sdk"
+  >
     Report issues and contribute to the SDK
   </Card>
-  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
+  <Card
+    title="Email Support"
+    icon="envelope"
+    href="mailto:support@scrapegraphai.com"
+  >
     Get help from our development team
   </Card>
 </CardGroup>
 
 <Accordion title="License" icon="scale">
-  This project is licensed under the MIT License. See the [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE) file for details.
+  This project is licensed under the MIT License. See the
+  [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE)
+  file for details.
 </Accordion>
