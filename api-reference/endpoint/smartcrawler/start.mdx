@@ -1,14 +1,14 @@
 ---
 title: 'Start SmartCrawler'
 api: 'POST /v1/crawl'
-description: 'Start a new AI-powered web crawl request'
+description: 'Start a new web crawl request with AI extraction or markdown conversion'
 ---
 
 # Start Crawl
 
 **POST** `/v1/crawl`
 
-Start a new crawl job using SmartCrawler.
+Start a new crawl job using SmartCrawler. Choose between AI-powered extraction or cost-effective markdown conversion.
 
 ---
 
@@ -21,6 +21,7 @@ Content-Type: `application/json`
 {
   "url": "string",
   "prompt": "string",
+  "extraction_mode": "boolean",
   "cache_website": "boolean",
   "depth": "integer",
   "max_pages": "integer",
@@ -29,6 +30,20 @@ Content-Type: `application/json`
   "schema": { /* JSON Schema object */ }
 }
 ```
+
+### Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| url | string | Yes | - | The starting URL for the crawl |
+| prompt | string | No* | - | Instructions for data extraction (*required when extraction_mode=true) |
+| extraction_mode | boolean | No | true | When `false`, enables markdown conversion mode (NO AI/LLM processing, 2 credits per page) |
+| cache_website | boolean | No | false | Whether to cache the website content |
+| depth | integer | No | 1 | Maximum crawl depth |
+| max_pages | integer | No | 10 | Maximum number of pages to crawl |
+| same_domain_only | boolean | No | true | Whether to crawl only the same domain |
+| batch_size | integer | No | 1 | Number of pages to process in each batch |
+| schema | object | No | - | JSON Schema object for structured output |
 
 ### Example
 ```json
@@ -95,6 +110,24 @@ Content-Type: `application/json`
   }
 }
 ```
+
+### Markdown Conversion Example (No AI/LLM)
+
+For cost-effective HTML to markdown conversion without AI processing:
+
+```json
+{
+  "url": "https://scrapegraphai.com/",
+  "extraction_mode": false,
+  "depth": 2,
+  "max_pages": 5,
+  "same_domain_only": true
+}
+```
+
+<Note>
+When `extraction_mode: false`, the `prompt` parameter is not required. This mode converts HTML to clean markdown with metadata extraction at only 2 credits per page (80% savings compared to AI mode).
+</Note>
 
 ---
 

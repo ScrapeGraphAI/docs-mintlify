@@ -6,7 +6,12 @@ icon: 'spider'
 
 ## Overview
 
-SmartCrawler is our advanced LLM-powered web crawling and extraction service. Unlike SmartScraper, which extracts data from a single page, SmartCrawler can traverse multiple pages, follow links, and extract structured data from entire websites or sections, all guided by your prompt and schema.
+SmartCrawler is our advanced web crawling service that offers two modes:
+
+1. **AI-Powered Extraction**: LLM-powered web crawling with intelligent data extraction (10 credits per page)
+2. **Markdown Conversion**: Cost-effective HTML to markdown conversion without AI/LLM processing (2 credits per page - 80% savings!)
+
+Unlike SmartScraper, which extracts data from a single page, SmartCrawler can traverse multiple pages, follow links, and either extract structured data or convert content to clean markdown from entire websites or sections.
 
 <Note>
 Try SmartCrawler instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
@@ -75,7 +80,8 @@ curl -X 'POST' \
 | Parameter         | Type    | Required | Description |
 |-------------------|---------|----------|-------------|
 | url               | string  | Yes      | The starting URL for the crawl. |
-| prompt            | string  | Yes      | Instructions for what to extract. |
+| prompt            | string  | No*      | Instructions for what to extract (*required when extraction_mode=true). |
+| extraction_mode   | bool    | No       | When `false`, enables markdown conversion mode (default: true). |
 | depth             | int     | No       | How many link levels to follow (default: 1). |
 | max_pages         | int     | No       | Maximum number of pages to crawl (default: 20). |
 | schema            | object  | No       | Pydantic or Zod schema for structured output. |
@@ -86,6 +92,103 @@ curl -X 'POST' \
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
+
+## Markdown Conversion Mode
+
+For cost-effective content archival and when you only need clean markdown without AI processing, use the markdown conversion mode. This mode offers significant cost savings and is perfect for documentation, content migration, and simple data collection.
+
+### Benefits
+
+- **80% Cost Savings**: Only 2 credits per page vs 10 credits for AI mode
+- **No AI/LLM Processing**: Pure HTML to markdown conversion
+- **Clean Output**: Well-formatted markdown with metadata extraction
+- **Fast Processing**: No AI inference delays
+- **Perfect for**: Documentation, content archival, site migration
+
+### Quick Start - Markdown Mode
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Markdown conversion mode - no prompt needed
+response = client.crawl(
+    url="https://scrapegraphai.com/",
+    extraction_mode=False,  # False = Markdown conversion (NO AI/LLM)
+    depth=2,
+    max_pages=5
+)
+```
+
+```javascript JavaScript
+import { crawl } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+const url = 'https://scrapegraphai.com';
+
+try {
+  // Markdown conversion mode - no prompt needed  
+  const response = await crawl(apiKey, url, null, null, {
+    extractionMode: false,  // false = Markdown conversion (NO AI/LLM)
+    depth: 2,
+    maxPages: 5
+  });
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/crawl' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "url": "https://scrapegraphai.com/",
+  "extraction_mode": false,
+  "depth": 2,
+  "max_pages": 5
+}'
+```
+
+</CodeGroup>
+
+### Markdown Mode Response
+
+<Accordion title="Markdown Conversion Response" icon="markdown">
+```json
+{
+  "status": "success",
+  "result": {
+    "status": "done",
+    "pages_processed": 5,
+    "credits_used": 10,
+    "crawled_urls": [
+      "https://scrapegraphai.com/",
+      "https://scrapegraphai.com/about",
+      "https://scrapegraphai.com/pricing"
+    ],
+    "pages": [
+      {
+        "url": "https://scrapegraphai.com/",
+        "title": "ScrapeGraphAI - AI-Powered Web Scraping",
+        "markdown": "# Transform Websites into Structured Data\n\nScrapeGraphAI is the most complete web scraping library...",
+        "metadata": {
+          "word_count": 1250,
+          "headers": ["Transform Websites", "Features", "Pricing"],
+          "links_count": 25
+        }
+      }
+    ]
+  }
+}
+```
+</Accordion>
 
 ### Crawl Rules
 
@@ -300,12 +403,15 @@ POST https://api.scrapegraphai.com/v1/crawl
 
 ### Key Features
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Multi-Page Extraction" icon="layers">
     Crawl and extract from entire sites, not just single pages
   </Card>
   <Card title="AI Understanding" icon="brain">
     Contextual extraction across multiple pages
+  </Card>
+  <Card title="Markdown Conversion" icon="markdown">
+    Cost-effective HTML to markdown conversion (80% savings!)
   </Card>
   <Card title="Crawl Rules" icon="filter">
     Fine-tune what gets crawled and extracted
@@ -313,23 +419,46 @@ POST https://api.scrapegraphai.com/v1/crawl
   <Card title="Schema Support" icon="code">
     Define custom output schemas for structured results
   </Card>
+  <Card title="Dual Mode Support" icon="toggle-on">
+    Choose between AI extraction or markdown conversion
+  </Card>
 </CardGroup>
 
 ## Use Cases
 
-- Site-wide data extraction
-- Product catalog crawling
-- Legal/Privacy/Terms aggregation
-- Research and competitive analysis
-- Multi-page blog/news scraping
+### AI Extraction Mode
+- Site-wide data extraction with smart understanding
+- Product catalog crawling with structured output
+- Legal/Privacy/Terms aggregation with AI parsing
+- Research and competitive analysis with insights
+- Multi-page blog/news scraping with content analysis
+
+### Markdown Conversion Mode
+- Website documentation archival and migration
+- Content backup and preservation (80% cheaper!)
+- Blog/article collection in markdown format
+- Site content analysis without AI overhead
+- Fast bulk content conversion for CMS migration
 
 ## Best Practices
 
-- Be specific in your prompts
-- Use schemas for structured output
-- Set reasonable `max_pages` and `depth`
-- Use `rules` to avoid unwanted pages
-- Handle errors and poll for results
+### AI Extraction Mode
+- Be specific in your prompts for better results
+- Use schemas for structured output validation
+- Test prompts on single pages first
+- Include examples in your schema descriptions
+
+### Markdown Conversion Mode  
+- Perfect for content archival and documentation
+- No prompt required - set `extraction_mode: false`
+- 80% cheaper than AI mode (2 credits vs 10 per page)
+- Ideal for bulk content migration
+
+### General
+- Set reasonable `max_pages` and `depth` limits
+- Use `rules` to avoid unwanted pages (like /logout)
+- Always handle errors and poll for results
+- Monitor your credit usage and rate limits
 
 ## API Reference
 
