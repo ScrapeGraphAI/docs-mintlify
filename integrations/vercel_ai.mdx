@@ -1,0 +1,123 @@
+---
+title: " Vercel AI"
+description: "Integrate ScrapeGraphAI into Vercel AI"
+---
+
+## Overview
+
+[Vercel AI sdk](https://ai-sdk.dev/) is a very populate javascript/typescript framework to interact with various LLMs providers. This page shows how to integrate it with ScrapeGraph
+
+<Card
+  title="Official Vercel AI documentation"
+  icon="book"
+  href="https://ai-sdk.dev/"
+>
+  View the integration on LlamaHub
+</Card>
+
+## Installation
+
+Follow out [javascript sdk installation steps](/sdks/javascript) using your favourite package manager:
+
+```bash
+# Using npm
+npm i scrapegraph-js
+
+# Using pnpm
+pnpm i scrapegraph-js
+
+# Using yarn
+yarn add scrapegraph-js
+
+# Using bun
+bun add scrapegraph-js
+```
+
+Then, install [vercel ai](https://ai-sdk.dev/docs/getting-started) with their [openai provider](https://ai-sdk.dev/providers/ai-sdk-providers/openai)
+
+```bash
+# Using npm
+npm i ai @ai-sdk/openai
+
+# Using pnpm
+pnpm i ai @ai-sdk/openai
+
+# Using yarn
+yarn add ai @ai-sdk/openai
+
+# Using bun
+bun add ai @ai-sdk/openai
+```
+
+## Usage
+
+ScrapeGraph sdk can be used like any other tools, see [vercel ai tool calling doc](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling)
+
+```ts
+import { z } from "zod";
+import { generateText, tool } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { smartScraper } from "scrapegraph-js";
+
+const apiKey = process.env.SGAI_APIKEY;
+
+const ArticleSchema = z.object({
+  title: z.string().describe("The article title"),
+  author: z.string().describe("The author's name"),
+  publishDate: z.string().describe("Article publication date"),
+  content: z.string().describe("Main article content"),
+  category: z.string().describe("Article category"),
+});
+
+const ArticlesArraySchema = z
+  .array(ArticleSchema)
+  .describe("Array of articles");
+
+const result = await generateText({
+  model: openai("gpt-4.1-mini"),
+  tools: {
+    scrape: tool({
+      description: "Get articles information for a given url.",
+      parameters: z.object({
+        url: z.string().describe("The exact url."),
+      }),
+      execute: async ({ url }) => {
+        const response = await smartScraper(
+          apiKey,
+          url,
+          "Extract the article information",
+          ArticlesArraySchema
+        );
+        const result: z.infer<typeof ArticleSchema> = response;
+        return result;
+      },
+    }),
+  },
+  prompt: "Can you find me the articles on https://scrapegraphai.com/blog?",
+});
+
+console.log(result);
+```
+
+**TODO ADD THE LOGS**
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/llama-index-tools-scrapegraph/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
