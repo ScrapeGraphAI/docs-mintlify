@@ -1,0 +1,240 @@
+---
+title: 'Agentic Scraper'
+description: 'Automate browser actions and scrape data with or without AI, even on login-protected sites.'
+icon: 'bolt'
+---
+
+<Frame>
+  <img src="/services/images/smartscraper-banner.png" alt="Agentic Scraper Service" />
+</Frame>
+
+## Overview
+
+Agentic Scraper is our most advanced service for automating browser actions and scraping data from any website, including those protected by login or requiring complex interactions. It allows you to:
+- Navigate websites
+- Perform sequences of actions (login, clicks, form filling, scrolling, etc.)
+- Extract the resulting content as markdown
+- **Optionally** use AI to extract structured data according to a schema
+
+<Note>
+Try it instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) – no coding required!
+</Note>
+
+## Difference: With vs Without AI Extraction
+
+- **Without AI Extraction (`ai_extraction: false`)**: You get the page content (after actions) as markdown/raw. Ideal for archiving, backup, or manual analysis.
+- **With AI Extraction (`ai_extraction: true`)**: AI extracts structured data according to a provided schema (e.g., JSON with specific fields). Perfect for automation, integration, and data analysis.
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```javascript JavaScript
+import { agenticScraper } from 'scrapegraph-js';
+import 'dotenv/config';
+
+const apiKey = process.env.SGAI_APIKEY;
+const url = 'https://dashboard.scrapegraphai.com/';
+const steps = [
+  'Type email@gmail.com in email input box',
+  'Type test-password@123 in password inputbox',
+  'click on login'
+];
+
+try {
+  // Basic scraping without AI extraction
+  const response = await agenticScraper(apiKey, url, steps, true, null, null, false);
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
+
+// With AI extraction
+const schema = {
+  dashboard_info: {
+    type: "object",
+    properties: {
+      username: { type: "string" },
+      email: { type: "string" },
+      dashboard_sections: { type: "array", items: { type: "string" } },
+      credits_remaining: { type: "number" }
+    },
+    required: ["username", "dashboard_sections"]
+  }
+};
+
+try {
+  const aiResponse = await agenticScraper(
+    apiKey,
+    url,
+    [...steps, 'wait for dashboard to load completely'],
+    true,
+    'Extract user info, dashboard sections, and remaining credits',
+    schema,
+    true
+  );
+  console.log(aiResponse);
+} catch (error) {
+  console.error(error);
+}
+```
+
+```bash cURL
+# Basic scraping without AI extraction
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/agentic-scrapper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "url": "https://dashboard.scrapegraphai.com/",
+  "use_session": true,
+  "steps": ["Type email@gmail.com in email input box", "Type test-password@123 in password inputbox", "click on login"],
+  "ai_extraction": false
+}'
+
+# With AI extraction
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/agentic-scrapper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "url": "https://dashboard.scrapegraphai.com/",
+  "use_session": true,
+  "steps": ["Type email@gmail.com in email input box", "Type test-password@123 in password inputbox", "click on login", "wait for dashboard to load completely"],
+  "user_prompt": "Extract user info, dashboard sections, and remaining credits",
+  "output_schema": {
+    "dashboard_info": {
+      "type": "object",
+      "properties": {
+        "username": {"type": "string"},
+        "email": {"type": "string"},
+        "dashboard_sections": {"type": "array", "items": {"type": "string"}},
+        "credits_remaining": {"type": "number"}
+      },
+      "required": ["username", "dashboard_sections"]
+    }
+  },
+  "ai_extraction": true
+}'
+```
+
+```python Python
+import os
+from dotenv import load_dotenv
+from scrapegraph_py import Client
+from scrapegraph_py.logger import sgai_logger
+
+load_dotenv()
+sgai_logger.set_logging(level="INFO")
+api_key = os.getenv("SGAI_API_KEY")
+client = Client(api_key=api_key)
+
+# Basic example: login and scrape without AI
+response = client.agenticscraper(
+    url="https://dashboard.scrapegraphai.com/",
+    use_session=True,
+    steps=[
+        "Type email@gmail.com in email input box",
+        "Type test-password@123 in password inputbox",
+        "click on login"
+    ],
+    ai_extraction=False
+)
+print(response)
+
+# Example with AI extraction and schema
+output_schema = {
+    "dashboard_info": {
+        "type": "object",
+        "properties": {
+            "username": {"type": "string"},
+            "email": {"type": "string"},
+            "dashboard_sections": {"type": "array", "items": {"type": "string"}},
+            "credits_remaining": {"type": "number"}
+        },
+        "required": ["username", "dashboard_sections"]
+    }
+}
+ai_response = client.agenticscraper(
+    url="https://dashboard.scrapegraphai.com/",
+    use_session=True,
+    steps=[
+        "Type email@gmail.com in email input box",
+        "Type test-password@123 in password inputbox",
+        "click on login",
+        "wait for dashboard to load completely"
+    ],
+    user_prompt="Extract user info, dashboard sections, and remaining credits",
+    output_schema=output_schema,
+    ai_extraction=True
+)
+print(ai_response)
+client.close()
+```
+
+</CodeGroup>
+
+### Main Parameters
+
+| Parameter        | Type     | Required    | Description |
+|------------------|----------|-------------|-------------|
+| apiKey           | string   | Yes         | Your ScrapeGraph API Key |
+| url              | string   | Yes         | Target page URL |
+| use_session      | bool     | No          | Keep browser session (useful for login) |
+| steps            | array    | Yes         | Sequence of actions to perform (click, type, etc.) |
+| user_prompt      | string   | AI only     | Prompt for AI extraction |
+| output_schema    | object   | AI only     | JSON schema for structured output |
+| ai_extraction    | bool     | No          | true = AI extraction, false = raw content only |
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Use Cases
+
+- Login and scraping of private dashboards
+- Automation of forms and data collection
+- Extraction of structured data from complex portals
+- Archiving content after dynamic interactions
+- End-to-end testing of web flows
+
+## Best Practices
+
+- Carefully define the `steps` sequence to simulate user actions
+- Use `ai_extraction: false` for backup/archiving, `true` for structured data
+- Provide a detailed `output_schema` for reliable AI results
+- Handle errors and poll for request status if the response is asynchronous
+
+## API Reference
+
+For technical details see:
+- [Start Agentic Scraper Job](/api-reference/endpoint/agenticscraper/start)
+- [Get Job Status](/api-reference/endpoint/agenticscraper/get-status)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Open-source projects
+  </Card>
+  <Card title="Main Website" icon="globe" href="https://www.scrapegraphai.com">
+    Official website
+  </Card>
+</CardGroup>
+
+<Card title="Ready to try?" icon="rocket" href="https://dashboard.scrapegraphai.com">
+  Get your API key and start using Agentic Scraper now!
+</Card>
