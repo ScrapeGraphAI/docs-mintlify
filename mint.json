@@ -85,6 +85,7 @@
         "services/smartscraper",
         "services/searchscraper",
         "services/smartcrawler",
+        "services/agenticscraper",
         "services/markdownify",
         "services/pagination",
         {
