@@ -27,6 +27,10 @@
     {
       "name": "Support",
       "url": "mailto:contact@scrapegraphai.com"
+    },
+    {
+      "name": "⭐ 21.1k",
+      "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
     }
   ],
   "topbarCtaButton": {
@@ -88,6 +92,7 @@
         "services/agenticscraper",
         "services/markdownify",
         "services/pagination",
+        "services/mcp-server",
         {
           "group": "Additional Parameters",
           "pages": ["services/additional-parameters/headers"]

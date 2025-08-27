@@ -1,0 +1,549 @@
+---
+title: 'MCP Server'
+description: 'Use ScrapeGraphAPI through the Model Context Protocol'
+openapi: 'https://raw.githubusercontent.com/ScrapeGraphAI/scrapegraph-mcp/main/openapi.json'
+---
+
+# ScrapeGraphAI MCP Server
+
+Use ScrapeGraphAPI's capabilities through the Model Context Protocol
+
+A Model Context Protocol (MCP) server implementation that integrates ScrapeGraphAPI for web scraping capabilities. Our MCP server is open-source and available on GitHub.
+
+## Features
+
+- Web scraping, crawling, and discovery
+- Search and content extraction
+- Deep research and batch scraping
+- Cloud and self-hosted support
+- SSE support
+
+## Installation
+
+You can either use our remote hosted URL or run the server locally. Get your API key from [ScrapeGraphAI Dashboard](https://dashboard.scrapegraphai.com)
+
+### Remote hosted URL
+
+```
+https://mcp.scrapegraphai.com/{SCRAPEGRAPH_API_KEY}/sse
+```
+
+### Running with npx
+
+```bash
+env SCRAPEGRAPH_API_KEY=sg-YOUR_API_KEY npx -y @scrapegraphai/mcp-server
+```
+
+### Manual Installation
+
+```bash
+npm install -g @scrapegraphai/mcp-server
+```
+
+> Play around with our MCP Server on MCP.so's playground or on Klavis AI.
+
+### Running on Cursor
+
+Add ScrapeGraphAI MCP server to Cursor
+
+#### Manual Installation
+
+**Configuring Cursor** 🖥️ Note: Requires Cursor version 0.45.6+
+
+For the most up-to-date configuration instructions, please refer to the official Cursor documentation on configuring MCP servers: [Cursor MCP Server Configuration Guide](https://docs.cursor.com/features/mcp-servers)
+
+To configure ScrapeGraphAI MCP in Cursor **v0.48.6**
+
+1. Open Cursor Settings
+2. Go to Features > MCP Servers
+3. Click "+ Add new global MCP server"
+4. Enter the following code:
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "command": "npx",
+      "args": ["-y", "@scrapegraphai/mcp-server"],
+      "env": {
+        "SCRAPEGRAPH_API_KEY": "YOUR-API-KEY"
+      }
+    }
+  }
+}
+```
+
+To configure ScrapeGraphAI MCP in Cursor **v0.45.6**
+
+1. Open Cursor Settings
+2. Go to Features > MCP Servers
+3. Click "+ Add New MCP Server"
+4. Enter the following:
+   - Name: "scrapegraph-mcp" (or your preferred name)
+   - Type: "command"
+   - Command: `env SCRAPEGRAPH_API_KEY=your-api-key npx -y @scrapegraphai/mcp-server`
+
+> If you are using Windows and are running into issues, try `cmd /c "set SCRAPEGRAPH_API_KEY=your-api-key && npx -y @scrapegraphai/mcp-server"`
+
+Replace `your-api-key` with your ScrapeGraphAI API key. If you don't have one yet, you can create an account and get it from [ScrapeGraphAI Dashboard](https://dashboard.scrapegraphai.com)
+
+After adding, refresh the MCP server list to see the new tools. The Composer Agent will automatically use ScrapeGraphAI MCP when appropriate, but you can explicitly request it by describing your web scraping needs. Access the Composer via Command+L (Mac), select "Agent" next to the submit button, and enter your query.
+
+### Running on Windsurf
+
+Add this to your `./codeium/windsurf/model_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-scrapegraph": {
+      "command": "npx",
+      "args": ["-y", "@scrapegraphai/mcp-server"],
+      "env": {
+        "SCRAPEGRAPH_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Running with SSE Mode
+
+To run the server using Server-Sent Events (SSE) locally instead of the default stdio transport:
+
+```bash
+env SSE_LOCAL=true SCRAPEGRAPH_API_KEY=sg-YOUR_API_KEY npx -y @scrapegraphai/mcp-server
+```
+
+Use the url: `http://localhost:3000/sse` or `https://mcp.scrapegraphai.com/{SCRAPEGRAPH_API_KEY}/sse`
+
+### Running on VS Code
+
+For one-click installation, click one of the install buttons below...
+
+[Install with NPX in VS Code](vscode://install-extension/ms-vscode.vscode-json) [Install with NPX in VS Code Insiders](vscode-insiders://install-extension/ms-vscode.vscode-json)
+
+For manual installation, add the following JSON block to your User Settings (JSON) file in VS Code. You can do this by pressing `Ctrl + Shift + P` and typing `Preferences: Open User Settings (JSON)`.
+
+```json
+{
+  "mcp": {
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "apiKey",
+        "description": "ScrapeGraphAI API Key",
+        "password": true
+      }
+    ],
+    "servers": {
+      "scrapegraph": {
+        "command": "npx",
+        "args": ["-y", "@scrapegraphai/mcp-server"],
+        "env": {
+          "SCRAPEGRAPH_API_KEY": "${input:apiKey}"
+        }
+      }
+    }
+  }
+}
+```
+
+Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace. This will allow you to share the configuration with others:
+
+```json
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "apiKey",
+      "description": "ScrapeGraphAI API Key",
+      "password": true
+    }
+  ],
+  "servers": {
+    "scrapegraph": {
+      "command": "npx",
+      "args": ["-y", "@scrapegraphai/mcp-server"],
+      "env": {
+        "SCRAPEGRAPH_API_KEY": "${input:apiKey}"
+      }
+    }
+  }
+}
+```
+
+### Running on Claude Desktop
+
+Add this to the Claude config file:
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph": {
+      "url": "https://mcp.scrapegraphai.com/{YOUR_API_KEY}/sse"
+    }
+  }
+}
+```
+
+### Running on Claude Code
+
+Add the ScrapeGraphAI MCP server using the Claude Code CLI:
+
+```bash
+claude mcp add scrapegraph -e SCRAPEGRAPH_API_KEY=your-api-key -- npx -y @scrapegraphai/mcp-server
+```
+
+## Configuration
+
+### Environment Variables
+
+#### Required for Cloud API
+
+- `SCRAPEGRAPH_API_KEY`: Your ScrapeGraphAI API key
+  - Required when using cloud API (default)
+  - Optional when using self-hosted instance with `SCRAPEGRAPH_API_URL`
+- `SCRAPEGRAPH_API_URL` (Optional): Custom API endpoint for self-hosted instances
+  - Example: `http://localhost:8000` for local development
+
+#### Optional Configuration
+
+- `SSE_LOCAL`: Set to `true` to run in SSE mode locally
+- `LOG_LEVEL`: Set logging level (debug, info, warn, error)
+- `PORT`: Custom port for SSE mode (default: 3000)
+
+### Configuration Examples
+
+#### Basic Configuration
+
+```bash
+export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
+npx -y @scrapegraphai/mcp-server
+```
+
+#### Custom API URL
+
+```bash
+export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
+export SCRAPEGRAPH_API_URL=http://localhost:8000
+npx -y @scrapegraphai/mcp-server
+```
+
+#### Local SSE Mode
+
+```bash
+export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
+export SSE_LOCAL=true
+export PORT=3001
+npx -y @scrapegraphai/mcp-server
+```
+
+### Custom configuration with Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph": {
+      "url": "https://mcp.scrapegraphai.com/{YOUR_API_KEY}/sse",
+      "description": "ScrapeGraphAI MCP Server for web scraping"
+    }
+  }
+}
+```
+
+### System Configuration
+
+The server automatically handles:
+- API key validation
+- Rate limiting
+- Error handling
+- Connection management
+
+### Rate Limiting and Batch Processing
+
+The server utilizes ScrapeGraphAI's built-in rate limiting and batch processing capabilities:
+- Automatic rate limit handling with exponential backoff
+- Efficient parallel processing for batch operations
+- Smart request queuing and throttling
+- Automatic retries for transient errors
+
+## Available Tools
+
+### 1. Scrape Tool (`scrapegraph_scrape`)
+
+Scrape content from a single URL with advanced options.
+
+```json
+{
+  "name": "scrapegraph_scrape",
+  "arguments": {
+    "url": "https://example.com",
+    "formats": ["markdown"],
+    "onlyMainContent": true,
+    "waitFor": 1000,
+    "timeout": 30000,
+    "mobile": false,
+    "includeTags": ["article", "main"],
+    "excludeTags": ["nav", "footer"],
+    "skipTlsVerification": false
+  }
+}
+```
+
+### 2. Batch Scrape Tool (`scrapegraph_batch_scrape`)
+
+Scrape multiple URLs efficiently with built-in rate limiting and parallel processing.
+
+```json
+{
+  "name": "scrapegraph_batch_scrape",
+  "arguments": {
+    "urls": ["https://example1.com", "https://example2.com"],
+    "options": {
+      "formats": ["markdown"],
+      "onlyMainContent": true
+    }
+  }
+}
+```
+
+Response includes operation ID for status checking:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Batch operation queued with ID: batch_1. Use scrapegraph_check_batch_status to check progress."
+    }
+  ],
+  "isError": false
+}
+```
+
+### 3. Check Batch Status (`scrapegraph_check_batch_status`)
+
+Check the status of a batch operation.
+
+```json
+{
+  "name": "scrapegraph_check_batch_status",
+  "arguments": {
+    "id": "batch_1"
+  }
+}
+```
+
+### 4. Search Tool (`scrapegraph_search`)
+
+Search the web and optionally extract content from search results.
+
+```json
+{
+  "name": "scrapegraph_search",
+  "arguments": {
+    "query": "your search query",
+    "limit": 5,
+    "lang": "en",
+    "country": "us",
+    "scrapeOptions": {
+      "formats": ["markdown"],
+      "onlyMainContent": true
+    }
+  }
+}
+```
+
+### 5. Crawl Tool (`scrapegraph_crawl`)
+
+Start an asynchronous crawl with advanced options.
+
+```json
+{
+  "name": "scrapegraph_crawl",
+  "arguments": {
+    "url": "https://example.com",
+    "maxDepth": 2,
+    "limit": 100,
+    "allowExternalLinks": false,
+    "deduplicateSimilarURLs": true
+  }
+}
+```
+
+### 6. Extract Tool (`scrapegraph_extract`)
+
+Extract structured information from web pages using LLM capabilities. Supports both cloud AI and self-hosted LLM extraction.
+
+```json
+{
+  "name": "scrapegraph_extract",
+  "arguments": {
+    "urls": ["https://example.com/page1", "https://example.com/page2"],
+    "prompt": "Extract product information including name, price, and description",
+    "systemPrompt": "You are a helpful assistant that extracts product information",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "price"]
+    },
+    "allowExternalLinks": false,
+    "enableWebSearch": false,
+    "includeSubdomains": false
+  }
+}
+```
+
+Example response:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": {
+        "name": "Example Product",
+        "price": 99.99,
+        "description": "This is an example product description"
+      }
+    }
+  ],
+  "isError": false
+}
+```
+
+#### Extract Tool Options:
+
+- `urls`: Array of URLs to extract information from
+- `prompt`: Custom prompt for the LLM extraction
+- `systemPrompt`: System prompt to guide the LLM
+- `schema`: JSON schema for structured data extraction
+- `allowExternalLinks`: Allow extraction from external links
+- `enableWebSearch`: Enable web search for additional context
+- `includeSubdomains`: Include subdomains in extraction
+
+When using a self-hosted instance, the extraction will use your configured LLM. For cloud API, it uses ScrapeGraphAI's managed LLM service.
+
+### 7. Deep Research Tool (`scrapegraph_deep_research`)
+
+Conduct deep web research on a query using intelligent crawling, search, and LLM analysis.
+
+```json
+{
+  "name": "scrapegraph_deep_research",
+  "arguments": {
+    "query": "how does carbon capture technology work?",
+    "maxDepth": 3,
+    "timeLimit": 120,
+    "maxUrls": 50
+  }
+}
+```
+
+**Arguments:**
+- `query` (string, required): The research question or topic to explore.
+- `maxDepth` (number, optional): Maximum recursive depth for crawling/search (default: 3).
+- `timeLimit` (number, optional): Time limit in seconds for the research session (default: 120).
+- `maxUrls` (number, optional): Maximum number of URLs to analyze (default: 50).
+
+**Returns:**
+- Final analysis generated by an LLM based on research. (`data.finalAnalysis`)
+- May also include structured activities and sources used in the research process.
+
+### 8. Generate LLMs.txt Tool (`scrapegraph_generate_llmstxt`)
+
+Generate a standardized llms.txt (and optionally llms-full.txt) file for a given domain. This file defines how large language models should interact with the site.
+
+```json
+{
+  "name": "scrapegraph_generate_llmstxt",
+  "arguments": {
+    "url": "https://example.com",
+    "maxUrls": 20,
+    "showFullText": true
+  }
+}
+```
+
+**Arguments:**
+- `url` (string, required): The base URL of the website to analyze.
+- `maxUrls` (number, optional): Max number of URLs to include (default: 10).
+- `showFullText` (boolean, optional): Whether to include llms-full.txt contents in the response.
+
+**Returns:**
+- Generated llms.txt file contents and optionally the llms-full.txt (`data.llmstxt` and/or `data.llmsfulltxt`)
+
+## Logging System
+
+The server includes comprehensive logging:
+- Operation status and progress
+- Performance metrics
+- Credit usage monitoring
+- Rate limit tracking
+- Error conditions
+
+Example log messages:
+
+```
+[INFO] ScrapeGraphAI MCP Server initialized successfully
+[INFO] Starting scrape for URL: https://example.com
+[INFO] Batch operation queued with ID: batch_1
+[WARNING] Credit usage has reached warning threshold
+[ERROR] Rate limit exceeded, retrying in 2s...
+```
+
+## Error Handling
+
+The server provides robust error handling:
+- Automatic retries for transient errors
+- Rate limit handling with backoff
+- Detailed error messages
+- Credit usage warnings
+- Network resilience
+
+Example error response:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Error: Rate limit exceeded. Retrying in 2 seconds..."
+    }
+  ],
+  "isError": true
+}
+```
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Run tests
+npm test
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Run tests: `npm test`
+4. Submit a pull request
+
+### Thanks to contributors
+
+Thanks to the ScrapeGraphAI team and community for the implementation! Thanks to MCP.so and Klavis AI for hosting and all contributors for integrating our server.
+
+## License
+
+MIT License - see LICENSE file for details
