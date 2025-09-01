@@ -91,6 +91,7 @@
         "services/smartcrawler",
         "services/agenticscraper",
         "services/markdownify",
+        "services/scrape",
         "services/pagination",
         "services/mcp-server",
         {
