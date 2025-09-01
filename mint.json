@@ -106,7 +106,7 @@
     },
     {
       "group": "Official SDKs",
-      "pages": ["sdks/python", "sdks/javascript"]
+      "pages": ["sdks/python", "sdks/javascript", "sdks/mocking"]
     },
     {
       "group": "Integrations",
