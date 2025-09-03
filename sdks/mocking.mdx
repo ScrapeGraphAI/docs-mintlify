@@ -86,7 +86,7 @@ def mock_with_path_overrides():
     client = Client.from_env(
         mock=True,
         mock_responses={
-            "/v1/credits": {"remaining_credits": 42, "total_credits_used": 58}
+            "/v1/credits": {"remaining_credits": 42, "total_credits_used": 58, "mock": true}
         },
     )
 
@@ -103,28 +103,33 @@ client = Client.from_env(
     mock_responses={
         "/v1/credits": {
             "remaining_credits": 100,
-            "total_credits_used": 0
+            "total_credits_used": 0,
+            "mock": true
         },
         "/v1/smartscraper/start": {
             "job_id": "mock-job-123",
-            "status": "processing"
+            "status": "processing",
+            "mock": true
         },
         "/v1/smartscraper/status/mock-job-123": {
             "job_id": "mock-job-123",
             "status": "completed",
             "result": {
                 "title": "Mock Title",
-                "content": "Mock content from the webpage"
+                "content": "Mock content from the webpage",
+                "mock": true
             }
         },
         "/v1/markdownify/start": {
             "job_id": "mock-markdown-456",
-            "status": "processing"
+            "status": "processing",
+            "mock": true
         },
         "/v1/markdownify/status/mock-markdown-456": {
             "job_id": "mock-markdown-456",
             "status": "completed",
-            "result": "# Mock Markdown\n\nThis is mock markdown content."
+            "result": "# Mock Markdown\n\nThis is mock markdown content.",
+            "mock": true
         }
     }
 )
@@ -158,7 +163,8 @@ def advanced_custom_handler():
         if "/v1/credits" in url:
             return {
                 "remaining_credits": 50,
-                "total_credits_used": 50
+                "total_credits_used": 50,
+                "mock": true
             }
         elif "/v1/smartscraper" in url:
             # Extract user_prompt from kwargs to create contextual responses
@@ -169,7 +175,8 @@ def advanced_custom_handler():
                     "status": "completed",
                     "result": {
                         "title": "Extracted Title",
-                        "content": "This is the extracted content"
+                        "content": "This is the extracted content",
+                        "mock": true
                     }
                 }
             else:
@@ -177,7 +184,8 @@ def advanced_custom_handler():
                     "job_id": "mock-generic-job",
                     "status": "completed",
                     "result": {
-                        "data": "Generic extracted data"
+                        "data": "Generic extracted data",
+                        "mock": true
                     }
                 }
         else:
@@ -245,17 +253,19 @@ def test_integration_flow():
     client = Client.from_env(
         mock=True,
         mock_responses={
-            "/v1/credits": {"remaining_credits": 10, "total_credits_used": 90},
+            "/v1/credits": {"remaining_credits": 10, "total_credits_used": 90, "mock": true},
             "/v1/smartscraper/start": {
                 "job_id": "test-job-123",
-                "status": "processing"
+                "status": "processing",
+                "mock": true
             },
             "/v1/smartscraper/status/test-job-123": {
                 "job_id": "test-job-123",
                 "status": "completed",
                 "result": {
                     "title": "Test Page",
-                    "content": "Test content"
+                    "content": "Test content",
+                    "mock": true
                 }
             }
         }
@@ -286,7 +296,7 @@ You can also control mocking through environment variables:
 export SGAI_MOCK=true
 
 # Set custom mock responses (JSON format)
-export SGAI_MOCK_RESPONSES='{"\/v1\/credits": {"remaining_credits": 100}}'
+export SGAI_MOCK_RESPONSES='{"\/v1\/credits": {"remaining_credits": 100, "mock": true}}'
 ```
 
 ```python
@@ -317,6 +327,82 @@ async def async_mock_example():
 # Run the async example
 asyncio.run(async_mock_example())
 ```
+
+## HTTP Method Mocking with cURL
+
+You can also test ScrapeGraphAI endpoints directly using cURL with mock responses. This is useful for testing API integrations without using SDKs.
+
+### Basic cURL Mock Usage
+
+```bash
+# Enable mock mode via environment variable
+export SGAI_MOCK=true
+
+# Test credits endpoint with mock
+curl -X GET "https://api.scrapegraph.ai/v1/credits" \
+  -H "Authorization: Bearer $SGAI_API_KEY" \
+  -H "Content-Type: application/json"
+```
+
+### Custom Mock Responses with cURL
+
+```bash
+# Set custom mock responses via environment variable
+export SGAI_MOCK_RESPONSES='{
+  "/v1/credits": {
+    "remaining_credits": 100,
+    "total_credits_used": 0,
+    "mock": true
+  },
+  "/v1/smartscraper/start": {
+    "job_id": "mock-job-123",
+    "status": "processing",
+    "mock": true
+  }
+}'
+
+# Test smartscraper endpoint
+curl -X POST "https://api.scrapegraph.ai/v1/smartscraper/start" \
+  -H "Authorization: Bearer $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "website_url": "https://example.com",
+    "user_prompt": "Extract title and content"
+  }'
+```
+
+### Testing Different HTTP Methods
+
+```bash
+# POST request - to smartCrawler
+curl --location 'https://api.scrapegraphai.com/v1/smartscraper' \
+--data '{
+    "website_url": "https://www.scrapegraphai.com//",
+    "user_prompt": "Extract founder info ",
+    "mock":true
+}'
+```
+
+```bash
+# POST request - to Markdownify
+curl --location 'https://api.scrapegraphai.com/v1/markdownify' \
+--data '{
+    "website_url": "https://www.scrapegraphai.com//",
+    "mock":true
+}'
+```
+
+```bash
+# POST request - to SearchScraper
+curl --location 'https://api.scrapegraphai.com/v1/searchscraper' \
+--data '{
+    "website_url": "https://www.scrapegraphai.com//",
+    "mock":true
+    "output_schema":{},
+    "num_results":3, 
+}'
+```
+
 
 ## JavaScript SDK Mocking
 
@@ -367,11 +453,13 @@ setMockResponses({
   '/v1/credits': {
     remaining_credits: 42,
     total_credits_used: 58,
-    custom_field: 'This is a custom response'
+    custom_field: 'This is a custom response',
+    mock: true
   },
   '/v1/smartscraper': () => ({
     request_id: 'custom-mock-request-id',
-    custom_data: 'Generated by custom function'
+    custom_data: 'Generated by custom function',
+    mock: true
   })
 });
 
@@ -403,7 +491,8 @@ setMockHandler((method, url) => {
     method: method,
     url: url,
     timestamp: new Date().toISOString(),
-    message: 'This response was generated by a custom handler'
+    message: 'This response was generated by a custom handler',
+    mock: true
   };
 });
 
@@ -519,7 +608,8 @@ async function completeMockDemo() {
     '/v1/credits': {
       remaining_credits: 100,
       total_credits_used: 0,
-      custom_message: 'Custom mock response'
+      custom_message: 'Custom mock response',
+      mock: true
     }
   });
   
@@ -532,7 +622,8 @@ async function completeMockDemo() {
     custom_handler: true,
     method,
     url,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    mock: true
   }));
   
   const handlerResult = await smartScraper(API_KEY, 'https://example.com', 'Test');
@@ -555,7 +646,7 @@ completeMockDemo().catch(console.error);
 
 ## SDK Comparison
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Python SDK" icon="python">
     - `Client(mock=True)` initialization
     - `mock_responses` parameter for overrides
@@ -568,18 +659,26 @@ completeMockDemo().catch(console.error);
     - `setMockHandler()` for custom logic
     - Environment variable: `SGAI_MOCK=1`
   </Card>
+  <Card title="cURL/HTTP" icon="terminal">
+    - Environment variable: `SGAI_MOCK=true`
+    - `SGAI_MOCK_RESPONSES` for custom responses
+    - Direct HTTP method testing
+    - No SDK dependencies required
+  </Card>
 </CardGroup>
 
 ### Feature Comparison
 
-| Feature | Python SDK | JavaScript SDK |
-|---------|------------|----------------|
-| **Global Mock Mode** | `Client(mock=True)` | `enableMock()` |
-| **Per-Request Mock** | `{mock: True}` in params | `{mock: true}` in options |
-| **Custom Responses** | `mock_responses` dict | `setMockResponses()` |
-| **Custom Handler** | `mock_handler` function | `setMockHandler()` |
-| **Environment Variable** | `SGAI_MOCK=true` | `SGAI_MOCK=1` |
-| **Async Support** | `AsyncClient(mock=True)` | Native async/await |
+| Feature | Python SDK | JavaScript SDK | cURL/HTTP |
+|---------|------------|----------------|-----------|
+| **Global Mock Mode** | `Client(mock=True)` | `enableMock()` | `SGAI_MOCK=true` |
+| **Per-Request Mock** | `{mock: True}` in params | `{mock: true}` in options | N/A |
+| **Custom Responses** | `mock_responses` dict | `setMockResponses()` | `SGAI_MOCK_RESPONSES` |
+| **Custom Handler** | `mock_handler` function | `setMockHandler()` | N/A |
+| **Environment Variable** | `SGAI_MOCK=true` | `SGAI_MOCK=1` | `SGAI_MOCK=true` |
+| **Async Support** | `AsyncClient(mock=True)` | Native async/await | N/A |
+| **HTTP Methods** | SDK abstraction | SDK abstraction | Direct GET/POST/PUT/DELETE |
+| **Dependencies** | Python SDK required | JavaScript SDK required | None |
 
 ## Limitations
 
@@ -635,11 +734,13 @@ def complete_mock_demo():
         mock_responses={
             "/v1/credits": {
                 "remaining_credits": 25,
-                "total_credits_used": 75
+                "total_credits_used": 75,
+                "mock": true
             },
             "/v1/smartscraper/start": {
                 "job_id": "demo-job-789",
-                "status": "processing"
+                "status": "processing",
+                "mock": true
             },
             "/v1/smartscraper/status/demo-job-789": {
                 "job_id": "demo-job-789",
@@ -652,7 +753,8 @@ def complete_mock_demo():
                         "48MP camera system",
                         "Titanium design",
                         "Action Button"
-                    ]
+                    ],
+                    "mock": true
                 }
             }
         }
