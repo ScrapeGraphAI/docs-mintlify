@@ -70,7 +70,8 @@ curl -X 'POST' \
 | websiteUrl | string | Yes | The URL of the webpage that needs to be scraped. |
 | prompt | string | Yes | A textual description of what you want to achieve. |
 | schema | object | No | The Pydantic or Zod object that describes the structure and format of the response. |
-
+| mock | boolean | no | If you want mock data for testing
+| plain_text | boolean | no | If you want result as plain text instead of Json
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -482,6 +483,7 @@ POST https://api.scrapegraphai.com/v1/smartscraper
 | website_html | string | No | Raw HTML content to process |
 | user_prompt | string | Yes | Instructions for data extraction |
 | output_schema | object | No | Pydantic or Zod schema for response validation |
+| mock | boolean | no | If you want mock data for testing
 
 ##### Response Format
 ```json

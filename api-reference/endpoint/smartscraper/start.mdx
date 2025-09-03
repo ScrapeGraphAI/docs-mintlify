@@ -12,6 +12,58 @@ SmartScraper allows you to extract specific information from any webpage using A
 - Collect contact information from business pages
 - Extract structured data from articles or blog posts
 
+## Request Body
+
+<ParamField body="website_url" type="string" required>
+  The URL of the webpage you want to extract information from.
+</ParamField>
+
+<ParamField body="user_prompt" type="string" required>
+  Natural language description of what information you want to extract from the webpage.
+</ParamField>
+
+<ParamField body="output_schema" type="object">
+  Optional schema to structure the output. If provided, the AI will attempt to format the results according to this schema.
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Optional headers to customize the request behavior. This can include user agent, cookies, or other HTTP headers.
+</ParamField>
+
+<ParamField body="mock" type="boolean">
+  Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual extraction. Useful for testing and development.
+  
+  Default: false
+</ParamField>
+
+<ParamField body="plain_text" type="boolean">
+  Optional parameter to return plain text instead of JSON. When set to true, the result will be returned as plain text rather than structured JSON data.
+  
+  Default: false
+</ParamField>
+
+## Example Request
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_url": "https://scrapegraphai.com/",
+  "user_prompt": "Extract company information and features",
+  "output_schema": {
+    "properties": {
+      "company_name": {"type": "string"},
+      "description": {"type": "string"},
+      "features": {"type": "array", "items": {"type": "string"}},
+      "contact_email": {"type": "string"}
+    }
+  },
+  "mock": false,
+  "plain_text": false
+}'
+```
+
 ### Example Response
 
 ```json
