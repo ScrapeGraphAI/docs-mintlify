@@ -56,7 +56,8 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "user_prompt": "Search for information",
-  "num_results": 5
+  "num_results": 5,
+  "mock": false
 }'
 ```
 
@@ -70,6 +71,7 @@ curl -X 'POST' \
 | prompt      | string | Yes      | A textual description of what you want to achieve.                          |
 | numResults  | number | No       | Number of websites to search (3-20). Default: 3. Higher = deeper research.  |
 | schema      | object | No       | The Pydantic or Zod object that describes the structure and format of the response |
+| mock        | boolean| No       | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual search. Useful for testing and development. Default: false |
 
 <Note>
 <b>NEW:</b> You can now control the number of websites to search (3-20) for deeper research. More sites = more credits. See advanced usage below!

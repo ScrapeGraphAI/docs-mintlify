@@ -40,6 +40,12 @@ description: 'Start a new AI-powered web search request'
   ```
 </ParamField>
 
+<ParamField body="mock" type="boolean">
+  Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual search. Useful for testing and development.
+  
+  Default: false
+</ParamField>
+
 ## Response
 
 <ResponseField name="request_id" type="string">
@@ -81,7 +87,8 @@ curl -X POST 'https://api.scrapegraphai.com/v1/searchscraper' \
       "major_features": {"type": "array", "items": {"type": "string"}}
     },
     "required": ["version", "release_date", "major_features"]
-  }
+  },
+  "mock": false
 }'
 ```
 

@@ -54,7 +54,8 @@ curl -X 'POST' \
   -H 'SGAI-APIKEY: your-api-key' \
   -H 'Content-Type: application/json' \
   -d '{
-  "website_url": "https://example.com"
+  "website_url": "https://example.com",
+  "mock": false
 }'
 ```
 
@@ -66,6 +67,7 @@ curl -X 'POST' \
 |-----------|------|----------|-------------|
 | apiKey | string | Yes | The ScrapeGraph API Key. |
 | websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
+| mock | boolean | No | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual conversion. Useful for testing and development. Default: false |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -159,7 +161,8 @@ curl -X 'POST' \
   -H 'SGAI-APIKEY: sgai-********************' \
   -H 'Content-Type: application/json' \
   -d '{
-  "website_url": "https://example.com"
+  "website_url": "https://example.com",
+  "mock": false
 }'
 ```
 
