@@ -62,6 +62,15 @@ response = client.smartscraper(
 )
 ```
 
+#### Parameters
+
+| Parameter        | Type    | Required | Description                                                                        |
+| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
+| website_url      | string  | Yes      | The URL of the webpage that needs to be scraped.                                    |
+| user_prompt      | string  | Yes      | A textual description of what you want to achieve.                                  |
+| output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response.        |
+| render_heavy_js  | boolean | No       | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: False |
+
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema for basic data extraction:
 
@@ -131,6 +140,43 @@ print("\nOffice Locations:")
 for office in response.offices:
     print(f"- {office.location}: {office.address}")
 ```
+</Accordion>
+
+<Accordion title="Enhanced JavaScript Rendering Example" icon="code">
+For modern web applications built with React, Vue, Angular, or other JavaScript frameworks:
+
+```python
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+
+class ProductInfo(BaseModel):
+    name: str = Field(description="Product name")
+    price: str = Field(description="Product price")
+    description: str = Field(description="Product description")
+    availability: str = Field(description="Product availability status")
+
+client = Client(api_key="your-api-key")
+
+# Enable enhanced JavaScript rendering for a React-based e-commerce site
+response = client.smartscraper(
+    website_url="https://example-react-store.com/products/123",
+    user_prompt="Extract product details including name, price, description, and availability",
+    output_schema=ProductInfo,
+    render_heavy_js=True  # Enable for React/Vue/Angular sites
+)
+
+print(f"Product: {response['result']['name']}")
+print(f"Price: {response['result']['price']}")
+print(f"Available: {response['result']['availability']}")
+```
+
+**When to use `render_heavy_js`:**
+- React, Vue, or Angular applications
+- Single Page Applications (SPAs)
+- Sites with heavy client-side rendering
+- Dynamic content loaded via JavaScript
+- Interactive elements that depend on JavaScript execution
+
 </Accordion>
 
 ### SearchScraper

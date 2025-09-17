@@ -88,12 +88,13 @@ const response = await smartScraper(
 
 #### Parameters
 
-| Parameter  | Type   | Required | Description                                                                         |
-| ---------- | ------ | -------- | ----------------------------------------------------------------------------------- |
-| apiKey     | string | Yes      | The ScrapeGraph API Key.                                                            |
-| websiteUrl | string | Yes      | The URL of the webpage that needs to be scraped.                                    |
-| prompt     | string | Yes      | A textual description of what you want to achieve.                                  |
-| schema     | object | No       | The Pydantic or Zod object that describes the structure and format of the response. |
+| Parameter       | Type    | Required | Description                                                                         |
+| --------------- | ------- | -------- | ----------------------------------------------------------------------------------- |
+| apiKey          | string  | Yes      | The ScrapeGraph API Key.                                                            |
+| websiteUrl      | string  | Yes      | The URL of the webpage that needs to be scraped.                                    |
+| prompt          | string  | Yes      | A textual description of what you want to achieve.                                  |
+| schema          | object  | No       | The Pydantic or Zod object that describes the structure and format of the response. |
+| renderHeavyJs   | boolean | No       | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: false |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -176,6 +177,49 @@ response.result.offices.forEach((office) => {
   console.log(`- ${office.location}: ${office.address}`);
 });
 ```
+
+</Accordion>
+
+<Accordion title="Enhanced JavaScript Rendering Example" icon="code">
+For modern web applications built with React, Vue, Angular, or other JavaScript frameworks:
+
+```javascript
+import { smartScraper } from 'scrapegraph-js';
+import { z } from 'zod';
+
+const apiKey = 'your-api-key';
+
+const ProductSchema = z.object({
+  name: z.string().describe('Product name'),
+  price: z.string().describe('Product price'),
+  description: z.string().describe('Product description'),
+  availability: z.string().describe('Product availability status')
+});
+
+try {
+  const response = await smartScraper(
+    apiKey,
+    'https://example-react-store.com/products/123',
+    'Extract product details including name, price, description, and availability',
+    ProductSchema,
+    true  // Enable render_heavy_js for JavaScript-heavy sites
+  );
+  
+  console.log('Product:', response.result.name);
+  console.log('Price:', response.result.price);
+  console.log('Available:', response.result.availability);
+  
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+**When to use `renderHeavyJs`:**
+- React, Vue, or Angular applications
+- Single Page Applications (SPAs)
+- Sites with heavy client-side rendering
+- Dynamic content loaded via JavaScript
+- Interactive elements that depend on JavaScript execution
 
 </Accordion>
 
