@@ -192,11 +192,13 @@ const response = await searchScraper(
 
 #### Parameters
 
-| Parameter | Type   | Required | Description                                                                        |
-| --------- | ------ | -------- | ---------------------------------------------------------------------------------- |
-| apiKey    | string | Yes      | The ScrapeGraph API Key.                                                           |
-| prompt    | string | Yes      | A textual description of what you want to achieve.                                 |
-| schema    | object | No       | The Pydantic or Zod object that describes the structure and format of the response |
+| Parameter        | Type    | Required | Description                                                                        |
+| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
+| apiKey           | string  | Yes      | The ScrapeGraph API Key.                                                           |
+| prompt           | string  | Yes      | A textual description of what you want to achieve.                                 |
+| numResults       | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
+| extractionMode   | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
+| schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -258,6 +260,45 @@ const response = await searchScraper(
   RestaurantSchema
 );
 ```
+
+</Accordion>
+
+<Accordion title="Markdown Mode Example" icon="code">
+Use markdown mode for cost-effective content gathering:
+
+```javascript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+try {
+  // Enable markdown mode for cost-effective content gathering
+  const response = await searchScraper(
+    apiKey,
+    'Latest developments in artificial intelligence',
+    3,    // Search 3 websites
+    false // Enable markdown mode (2 credits per page vs 10 credits)
+  );
+
+  // Access the raw markdown content
+  const markdownContent = response.markdown_content;
+  
+  console.log('Markdown content length:', markdownContent.length);
+  console.log('Reference URLs:', response.reference_urls);
+  
+  // Process the markdown content
+  console.log('Content preview:', markdownContent.substring(0, 500) + '...');
+  
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+**Markdown Mode Benefits:**
+- **Cost-effective**: Only 2 credits per page (vs 10 credits for AI extraction)
+- **Full content**: Get complete page content in markdown format
+- **Faster**: No AI processing overhead
+- **Perfect for**: Content analysis, bulk data collection, building datasets
 
 </Accordion>
 

@@ -143,6 +143,15 @@ response = client.searchscraper(
 )
 ```
 
+#### Parameters
+
+| Parameter        | Type    | Required | Description                                                                        |
+| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
+| user_prompt      | string  | Yes      | A textual description of what you want to achieve.                                 |
+| num_results      | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
+| extraction_mode  | boolean | No       | **True** = AI extraction mode (10 credits/page), **False** = markdown mode (2 credits/page). Default: True |
+| output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response (AI extraction mode only) |
+
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema for structured search results:
 
@@ -221,6 +230,46 @@ for trend in response.trends:
     print(f"Impact: {trend.impact}")
     print(f"Timeframe: {trend.timeframe}")
 ```
+</Accordion>
+
+<Accordion title="Markdown Mode Example" icon="code">
+Use markdown mode for cost-effective content gathering:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Enable markdown mode for cost-effective content gathering
+response = client.searchscraper(
+    user_prompt="Latest developments in artificial intelligence",
+    num_results=3,
+    extraction_mode=False  # Enable markdown mode (2 credits per page vs 10 credits)
+)
+
+# Access the raw markdown content
+markdown_content = response['markdown_content']
+reference_urls = response['reference_urls']
+
+print(f"Markdown content length: {len(markdown_content)} characters")
+print(f"Reference URLs: {len(reference_urls)}")
+
+# Process the markdown content
+print("Content preview:", markdown_content[:500] + "...")
+
+# Save to file for analysis
+with open('ai_research_content.md', 'w', encoding='utf-8') as f:
+    f.write(markdown_content)
+
+print("Content saved to ai_research_content.md")
+```
+
+**Markdown Mode Benefits:**
+- **Cost-effective**: Only 2 credits per page (vs 10 credits for AI extraction)
+- **Full content**: Get complete page content in markdown format
+- **Faster**: No AI processing overhead
+- **Perfect for**: Content analysis, bulk data collection, building datasets
+
 </Accordion>
 
 ### Markdownify
