@@ -1,0 +1,121 @@
+---
+title: 'Lead Generation'
+description: 'Automate lead discovery and enrichment with intelligent web scraping'
+---
+
+# Automating Lead Discovery & Enrichment
+
+Transform your lead generation process with automated web scraping. Extract valuable contact information and business details from various online sources.
+
+## Common Use Cases
+
+- **Contact Discovery**: Extract contact information from company websites
+- **Business Directory Scraping**: Gather leads from business directories
+- **LinkedIn Profile Scraping**: Extract professional profiles and company information
+- **Email Discovery**: Find and verify business email addresses
+- **Lead Enrichment**: Add additional data points to existing leads
+
+## Integration Examples
+
+### Company Contact Scraping
+
+```python
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class ContactInfo(BaseModel):
+    name: str = Field(description="Contact person's full name")
+    email: Optional[str] = Field(description="Email address if available")
+    role: Optional[str] = Field(description="Job role or position")
+    phone: Optional[str] = Field(description="Phone number if available")
+    department: Optional[str] = Field(description="Department or team")
+
+class CompanyContacts(BaseModel):
+    contacts: List[ContactInfo] = Field(description="List of contact information")
+    company_name: str = Field(description="Company name")
+
+# Initialize the client
+client = Client(api_key="your-api-key")
+
+# Scrape company website
+response = client.smartscraper(
+    website_url="https://company.com/about",
+    user_prompt="Extract all contact information for decision makers and leadership team",
+    output_schema=CompanyContacts
+)
+
+# Process and store leads
+for contact in response.contacts:
+    if contact.email and contact.role and "manager" in contact.role.lower():
+        leads_db.add(contact)
+```
+
+### Business Directory Scraping
+
+```python
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class BusinessInfo(BaseModel):
+    """Schema for business information"""
+    name: str = Field(description="Business name")
+    website: str = Field(description="Company website URL")
+    description: Optional[str] = Field(description="Business description")
+    location: Optional[str] = Field(description="Business location")
+    industry: Optional[str] = Field(description="Industry or category")
+    size: Optional[str] = Field(description="Company size if available")
+    contact_email: Optional[str] = Field(description="Primary contact email")
+    phone: Optional[str] = Field(description="Business phone number")
+
+class BusinessSearchResults(BaseModel):
+    """Schema for search results"""
+    businesses: List[BusinessInfo] = Field(description="List of found businesses")
+    total_results: Optional[int] = Field(description="Total number of businesses found")
+
+# Initialize the client
+client = Client(api_key="your-api-key")
+
+try:
+    # Search for businesses in a specific category
+    search_results = client.searchscraper(
+        user_prompt="Find software companies in San Francisco with their contact details",
+        output_schema=BusinessSearchResults,
+        num_results=10,  # Number of websites to search (3-20)
+        extraction_mode=True  # Use AI extraction mode for structured data
+    )
+
+    # Extract and validate leads
+    valid_leads = []
+    for business in search_results.businesses:
+        if not business.website:
+            continue
+            
+        try:
+            # Get more detailed information from company website
+            details = client.smartscraper(
+                website_url=business.website,
+                user_prompt="Extract detailed company information including team size, tech stack, and all contact methods",
+                output_schema=CompanyContacts  # Defined earlier in the file
+            )
+            
+            if validate_lead(details):  # Your validation logic here
+                valid_leads.append(details)
+                
+        except Exception as e:
+            print(f"Error processing {business.name}: {str(e)}")
+            continue
+
+    print(f"Found {len(valid_leads)} valid leads out of {len(search_results.businesses)} businesses")
+
+except Exception as e:
+    print(f"Error during search: {str(e)}")
+```
+
+## Best Practices
+
+1. **Data Validation**: Always validate extracted contact information
+2. **Privacy Compliance**: Ensure compliance with privacy regulations
+3. **Rate Limiting**: Implement appropriate delays between requests
+4. **Data Deduplication**: Remove duplicate leads before storage

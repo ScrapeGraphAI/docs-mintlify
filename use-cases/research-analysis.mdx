@@ -1,0 +1,173 @@
+---
+title: 'Research & Analysis'
+description: 'Build powerful research tools with deep web search capabilities'
+---
+
+# Automating Research Data Collection
+
+Learn how to leverage ScrapeGraphAI to build sophisticated research tools and automate data collection for research projects.
+
+## Common Use Cases
+
+- **Academic Research**: Gather data from academic sources and research papers
+- **Market Research**: Collect and analyze market data and consumer insights
+- **Competitive Analysis**: Research competitor strategies and market positioning
+- **Industry Research**: Track industry trends and developments
+
+## Integration Examples
+
+### Research Data Collector
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime
+from scrapegraph_py import Client
+
+# Schema for research paper data
+class ResearchPaper(BaseModel):
+    title: str = Field(description="Paper title")
+    abstract: str = Field(description="Paper abstract")
+    authors: List[str] = Field(description="Paper authors")
+    publication_date: str = Field(description="Publication date")
+    journal: Optional[str] = Field(description="Journal name")
+    keywords: Optional[List[str]] = Field(description="Research keywords")
+    citations: Optional[int] = Field(description="Citation count")
+    doi: Optional[str] = Field(description="Digital Object Identifier")
+    url: str = Field(description="Paper URL")
+    pdf_url: Optional[str] = Field(description="PDF download URL")
+
+# Schema for research collection results
+class ResearchCollectionResult(BaseModel):
+    papers: List[ResearchPaper] = Field(description="List of research papers")
+    total_papers: int = Field(description="Total number of papers found")
+    query: str = Field(description="Search query used")
+    collection_date: str = Field(description="Date of collection")
+
+client = Client()
+
+# Search and collect research papers
+response = client.searchscraper(
+    user_prompt="Find recent research papers on machine learning applications in healthcare, focusing on papers published in the last year. Extract complete paper details including abstract, citations, and DOI.",
+    num_results=15,  # Number of papers to collect
+    output_schema=ResearchCollectionResult
+)
+
+# Process and analyze research papers
+print(f"Query: {response.query}")
+print(f"Papers Found: {response.total_papers}")
+print(f"Collection Date: {response.collection_date}\n")
+
+for paper in response.papers:
+    print(f"Title: {paper.title}")
+    print(f"Authors: {', '.join(paper.authors)}")
+    if paper.journal:
+        print(f"Journal: {paper.journal}")
+    print(f"Published: {paper.publication_date}")
+    print(f"Citations: {paper.citations or 'N/A'}")
+    if paper.keywords:
+        print(f"Keywords: {', '.join(paper.keywords)}")
+    if paper.doi:
+        print(f"DOI: {paper.doi}")
+    print(f"URL: {paper.url}")
+    if paper.pdf_url:
+        print(f"PDF: {paper.pdf_url}")
+    print(f"\nAbstract: {paper.abstract}\n")
+```
+
+### Industry Analysis Tool
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
+from datetime import datetime
+from scrapegraph_py import Client
+
+# Schema for company profile data
+class CompanyProfile(BaseModel):
+    name: str = Field(description="Company name")
+    market_share: Optional[float] = Field(description="Market share percentage")
+    revenue: Optional[str] = Field(description="Annual revenue")
+    employees: Optional[str] = Field(description="Number of employees")
+    headquarters: Optional[str] = Field(description="Company headquarters")
+    key_products: Optional[List[str]] = Field(description="Key products or services")
+
+# Schema for market metrics
+class MarketMetrics(BaseModel):
+    size: str = Field(description="Total market size")
+    growth_rate: float = Field(description="Annual growth rate percentage")
+    cagr: Optional[float] = Field(description="Compound Annual Growth Rate")
+    forecast_period: str = Field(description="Market forecast period")
+    segments: Dict[str, float] = Field(description="Market segments and their shares")
+
+# Schema for industry analysis
+class IndustryAnalysis(BaseModel):
+    sector: str = Field(description="Industry sector name")
+    subsector: Optional[str] = Field(description="Industry subsector")
+    market_metrics: MarketMetrics = Field(description="Market size and growth metrics")
+    trends: List[str] = Field(description="Key industry trends")
+    key_players: List[CompanyProfile] = Field(description="Major companies in the sector")
+    challenges: Optional[List[str]] = Field(description="Industry challenges")
+    opportunities: Optional[List[str]] = Field(description="Growth opportunities")
+    technologies: Optional[List[str]] = Field(description="Emerging technologies")
+    regulations: Optional[List[str]] = Field(description="Key regulations and policies")
+
+client = Client()
+
+# Collect industry analysis data
+response = client.smartscraper(
+    website_url="https://industry-research-site.com/sector-analysis",
+    user_prompt="Extract comprehensive industry analysis including detailed market metrics, company profiles, trends, and regulatory factors. Focus on quantitative data where available.",
+    output_schema=IndustryAnalysis
+)
+
+# Generate insights report
+print(f"Industry Analysis: {response.sector}")
+if response.subsector:
+    print(f"Subsector: {response.subsector}")
+
+print("\nMarket Overview:")
+print(f"Size: {response.market_metrics.size}")
+print(f"Growth Rate: {response.market_metrics.growth_rate}%")
+if response.market_metrics.cagr:
+    print(f"CAGR: {response.market_metrics.cagr}%")
+print(f"Forecast Period: {response.market_metrics.forecast_period}")
+
+print("\nMarket Segments:")
+for segment, share in response.market_metrics.segments.items():
+    print(f"- {segment}: {share}%")
+
+print("\nKey Players:")
+for player in response.key_players:
+    print(f"\nCompany: {player.name}")
+    if player.market_share:
+        print(f"Market Share: {player.market_share}%")
+    if player.revenue:
+        print(f"Revenue: {player.revenue}")
+    if player.key_products:
+        print(f"Key Products: {', '.join(player.key_products)}")
+
+print("\nIndustry Trends:")
+for trend in response.trends:
+    print(f"- {trend}")
+
+if response.technologies:
+    print("\nEmerging Technologies:")
+    for tech in response.technologies:
+        print(f"- {tech}")
+
+if response.regulations:
+    print("\nKey Regulations:")
+    for reg in response.regulations:
+        print(f"- {reg}")
+```
+
+## Best Practices
+
+1. **Data Validation**: Implement thorough validation for collected research data
+2. **Source Credibility**: Prioritize reliable and authoritative sources
+3. **Data Organization**: Maintain structured storage for research findings
+4. **Citation Management**: Properly track and manage citations and references
+5. **Regular Updates**: Schedule periodic updates for ongoing research projects
+6. **Data Backup**: Maintain backups of collected research data
+7. **Ethical Considerations**: Follow ethical guidelines and respect source websites' terms of service

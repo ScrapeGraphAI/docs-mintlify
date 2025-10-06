@@ -73,6 +73,18 @@
       "pages": [
         "introduction",
         {
+          "group": "Use Cases",
+          "pages": [
+            "use-cases/overview",
+            "use-cases/ai-llm",
+            "use-cases/lead-generation",
+            "use-cases/market-intelligence",
+            "use-cases/content-aggregation",
+            "use-cases/research-analysis",
+            "use-cases/seo-analytics"
+          ]
+        },
+        {
           "group": "Dashboard",
           "pages": [
             "dashboard/overview",
