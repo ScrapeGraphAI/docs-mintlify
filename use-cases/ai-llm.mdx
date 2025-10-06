@@ -1,0 +1,102 @@
+---
+title: 'AI & LLM Applications'
+description: 'Power your AI applications with real-time web data'
+---
+
+# Enhancing AI Applications with Web Data
+
+Learn how to integrate ScrapeGraphAI with your AI and LLM applications to enhance their capabilities with real-time web data.
+
+## Common Use Cases
+
+- **RAG (Retrieval Augmented Generation)**: Enhance your LLM responses with up-to-date web content
+- **AI Assistants**: Build domain-specific AI assistants with access to web data
+- **Knowledge Bases**: Create and maintain dynamic knowledge bases from web sources
+- **Research Agents**: Develop autonomous agents that can research and analyze web content
+
+## Integration Examples
+
+### RAG with LangChain
+
+```python
+from langchain import LLMChain
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+from typing import Optional
+
+class ArticleSchema(BaseModel):
+    """Schema for article content"""
+    title: str = Field(description="Article title")
+    content: str = Field(description="Main article content")
+    author: Optional[str] = Field(description="Article author name")
+    date: Optional[str] = Field(description="Publication date")
+    summary: Optional[str] = Field(description="Article summary or description")
+
+# Initialize the client
+client = Client(api_key="your-api-key")
+
+try:
+    # Scrape relevant content
+    response = client.smartscraper(
+        website_url="https://example.com/article",
+        user_prompt="Extract the main article content, title, author, and publication date",
+        output_schema=ArticleSchema
+    )
+
+    # Use in your RAG pipeline
+    text_content = f"Title: {response.title}\n\nContent: {response.content}"
+    docs = text_splitter.split_text(text_content)  # Most text splitters expect string input
+    vectorstore.add_documents(docs)
+
+    # Query your LLM with the enhanced context
+    response = llm_chain.run("Summarize the latest developments...")
+
+except Exception as e:
+    print(f"Error occurred: {str(e)}")
+```
+
+### AI Research Assistant
+
+```python
+from scrapegraph_py import Client
+from pydantic import BaseModel, Field
+from typing import List
+
+class ResearchData(BaseModel):
+    title: str = Field(description="Article title")
+    content: str = Field(description="Main article content")
+    author: str = Field(description="Article author")
+    date: str = Field(description="Publication date")
+
+class ResearchResults(BaseModel):
+    articles: List[ResearchData]
+
+# Initialize the client
+client = Client(api_key="your-api-key")
+
+try:
+# Search and scrape multiple sources
+search_results = client.searchscraper(
+    user_prompt="What are the latest developments in artificial intelligence?",
+    output_schema=ResearchResults,
+    num_results=5,  # Number of websites to search (3-20)
+    extraction_mode=True  # Use AI extraction mode for structured data
+)
+
+    # Process with your AI model
+    if search_results and search_results.articles:
+        analysis = ai_model.analyze(search_results.articles)
+        print(f"Analyzed {len(search_results.articles)} articles")
+    else:
+        print("No articles found in the search results")
+
+except Exception as e:
+    print(f"Error during research: {str(e)}")
+```
+
+## Best Practices
+
+1. **Data Freshness**: Regularly update your knowledge base with fresh web content
+2. **Content Filtering**: Use our filtering options to get only relevant content
+3. **Rate Limiting**: Implement appropriate rate limiting for production applications
+4. **Error Handling**: Always handle potential scraping errors gracefully

@@ -1,0 +1,209 @@
+---
+title: 'SEO & Analytics'
+description: 'Monitor and optimize your digital presence with automated SEO tracking'
+---
+
+# Monitoring SEO Performance & Digital Analytics
+
+Learn how to use ScrapeGraphAI to monitor your SEO performance and track digital analytics across the web.
+
+## Common Use Cases
+
+- **SERP Tracking**: Monitor search engine rankings for target keywords
+- **Competitor Analysis**: Track competitor SEO strategies and performance
+- **Content Performance**: Analyze content visibility and engagement
+- **Backlink Monitoring**: Track and analyze backlink profiles
+
+## Integration Examples
+
+### SERP Position Tracker
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
+from datetime import datetime
+from scrapegraph_py import Client
+
+# Schema for rich result data
+class RichResult(BaseModel):
+    type: str = Field(description="Type of rich result (featured snippet, knowledge panel, etc.)")
+    content: str = Field(description="Rich result content")
+    position: int = Field(description="Position in SERP")
+    url: Optional[str] = Field(description="Source URL if available")
+
+# Schema for SERP result
+class SearchResult(BaseModel):
+    position: int = Field(description="SERP position")
+    title: str = Field(description="Page title")
+    url: str = Field(description="Page URL")
+    description: str = Field(description="Meta description")
+    breadcrumbs: Optional[List[str]] = Field(description="URL breadcrumbs")
+    sitelinks: Optional[List[Dict[str, str]]] = Field(description="Sitelinks data")
+    featured_snippet: Optional[bool] = Field(description="Is featured snippet")
+    rich_results: Optional[List[RichResult]] = Field(description="Rich results data")
+
+# Schema for SERP analysis
+class SERPAnalysis(BaseModel):
+    keyword: str = Field(description="Target keyword")
+    results: List[SearchResult] = Field(description="Search results")
+    total_results: int = Field(description="Total number of results")
+    ads_count: Optional[int] = Field(description="Number of ads")
+    rich_results_count: Optional[int] = Field(description="Number of rich results")
+    analysis_date: str = Field(description="Analysis timestamp")
+    device: str = Field(description="Device type (mobile/desktop)")
+    location: Optional[str] = Field(description="Search location")
+
+client = Client()
+
+# Track SERP positions for keywords
+target_keywords = [
+    "your target keyword",
+    "another keyword"
+]
+
+for keyword in target_keywords:
+    # Analyze SERP data
+    response = client.smartscraper(
+        website_url=f"https://www.google.com/search?q={keyword}",
+        user_prompt="Extract detailed search results including positions, titles, descriptions, and all rich results. Also analyze ad presence and total result counts.",
+        output_schema=SERPAnalysis
+    )
+    
+    # Process SERP data
+    print(f"\nKeyword Analysis: {response.keyword}")
+    print(f"Date: {response.analysis_date}")
+    print(f"Device: {response.device}")
+    if response.location:
+        print(f"Location: {response.location}")
+    print(f"Total Results: {response.total_results:,}")
+    if response.ads_count:
+        print(f"Ads: {response.ads_count}")
+    if response.rich_results_count:
+        print(f"Rich Results: {response.rich_results_count}")
+    
+    print("\nSearch Results:")
+    for result in response.results:
+        print(f"\nPosition: {result.position}")
+        print(f"Title: {result.title}")
+        print(f"URL: {result.url}")
+        print(f"Description: {result.description}")
+        
+        if result.featured_snippet:
+            print("Featured Snippet: Yes")
+        
+        if result.rich_results:
+            print("\nRich Results:")
+            for rich in result.rich_results:
+                print(f"- Type: {rich.type}")
+                print(f"  Position: {rich.position}")
+        
+        if result.sitelinks:
+            print("\nSitelinks:")
+            for link in result.sitelinks:
+                print(f"- {link['title']}: {link['url']}")
+```
+
+### Content Performance Analyzer
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict
+from datetime import datetime
+from scrapegraph_py import Client
+
+# Schema for heading data
+class HeadingData(BaseModel):
+    text: str = Field(description="Heading text")
+    level: int = Field(description="Heading level (1-6)")
+    word_count: int = Field(description="Words in heading")
+
+# Schema for meta data
+class MetaData(BaseModel):
+    title: str = Field(description="Meta title")
+    description: str = Field(description="Meta description")
+    robots: Optional[str] = Field(description="Robots meta tag")
+    canonical: Optional[str] = Field(description="Canonical URL")
+    og_tags: Optional[Dict[str, str]] = Field(description="OpenGraph tags")
+    twitter_tags: Optional[Dict[str, str]] = Field(description="Twitter card tags")
+
+# Schema for content metrics
+class ContentMetrics(BaseModel):
+    url: str = Field(description="Page URL")
+    title: str = Field(description="Page title")
+    meta_data: MetaData = Field(description="Meta tag information")
+    word_count: int = Field(description="Content word count")
+    headings: List[HeadingData] = Field(description="Page headings structure")
+    keywords: List[str] = Field(description="Target keywords")
+    images: List[Dict[str, str]] = Field(description="Image data including alt text")
+    internal_links: List[str] = Field(description="Internal link URLs")
+    external_links: List[str] = Field(description="External link URLs")
+    social_shares: Optional[Dict[str, int]] = Field(description="Social share counts")
+    schema_markup: Optional[List[Dict]] = Field(description="Structured data markup")
+    content_score: Optional[float] = Field(description="Content quality score (0-100)")
+
+client = Client()
+
+# Analyze content performance
+target_urls = [
+    "https://your-site.com/page1",
+    "https://your-site.com/page2"
+]
+
+for url in target_urls:
+    # Extract content metrics
+    response = client.smartscraper(
+        website_url=url,
+        user_prompt="Perform comprehensive content analysis including meta tags, headings structure, internal/external links, and structured data. Calculate content quality score based on best practices.",
+        output_schema=ContentMetrics
+    )
+    
+    # Generate content insights report
+    print(f"\nContent Analysis for: {response.url}")
+    print(f"Title: {response.title}")
+    print(f"Content Score: {response.content_score:.1f}/100" if response.content_score else "Score: N/A")
+    
+    print("\nMeta Information:")
+    print(f"Title Tag: {response.meta_data.title}")
+    print(f"Description: {response.meta_data.description}")
+    if response.meta_data.canonical:
+        print(f"Canonical: {response.meta_data.canonical}")
+    
+    print("\nContent Statistics:")
+    print(f"Word Count: {response.word_count}")
+    print(f"Internal Links: {len(response.internal_links)}")
+    print(f"External Links: {len(response.external_links)}")
+    print(f"Images: {len(response.images)}")
+    
+    print("\nHeading Structure:")
+    for heading in response.headings:
+        print(f"H{heading.level}: {heading.text} ({heading.word_count} words)")
+    
+    print("\nTarget Keywords:")
+    for keyword in response.keywords:
+        print(f"- {keyword}")
+    
+    if response.social_shares:
+        print("\nSocial Engagement:")
+        for platform, count in response.social_shares.items():
+            print(f"{platform}: {count:,}")
+    
+    if response.schema_markup:
+        print("\nStructured Data:")
+        for schema in response.schema_markup:
+            print(f"- Type: {schema.get('type', 'Unknown')}")
+    
+    print("\nImage Analysis:")
+    missing_alt = sum(1 for img in response.images if not img.get('alt'))
+    print(f"Images Missing Alt Text: {missing_alt} of {len(response.images)}")
+```
+
+## Best Practices
+
+1. **Regular Monitoring**: Set up automated tracking for key SEO metrics
+2. **Competitor Tracking**: Monitor competitor SEO strategies and performance
+3. **Data History**: Maintain historical data for trend analysis
+4. **Mobile Optimization**: Track mobile-specific SEO metrics
+5. **Local SEO**: Monitor local search performance if applicable
+6. **Technical SEO**: Regular checks for technical SEO issues
+7. **Content Strategy**: Use insights to inform content optimization
+8. **Compliance**: Follow search engine guidelines and terms of service
