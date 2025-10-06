@@ -88,6 +88,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timedelta
 from scrapegraph_py import Client
+import time  # For job polling
 
 # Schema for blog post data
 class BlogPost(BaseModel):
@@ -111,8 +112,8 @@ class BlogMonitorResult(BaseModel):
 
 client = Client()
 
-# Monitor blog for new content
-response = client.smartcrawler_initiate(
+# Start the crawler job
+job = client.smartcrawler_initiate(
     url="https://example-blog.com",
     user_prompt="Extract all blog posts from the last 7 days, including title, content, author, publication date, categories, and metadata. Calculate estimated reading time based on content length.",
     extraction_mode="ai",
@@ -120,26 +121,39 @@ response = client.smartcrawler_initiate(
     same_domain_only=True
 )
 
-# Process the crawled content
-print(f"Blog: {response.blog_url}")
-print(f"Total Posts Found: {response.total_posts}")
-print(f"Last Updated: {response.last_updated}\n")
+# Wait for job completion and get results
+job_id = job.job_id
+while True:
+    status = client.smartcrawler_get_status(job_id)
+    if status.state == "completed":
+        response = status.result
+        break
+    elif status.state in ["failed", "cancelled"]:
+        print(f"Job failed: {status.error}")
+        break
+    time.sleep(5)  # Wait 5 seconds before checking again
 
-for post in response.posts:
-    # Check if post is recent
-    post_date = datetime.strptime(post.publication_date, "%Y-%m-%d")
-    if post_date > datetime.now() - timedelta(days=7):
-        print(f"Title: {post.title}")
-        print(f"Author: {post.author}")
-        print(f"Published: {post.publication_date}")
-        print(f"Reading Time: {post.reading_time} minutes")
-        if post.categories:
-            print(f"Categories: {', '.join(post.categories)}")
-        if post.tags:
-            print(f"Tags: {', '.join(post.tags)}")
-        if post.excerpt:
-            print(f"\nExcerpt: {post.excerpt}")
-        print(f"URL: {post.url}\n")
+# Process the crawled content if successful
+if response:
+    print(f"Blog: {response.blog_url}")
+    print(f"Total Posts Found: {response.total_posts}")
+    print(f"Last Updated: {response.last_updated}\n")
+
+    for post in response.posts:
+        # Check if post is recent
+        post_date = datetime.strptime(post.publication_date, "%Y-%m-%d")
+        if post_date > datetime.now() - timedelta(days=7):
+            print(f"Title: {post.title}")
+            print(f"Author: {post.author}")
+            print(f"Published: {post.publication_date}")
+            print(f"Reading Time: {post.reading_time} minutes")
+            if post.categories:
+                print(f"Categories: {', '.join(post.categories)}")
+            if post.tags:
+                print(f"Tags: {', '.join(post.tags)}")
+            if post.excerpt:
+                print(f"\nExcerpt: {post.excerpt}")
+            print(f"URL: {post.url}\n")
 ```
 
 ## Best Practices
