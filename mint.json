@@ -162,7 +162,13 @@
         "api-reference/endpoint/smartcrawler/get-status"
       ]
     },
-
+    {
+      "group": "Sitemap",
+      "pages": [
+        "api-reference/endpoint/sitemap/start",
+        "api-reference/endpoint/sitemap/get-status"
+      ]
+    },
     {
       "group": "Markdownify",
       "pages": [

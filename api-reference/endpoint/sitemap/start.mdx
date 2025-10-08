@@ -1,0 +1,148 @@
+---
+title: 'Start Sitemap'
+openapi: 'POST /v1/sitemap'
+description: 'Extract all URLs from a website sitemap automatically.'
+---
+
+Sitemap allows you to extract all URLs from a website's sitemap.xml file automatically. The API automatically discovers the sitemap from robots.txt, common locations like /sitemap.xml, or sitemap index files.
+
+### Use Cases
+- Discover all pages on a website for bulk scraping
+- Build content inventory from a website
+- Monitor website structure changes
+- Combine with other endpoints to scrape multiple pages
+- Create site maps for SEO analysis
+
+## Request Body
+
+<ParamField body="website_url" type="string" required>
+  The URL of the website you want to extract the sitemap from. The API will automatically locate the sitemap.xml file.
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Optional headers to customize the request behavior. This can include user agent, cookies, or other HTTP headers.
+</ParamField>
+
+<ParamField body="mock" type="boolean">
+  Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual extraction. Useful for testing and development.
+  
+  Default: false
+</ParamField>
+
+## Example Request
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/sitemap' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_url": "https://scrapegraphai.com"
+}'
+```
+
+### Example Response
+
+```json
+{
+  "request_id": "65401e0d-8cd6-4d6a-88f6-e21255d1c06a",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com",
+  "urls": [
+    "https://scrapegraphai.com/",
+    "https://scrapegraphai.com/about",
+    "https://scrapegraphai.com/blog",
+    "https://scrapegraphai.com/blog/how-to-scrape-websites",
+    "https://scrapegraphai.com/blog/web-scraping-best-practices",
+    "https://scrapegraphai.com/docs",
+    "https://scrapegraphai.com/pricing",
+    "https://scrapegraphai.com/contact"
+  ],
+  "error": ""
+}
+```
+
+## Python Example
+
+```python
+from scrapegraph_py import Client
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Initialize client
+client = Client.from_env()
+
+try:
+    # Extract sitemap URLs
+    response = client.sitemap(website_url="https://scrapegraphai.com")
+    
+    print(f"Found {len(response.urls)} URLs")
+    
+    # Display first 10 URLs
+    for url in response.urls[:10]:
+        print(url)
+        
+finally:
+    client.close()
+```
+
+## JavaScript Example
+
+```javascript
+import { sitemap } from 'scrapegraph-js';
+import 'dotenv/config';
+
+const apiKey = process.env.SGAI_APIKEY;
+const url = 'https://scrapegraphai.com/';
+
+try {
+  const response = await sitemap(apiKey, url);
+  
+  console.log(`Total URLs found: ${response.urls.length}`);
+  
+  // Display first 10 URLs
+  response.urls.slice(0, 10).forEach((url, index) => {
+    console.log(`${index + 1}. ${url}`);
+  });
+  
+} catch (error) {
+  console.error('Error:', error.message);
+}
+```
+
+## Combining with SmartScraper
+
+You can combine the Sitemap endpoint with SmartScraper to scrape multiple pages from a website:
+
+```python
+from scrapegraph_py import Client
+
+client = Client.from_env()
+
+try:
+    # Step 1: Get all URLs from sitemap
+    sitemap_response = client.sitemap(website_url="https://scrapegraphai.com")
+    
+    # Step 2: Filter for specific pages (e.g., blog posts)
+    blog_urls = [url for url in sitemap_response.urls if '/blog/' in url]
+    
+    # Step 3: Scrape each blog post
+    for url in blog_urls[:5]:  # Scrape first 5 blog posts
+        result = client.smartscraper(
+            website_url=url,
+            user_prompt="Extract the title, author, and main content"
+        )
+        print(f"Scraped: {url}")
+        
+finally:
+    client.close()
+```
+
+## Features
+
+- **Automatic Discovery**: Finds sitemap from robots.txt or common locations
+- **Sitemap Index Support**: Handles sitemap index files with multiple sitemaps
+- **Fast Extraction**: Quickly retrieves all URLs without scraping each page
+- **No Rate Limits**: Extract thousands of URLs in a single request
+- **Integration Ready**: Combine with other endpoints for bulk operations
