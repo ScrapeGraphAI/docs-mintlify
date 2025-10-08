@@ -1,0 +1,116 @@
+---
+title: 'Market Intelligence'
+description: 'Monitor competitors and market trends with automated data collection'
+---
+
+# Competitive Analysis & Market Insights
+
+Learn how to leverage ScrapeGraphAI for market intelligence and competitive analysis to stay ahead in your industry.
+
+## Common Use Cases
+
+- **Price Monitoring**: Track competitor pricing and promotional strategies
+- **Product Analysis**: Monitor product features, specifications, and availability
+- **Market Trends**: Analyze market trends and consumer sentiment
+- **Competitive Intelligence**: Track competitor activities and market positioning
+
+## Integration Examples
+
+### Price Monitoring System
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from decimal import Decimal
+from scrapegraph_py import Client
+
+# Schema for product pricing data
+class ProductPrice(BaseModel):
+    name: str = Field(description="Name of the product")
+    price: Decimal = Field(description="Current price")
+    original_price: Optional[Decimal] = Field(description="Original price if on sale")
+    currency: str = Field(description="Currency code (e.g., USD)")
+    seller: str = Field(description="Seller/retailer name")
+    availability: str = Field(description="Product availability status")
+    updated_at: str = Field(description="Last update timestamp")
+
+# Schema for price monitoring results
+class PriceMonitorResult(BaseModel):
+    products: List[ProductPrice] = Field(description="List of product prices")
+    total_products: int = Field(description="Total number of products monitored")
+    source_url: str = Field(description="URL of the monitored page")
+
+client = Client()
+
+# Monitor competitor prices
+response = client.smartscraper(
+    website_url="https://competitor-store.com/category/products",
+    user_prompt="Extract pricing information for all products including name, current price, original price if available, and availability status",
+    output_schema=PriceMonitorResult
+)
+
+# Process and analyze the data
+for product in response.products:
+    if product.original_price and product.original_price > product.price:
+        discount = ((product.original_price - product.price) / product.original_price) * 100
+        print(f"Product: {product.name}")
+        print(f"Current Price: {product.price} {product.currency}")
+        print(f"Original Price: {product.original_price} {product.currency}")
+        print(f"Discount: {discount:.1f}%")
+        print(f"Availability: {product.availability}\n")
+```
+
+### Market Trend Analysis
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime
+from scrapegraph_py import Client
+
+# Schema for market trend data
+class TrendData(BaseModel):
+    topic: str = Field(description="Trend topic or keyword")
+    mentions: int = Field(description="Number of mentions")
+    sentiment: float = Field(description="Sentiment score (-1 to 1)")
+    sources: List[str] = Field(description="Source URLs")
+    date: str = Field(description="Date of analysis")
+    key_insights: Optional[List[str]] = Field(description="Key insights about the trend")
+
+# Schema for trend analysis results
+class TrendAnalysisResult(BaseModel):
+    trends: List[TrendData] = Field(description="List of analyzed trends")
+    total_sources: int = Field(description="Total number of sources analyzed")
+    analysis_date: str = Field(description="Date of the analysis")
+
+client = Client()
+
+# Search and analyze market trends
+response = client.searchscraper(
+    user_prompt="Analyze market trends and sentiment in the electric vehicle industry. Focus on pricing trends, consumer preferences, and technological advancements.",
+    num_results=10,  # Number of sources to analyze
+    output_schema=TrendAnalysisResult
+)
+
+# Process and visualize trends
+print(f"Analysis Date: {response.analysis_date}")
+print(f"Sources Analyzed: {response.total_sources}\n")
+
+for trend in response.trends:
+    print(f"Topic: {trend.topic}")
+    print(f"Mentions: {trend.mentions}")
+    print(f"Sentiment: {trend.sentiment:+.2f}")
+    if trend.key_insights:
+        print("Key Insights:")
+        for insight in trend.key_insights:
+            print(f"- {insight}")
+    print(f"Sources: {len(trend.sources)}\n")
+```
+
+## Best Practices
+
+1. **Regular Monitoring**: Set up automated monitoring schedules for consistent data collection
+2. **Data Validation**: Implement validation checks for pricing and product data
+3. **Historical Analysis**: Store historical data for trend analysis and pattern recognition
+4. **Compliance**: Ensure compliance with website terms of service and rate limits
+5. **Data Freshness**: Update market intelligence data at appropriate intervals based on market volatility
