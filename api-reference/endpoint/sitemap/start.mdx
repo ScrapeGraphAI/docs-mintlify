@@ -29,6 +29,12 @@ Sitemap allows you to extract all URLs from a website's sitemap.xml file automat
   Default: false
 </ParamField>
 
+<ParamField body="stealth" type="boolean">
+  Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
+  
+  Default: false
+</ParamField>
+
 ## Example Request
 
 ```bash
@@ -36,7 +42,8 @@ curl -X POST 'https://api.scrapegraphai.com/v1/sitemap' \
 -H 'SGAI-APIKEY: YOUR_API_KEY' \
 -H 'Content-Type: application/json' \
 -d '{
-  "website_url": "https://scrapegraphai.com"
+  "website_url": "https://scrapegraphai.com",
+  "stealth": true
 }'
 ```
 
@@ -75,7 +82,10 @@ client = Client.from_env()
 
 try:
     # Extract sitemap URLs
-    response = client.sitemap(website_url="https://scrapegraphai.com")
+    response = client.sitemap(
+        website_url="https://scrapegraphai.com",
+        stealth=True
+    )
     
     print(f"Found {len(response.urls)} URLs")
     
@@ -97,7 +107,7 @@ const apiKey = process.env.SGAI_APIKEY;
 const url = 'https://scrapegraphai.com/';
 
 try {
-  const response = await sitemap(apiKey, url);
+  const response = await sitemap(apiKey, url, { stealth: true });
   
   console.log(`Total URLs found: ${response.urls.length}`);
   
@@ -122,7 +132,10 @@ client = Client.from_env()
 
 try:
     # Step 1: Get all URLs from sitemap
-    sitemap_response = client.sitemap(website_url="https://scrapegraphai.com")
+    sitemap_response = client.sitemap(
+        website_url="https://scrapegraphai.com",
+        stealth=True
+    )
     
     # Step 2: Filter for specific pages (e.g., blog posts)
     blog_urls = [url for url in sitemap_response.urls if '/blog/' in url]
@@ -131,7 +144,8 @@ try:
     for url in blog_urls[:5]:  # Scrape first 5 blog posts
         result = client.smartscraper(
             website_url=url,
-            user_prompt="Extract the title, author, and main content"
+            user_prompt="Extract the title, author, and main content",
+            stealth=True
         )
         print(f"Scraped: {url}")
         

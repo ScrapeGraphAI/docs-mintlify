@@ -378,7 +378,7 @@
           "SearchScraper"
         ],
         "summary": "Get Searchscraper Status",
-        "operationId": "get_searchscraper_status_v1_searchscraper__request_id__get",
+        "operationId": "get_searchscraper_status_v1_searchscraper__request_id__get"
       },
       "post": {
         "tags": [
@@ -787,6 +787,12 @@
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
               "Cookie": "cookie1=value1; cookie2=value2"
             }
+          },
+          "stealth": {
+            "type": "boolean",
+            "title": "Stealth",
+            "description": "Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost",
+            "default": false
           }
         },
         "type": "object",
@@ -845,6 +851,12 @@
               }
             ],
             "title": "Output Schema"
+          },
+          "stealth": {
+            "type": "boolean",
+            "title": "Stealth",
+            "description": "Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost",
+            "default": false
           }
         },
         "type": "object",
@@ -936,6 +948,12 @@
                 "download_url": "string"
               }
             }
+          },
+          "stealth": {
+            "type": "boolean",
+            "title": "Stealth",
+            "description": "Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost",
+            "default": false
           }
         },
         "type": "object",

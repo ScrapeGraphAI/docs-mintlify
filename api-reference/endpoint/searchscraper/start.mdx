@@ -46,6 +46,12 @@ description: 'Start a new AI-powered web search request'
   Default: false
 </ParamField>
 
+<ParamField body="stealth" type="boolean">
+  Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
+  
+  Default: false
+</ParamField>
+
 ## Response
 
 <ResponseField name="request_id" type="string">
@@ -88,7 +94,8 @@ curl -X POST 'https://api.scrapegraphai.com/v1/searchscraper' \
     },
     "required": ["version", "release_date", "major_features"]
   },
-  "mock": false
+  "mock": false,
+  "stealth": true
 }'
 ```
 

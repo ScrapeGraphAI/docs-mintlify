@@ -14,6 +14,22 @@ Markdownify converts webpage content into clean, well-formatted Markdown. This i
 - Preserves links and images
 - Cleans up unnecessary formatting
 
+## Request Body
+
+<ParamField body="website_url" type="string" required>
+  The URL of the webpage you want to convert to markdown.
+</ParamField>
+
+<ParamField body="headers" type="object">
+  Optional headers to customize the request behavior. This can include user agent, cookies, or other HTTP headers.
+</ParamField>
+
+<ParamField body="stealth" type="boolean">
+  Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
+  
+  Default: false
+</ParamField>
+
 ### Example Response
 
 ```json

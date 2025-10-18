@@ -42,6 +42,12 @@ SmartScraper allows you to extract specific information from any webpage using A
   Default: false
 </ParamField>
 
+<ParamField body="stealth" type="boolean">
+  Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
+  
+  Default: false
+</ParamField>
+
 ## Example Request
 
 ```bash
@@ -60,7 +66,8 @@ curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
     }
   },
   "mock": false,
-  "plain_text": false
+  "plain_text": false,
+  "stealth": true
 }'
 ```
 

@@ -44,6 +44,7 @@ Content-Type: `application/json`
 | same_domain_only | boolean | No | true | Whether to crawl only the same domain |
 | batch_size | integer | No | 1 | Number of pages to process in each batch |
 | schema | object | No | - | JSON Schema object for structured output |
+| stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
 
 ### Example
 ```json
@@ -55,6 +56,7 @@ Content-Type: `application/json`
   "max_pages": 2,
   "same_domain_only": true,
   "batch_size": 1,
+  "stealth": true,
   "schema": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ScrapeGraphAI Website Content",
@@ -121,7 +123,8 @@ For cost-effective HTML to markdown conversion without AI processing:
   "extraction_mode": false,
   "depth": 2,
   "max_pages": 5,
-  "same_domain_only": true
+  "same_domain_only": true,
+  "stealth": true
 }
 ```
 
