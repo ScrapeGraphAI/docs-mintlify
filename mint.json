@@ -104,11 +104,10 @@
         "services/agenticscraper",
         "services/markdownify",
         "services/scrape",
-        "services/pagination",
         "services/mcp-server",
         {
           "group": "Additional Parameters",
-          "pages": ["services/additional-parameters/headers"]
+          "pages": ["services/additional-parameters/headers", "services/additional-parameters/pagination"]
         },
         {
           "group": "Browser Extensions",
