@@ -27,28 +27,52 @@ SmartScraper allows you to extract specific information from any webpage using A
 </ParamField>
 
 <ParamField body="headers" type="object">
-  Optional headers to customize the request behavior. This can include user agent, cookies, or other HTTP headers.
+  Optional custom HTTP headers to send with the request. Useful for setting User-Agent, cookies, authentication tokens, and other request metadata.
+
+  Example: `{"User-Agent": "Mozilla/5.0...", "Cookie": "session=abc123"}`
+</ParamField>
+
+<ParamField body="total_pages" type="integer">
+  Optional parameter to enable pagination and scrape multiple pages. Specify the number of pages to extract data from.
+
+  Default: 1
+  Range: 1-100
+</ParamField>
+
+<ParamField body="number_of_scrolls" type="integer">
+  Optional parameter for infinite scroll pages. Specify how many times to scroll down to load more content before extraction.
+
+  Default: 0
+  Range: 0-50
+</ParamField>
+
+<ParamField body="render_heavy_js" type="boolean">
+  Optional parameter to enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, SPAs). Use when standard rendering doesn't capture all content.
+
+  Default: false
 </ParamField>
 
 <ParamField body="mock" type="boolean">
   Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual extraction. Useful for testing and development.
-  
+
   Default: false
 </ParamField>
 
 <ParamField body="plain_text" type="boolean">
   Optional parameter to return plain text instead of JSON. When set to true, the result will be returned as plain text rather than structured JSON data.
-  
+
   Default: false
 </ParamField>
 
 <ParamField body="stealth" type="boolean">
   Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
-  
+
   Default: false
 </ParamField>
 
-## Example Request
+## Example Requests
+
+### Basic Request
 
 ```bash
 curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
@@ -64,10 +88,26 @@ curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
       "features": {"type": "array", "items": {"type": "string"}},
       "contact_email": {"type": "string"}
     }
-  },
-  "mock": false,
-  "plain_text": false,
-  "stealth": true
+  }
+}'
+```
+
+### Advanced Request with Pagination and Stealth Mode
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_url": "https://example.com/news",
+  "user_prompt": "Extract all the headlines from this section into a table with the date and URL of the news",
+  "total_pages": 2,
+  "stealth": true,
+  "render_heavy_js": true,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "Cookie": "cookie1=value1; cookie2=value2"
+  }
 }'
 ```
 
