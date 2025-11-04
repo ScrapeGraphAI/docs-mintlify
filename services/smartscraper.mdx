@@ -232,7 +232,7 @@ html_content = """
 """
 
 response = client.smartscraper(
-    website_html=html_content,  # This will override website_url if both are provided
+    website_html=html_content,  # Use HTML content instead of URL
     user_prompt="Extract info about the company"
 )
 ```
@@ -245,7 +245,73 @@ This is useful when:
 - You want to pre-process the HTML before extraction
 
 <Note>
-When both `website_url` and `website_html` are provided, `website_html` takes precedence and will be used for extraction.
+You must provide exactly one of: `website_url`, `website_html`, or `website_markdown`. Providing multiple will result in an error.
+</Note>
+</Accordion>
+
+<Accordion title="Using Your Own Markdown" icon="code">
+You can also pass your own Markdown content directly for extraction:
+
+```python
+markdown_content = """
+# ScrapeGraphAI
+
+AI-powered web scraping for modern applications.
+
+## Features
+
+- Smart Extraction
+- Local Processing
+- Schema Support
+"""
+
+response = client.smartscraper(
+    website_markdown=markdown_content,  # Use Markdown content instead of URL
+    user_prompt="Extract info about the company"
+)
+```
+
+```javascript
+const markdownContent = `
+# ScrapeGraphAI
+
+AI-powered web scraping for modern applications.
+
+## Features
+
+- Smart Extraction
+- Local Processing
+- Schema Support
+`;
+
+const response = await smartScraper(
+  apiKey,
+  null, // url is null when using markdown
+  'Extract info about the company',
+  null, // schema
+  null, // numberOfScrolls
+  null, // totalPages
+  null, // cookies
+  {}, // options
+  false, // plain_text
+  false, // renderHeavyJs
+  false, // stealth
+  null, // websiteHtml
+  markdownContent // websiteMarkdown
+);
+```
+
+This is useful when:
+- You already have Markdown content from another source
+- You're processing documentation or README files
+- You want to extract structured data from Markdown
+- You're working with content that's already in Markdown format
+- You need to process content offline
+
+<Note>
+- Maximum content size: 2MB
+- You must provide exactly one of: `website_url`, `website_html`, or `website_markdown`
+- Parameters like `number_of_scrolls`, `total_pages`, `render_heavy_js`, and `stealth` are not applicable when using Markdown content
 </Note>
 </Accordion>
 
@@ -577,8 +643,9 @@ POST https://api.scrapegraphai.com/v1/smartscraper
 ##### Request Body
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| website_url | string | Yes* | URL to scrape (*either this or website_html required) |
-| website_html | string | No | Raw HTML content to process |
+| website_url | string | Yes* | URL to scrape (*must provide exactly one: website_url, website_html, or website_markdown) |
+| website_html | string | No | Raw HTML content to process (max 2MB, mutually exclusive with website_url and website_markdown) |
+| website_markdown | string | No | Raw Markdown content to process (max 2MB, mutually exclusive with website_url and website_html) |
 | user_prompt | string | Yes | Instructions for data extraction |
 | output_schema | object | No | Pydantic or Zod schema for response validation |
 | render_heavy_js | boolean | No | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: false |

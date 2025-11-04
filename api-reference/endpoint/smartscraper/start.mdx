@@ -15,7 +15,15 @@ SmartScraper allows you to extract specific information from any webpage using A
 ## Request Body
 
 <ParamField body="website_url" type="string" required>
-  The URL of the webpage you want to extract information from.
+  The URL of the webpage you want to extract information from. You must provide exactly one of: `website_url`, `website_html`, or `website_markdown`.
+</ParamField>
+
+<ParamField body="website_html" type="string">
+  Raw HTML content to process directly (max 2MB). Mutually exclusive with `website_url` and `website_markdown`. Useful when you already have HTML content cached or want to process modified HTML.
+</ParamField>
+
+<ParamField body="website_markdown" type="string">
+  Raw Markdown content to process directly (max 2MB). Mutually exclusive with `website_url` and `website_html`. Perfect for extracting structured data from Markdown documentation, README files, or any content already in Markdown format.
 </ParamField>
 
 <ParamField body="user_prompt" type="string" required>
@@ -64,10 +72,16 @@ SmartScraper allows you to extract specific information from any webpage using A
   Default: false
 </ParamField>
 
-<ParamField body="stealth" type="boolean">
-  Optional parameter to enable stealth mode. When set to true, the scraper will use advanced anti-detection techniques to bypass bot protection and access protected websites. Adds +4 credits to the request cost.
+<ParamField body="cookies" type="object">
+  Optional cookies object for authentication and session management. Useful for accessing authenticated pages or maintaining session state.
 
-  Default: false
+  Example: `{"session_id": "abc123", "auth_token": "xyz789"}`
+</ParamField>
+
+<ParamField body="steps" type="array">
+  Optional array of interaction steps to perform on the webpage before extraction. Each step is a string describing the action to take (e.g., "click on filter button", "wait for results to load").
+
+  Example: `["click on search button", "type query in search box", "wait for results"]`
 </ParamField>
 
 ## Example Requests
@@ -107,6 +121,132 @@ curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
   "headers": {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Cookie": "cookie1=value1; cookie2=value2"
+  }
+}'
+```
+
+### Request with HTML Content
+
+Extract structured data directly from HTML content:
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_html": "<html><body><h1>Product Catalog</h1><div class=\"product\"><h2>Laptop Pro 15</h2><p><strong>Brand:</strong> TechCorp</p><p><strong>Price:</strong> $1,299.99</p><p><strong>Rating:</strong> 4.5/5</p><p><strong>In Stock:</strong> Yes</p></div></body></html>",
+  "user_prompt": "Extract all products with their names, brands, prices, ratings, and stock status",
+  "output_schema": {
+    "properties": {
+      "products": {
+        "type": "array",
+        "items": {
+          "properties": {
+            "name": {"type": "string"},
+            "brand": {"type": "string"},
+            "price": {"type": "string"},
+            "rating": {"type": "string"},
+            "in_stock": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+### Request with Markdown Content
+
+Extract structured data directly from Markdown content:
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_markdown": "# Product Catalog\n\n## Laptop Pro 15\n- **Brand**: TechCorp\n- **Price**: $1,299.99\n- **Rating**: 4.5/5\n- **In Stock**: Yes",
+  "user_prompt": "Extract all products with their names, brands, prices, ratings, and stock status",
+  "output_schema": {
+    "properties": {
+      "products": {
+        "type": "array",
+        "items": {
+          "properties": {
+            "name": {"type": "string"},
+            "brand": {"type": "string"},
+            "price": {"type": "string"},
+            "rating": {"type": "string"},
+            "in_stock": {"type": "boolean"}
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+### Request with Cookies and Infinite Scroll
+
+Extract data from authenticated pages with infinite scroll:
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_url": "https://example.com/dashboard",
+  "user_prompt": "Extract all dashboard items and their details",
+  "cookies": {
+    "session_id": "abc123def456",
+    "auth_token": "xyz789"
+  },
+  "number_of_scrolls": 5,
+  "output_schema": {
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "properties": {
+            "title": {"type": "string"},
+            "description": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+### Request with Browser Interaction Steps
+
+Perform browser interactions before extraction:
+
+```bash
+curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
+-H 'SGAI-APIKEY: YOUR_API_KEY' \
+-H 'Content-Type: application/json' \
+-d '{
+  "website_url": "https://example.com/products",
+  "user_prompt": "Extract all visible product information after applying filters",
+  "steps": [
+    "click on filter button",
+    "select category electronics",
+    "click apply filters",
+    "wait for results to load"
+  ],
+  "output_schema": {
+    "properties": {
+      "products": {
+        "type": "array",
+        "items": {
+          "properties": {
+            "name": {"type": "string"},
+            "price": {"type": "string"},
+            "category": {"type": "string"}
+          }
+        }
+      }
+    }
   }
 }'
 ```
