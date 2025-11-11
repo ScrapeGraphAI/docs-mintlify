@@ -1,0 +1,141 @@
+---
+title: 'Toonify'
+description: 'Serialize structured data to a compact LLM-friendly format that cuts token usage by 30–60%'
+icon: 'sparkles'
+---
+
+## Overview
+
+Toonify introduces TOON (Token-Oriented Object Notation), a compact serialization format designed by ScrapeGraphAI to make structured payloads cheaper to send to Large Language Models. Compared with JSON, TOON frequently reduces token counts by 30–60% while keeping data human-readable and type-safe [Toonify README](https://github.com/ScrapeGraphAI/toonify).
+
+<Note>
+Looking for the source? Explore the open-source project on <a href="https://github.com/ScrapeGraphAI/toonify" target="_blank">GitHub</a>.
+</Note>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Compact Encoding" icon="compress">
+    CSV-like density for structured data while preserving hierarchy
+  </Card>
+  <Card title="Human Friendly" icon="sparkles">
+    Indentation-based syntax that stays readable and easy to edit
+  </Card>
+  <Card title="Type Safety" icon="shield-check">
+    Supports strings, numbers, booleans, and null values without ambiguity
+  </Card>
+  <Card title="Flexible Delimiters" icon="adjustments-horizontal">
+    Choose comma, tab, or pipe to match your downstream tooling
+  </Card>
+</CardGroup>
+
+## Installation
+
+Use pip to add Toonify to your project:
+
+```bash
+pip install toonify
+```
+
+For development or contributions:
+
+```bash
+git clone https://github.com/ScrapeGraphAI/toonify.git
+cd toonify
+pip install -e .[dev]
+```
+
+## Python Quick Start
+
+```python
+from toon import encode, decode
+
+data = {
+    "products": [
+        {"sku": "LAP-001", "name": "Gaming Laptop", "price": 1299.99},
+        {"sku": "MOU-042", "name": "Wireless Mouse", "price": 29.99},
+    ]
+}
+
+# Encode Python dict to TOON
+toon_string = encode(data)
+print(toon_string)
+
+# Decode TOON back to Python
+result = decode(toon_string)
+assert result == data
+```
+
+### Expressive Tabular Output
+
+```
+products[3]{id,name,price}:
+  101,Laptop Pro,1299
+  102,Magic Mouse,79
+  103,USB-C Cable,19
+```
+
+Compared with the equivalent JSON, this TOON snippet cuts the payload size by roughly 60% while remaining easy to scan by humans and LLMs.
+
+## Command Line Usage
+
+Toonify ships with a CLI for converting between JSON and TOON:
+
+```bash
+# Encode JSON to TOON
+toon data.json -o data.toon
+
+# Decode TOON to JSON
+toon data.toon -o data.json
+
+# Stream from stdin and inspect stats
+cat data.json | toon -e --stats
+```
+
+### Helpful Flags
+
+| Flag | Description |
+|------|-------------|
+| `--delimiter {comma,tab,pipe}` | Choose the delimiter used in tabular data |
+| `--indent INDENT` | Configure indentation (default: 2 spaces) |
+| `--stats` | Display byte and token savings for a conversion |
+| `--key-folding {off,safe}` | Collapse nested keys into dotted paths when encoding |
+| `--expand-paths {off,safe}` | Expand dotted paths back into nested objects when decoding |
+
+## Advanced Capabilities
+
+- **Key Folding:** Safely condenses deep objects into dotted keys (`api.response.data.count`) for even smaller payloads.
+- **Path Expansion:** Reconstructs dotted keys into nested objects on decode, keeping round-trips lossless.
+- **Delimiter Control:** Switch to tab or pipe delimiters when your data contains commas, preventing unnecessary quoting.
+- **Strict Parsing:** Enable or disable strict validation based on your tolerance for loosely formatted input.
+
+## When to Use TOON
+
+<CardGroup cols={2}>
+  <Card title="Great Fit" icon="thumb-up">
+    Slim down prompts, preserve schema structure, and feed uniform tables to LLMs.
+  </Card>
+  <Card title="Use JSON Instead" icon="information-circle">
+    Prefer JSON when interoperability with existing JSON-only tooling outweighs token savings.
+  </Card>
+</CardGroup>
+
+## Testing & Quality
+
+The repository includes an automated test suite—run it locally with:
+
+```bash
+pytest
+pytest --cov=toon --cov-report=term-missing
+```
+
+## Resources
+
+- **Project Repository:** [ScrapeGraphAI/toonify](https://github.com/ScrapeGraphAI/toonify)
+- **PyPI Package:** <a href="https://pypi.org/project/toonify/" target="_blank">toonify</a>
+- **Format Specification:** <a href="https://github.com/toon-format/toon" target="_blank">TOON Format Docs</a>
+
+<Card title="Contribute" icon="heart" href="https://github.com/ScrapeGraphAI/toonify">
+  Join the open-source effort and help evolve the TOON ecosystem.
+</Card>
+

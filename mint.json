@@ -104,6 +104,7 @@
         "services/agenticscraper",
         "services/markdownify",
         "services/scrape",
+        "services/toonify",
         "services/mcp-server",
         {
           "group": "Additional Parameters",
