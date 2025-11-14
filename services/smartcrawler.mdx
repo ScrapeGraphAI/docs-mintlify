@@ -28,7 +28,7 @@ from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
 
-response = client.smartcrawler(
+response = client.crawl(
     url="https://scrapegraphai.com/",
     prompt="Extract info about the company",
     depth=2,
@@ -294,7 +294,7 @@ class CompanyData(BaseModel):
     description: str = Field(description="Description")
     features: list[str] = Field(description="Features")
 
-response = client.smartcrawler(
+response = client.crawl(
     url="https://example.com",
     prompt="Extract company info",
     schema=CompanyData,
@@ -330,7 +330,7 @@ from scrapegraph_py import AsyncClient
 
 async def main():
     async with AsyncClient(api_key="your-api-key") as client:
-        task = await client.smartcrawler(
+        task = await client.crawl(
             url="https://scrapegraphai.com/",
             prompt="Extract info about the company",
             depth=2,
