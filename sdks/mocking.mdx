@@ -354,20 +354,16 @@ export SGAI_MOCK_RESPONSES='{
     "total_credits_used": 0,
     "mock": true
   },
-  "/v1/smartscraper/start": {
-    "job_id": "mock-job-123",
-    "status": "processing",
-    "mock": true
-  }
 }'
 
 # Test smartscraper endpoint
-curl -X POST "https://api.scrapegraph.ai/v1/smartscraper/start" \
+curl -X POST "https://api.scrapegraph.ai/v1/smartscraper/" \
   -H "Authorization: Bearer $SGAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "website_url": "https://example.com",
     "user_prompt": "Extract title and content"
+    "mock": true
   }'
 ```
 
