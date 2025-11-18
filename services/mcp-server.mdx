@@ -33,22 +33,8 @@ You can either use our remote hosted URL or run the server locally. Get your API
 ### Remote hosted URL
 
 ```
-https://mcp.scrapegraphai.com/{SCRAPEGRAPH_API_KEY}/sse
+https://smithery.ai/server/@ScrapeGraphAI/scrapegraph-mcp
 ```
-
-### Running with npx
-
-```bash
-env SCRAPEGRAPH_API_KEY=sg-YOUR_API_KEY npx -y @scrapegraphai/mcp-server
-```
-
-### Manual Installation
-
-```bash
-npm install -g @scrapegraphai/mcp-server
-```
-
-> Play around with our MCP Server on MCP.so's playground or on Klavis AI.
 
 ### Running on Cursor
 
@@ -67,14 +53,20 @@ To configure ScrapeGraphAI MCP in Cursor **v0.48.6**
 3. Click "+ Add new global MCP server"
 4. Enter the following code:
 
+First, install the Python package:
+
+```bash
+pip install scrapegraph-mcp
+```
+
 ```json
 {
   "mcpServers": {
     "scrapegraph-mcp": {
-      "command": "npx",
-      "args": ["-y", "@scrapegraphai/mcp-server"],
+      "command": "python3",
+      "args": ["-m", "scrapegraph_mcp.server"],
       "env": {
-        "SCRAPEGRAPH_API_KEY": "YOUR-API-KEY"
+        "SGAI_API_KEY": "YOUR-API-KEY"
       }
     }
   }
@@ -89,49 +81,108 @@ To configure ScrapeGraphAI MCP in Cursor **v0.45.6**
 4. Enter the following:
    - Name: "scrapegraph-mcp" (or your preferred name)
    - Type: "command"
-   - Command: `env SCRAPEGRAPH_API_KEY=your-api-key npx -y @scrapegraphai/mcp-server`
+   - Command: `env SGAI_API_KEY=your-api-key python3 -m scrapegraph_mcp.server`
 
-> If you are using Windows and are running into issues, try `cmd /c "set SCRAPEGRAPH_API_KEY=your-api-key && npx -y @scrapegraphai/mcp-server"`
+Make sure the Python package is installed:
+
+```bash
+pip install scrapegraph-mcp
+```
+
+> If you are using Windows and are running into issues, try `cmd /c "set SGAI_API_KEY=your-api-key && python -m scrapegraph_mcp.server"`
 
 Replace `your-api-key` with your ScrapeGraphAI API key. If you don't have one yet, you can create an account and get it from [ScrapeGraphAI Dashboard](https://dashboard.scrapegraphai.com)
 
 After adding, refresh the MCP server list to see the new tools. The Composer Agent will automatically use ScrapeGraphAI MCP when appropriate, but you can explicitly request it by describing your web scraping needs. Access the Composer via Command+L (Mac), select "Agent" next to the submit button, and enter your query.
 
-### Running on Windsurf
+#### Local Python MCP (self-hosted) in Cursor
 
-Add this to your `./codeium/windsurf/model_config.json`:
+
+1. Install the Python package:
+
+```bash
+pip install scrapegraph-mcp
+```
+
+2. Add this configuration to your global Cursor MCP settings (recommended path: `~/.cursor/mcp.json`):
 
 ```json
 {
   "mcpServers": {
-    "mcp-server-scrapegraph": {
-      "command": "npx",
-      "args": ["-y", "@scrapegraphai/mcp-server"],
+    "local sgai": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "scrapegraph_mcp.server"
+      ],
       "env": {
-        "SCRAPEGRAPH_API_KEY": "YOUR_API_KEY"
+        "SGAI_API_KEY": "YOUR_API_KEY"
       }
     }
   }
 }
 ```
 
-### Running with SSE Mode
+<Note>
+  - Replace <code>YOUR_API_KEY</code> with your ScrapeGraphAI API key.<br/>
+  - You can point <code>command</code> to an absolute Python path (e.g., a pyenv or venv shim) if needed.<br/>
+  - The local server uses the <code>SGAI_API_KEY</code> environment variable (different from the cloud <code>SCRAPEGRAPH_API_KEY</code>).
+</Note>
 
-To run the server using Server-Sent Events (SSE) locally instead of the default stdio transport:
+#### Alternative: Cursor config using CLI entry point
 
-```bash
-env SSE_LOCAL=true SCRAPEGRAPH_API_KEY=sg-YOUR_API_KEY npx -y @scrapegraphai/mcp-server
+If the `scrapegraph-mcp` CLI is on your PATH (installed by `pip install scrapegraph-mcp`), you can configure Cursor like this:
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "command": "scrapegraph-mcp",
+      "env": {
+        "SGAI_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
 ```
 
-Use the url: `http://localhost:3000/sse` or `https://mcp.scrapegraphai.com/{SCRAPEGRAPH_API_KEY}/sse`
+### Running on Windsurf
+
+Add this to your `./codeium/windsurf/model_config.json`:
+
+First, install the Python package:
+
+```bash
+pip install scrapegraph-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "mcp-server-scrapegraph": {
+      "command": "python3",
+      "args": ["-m", "scrapegraph_mcp.server"],
+      "env": {
+        "SGAI_API_KEY": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
 
 ### Running on VS Code
 
 For one-click installation, click one of the install buttons below...
 
-[Install with NPX in VS Code](vscode://install-extension/ms-vscode.vscode-json) [Install with NPX in VS Code Insiders](vscode-insiders://install-extension/ms-vscode.vscode-json)
+[Install in VS Code](vscode://install-extension/ms-vscode.vscode-json) [Install in VS Code Insiders](vscode-insiders://install-extension/ms-vscode.vscode-json)
 
 For manual installation, add the following JSON block to your User Settings (JSON) file in VS Code. You can do this by pressing `Ctrl + Shift + P` and typing `Preferences: Open User Settings (JSON)`.
+
+First, install the Python package:
+
+```bash
+pip install scrapegraph-mcp
+```
 
 ```json
 {
@@ -146,10 +197,10 @@ For manual installation, add the following JSON block to your User Settings (JSO
     ],
     "servers": {
       "scrapegraph": {
-        "command": "npx",
-        "args": ["-y", "@scrapegraphai/mcp-server"],
+        "command": "python3",
+        "args": ["-m", "scrapegraph_mcp.server"],
         "env": {
-          "SCRAPEGRAPH_API_KEY": "${input:apiKey}"
+          "SGAI_API_KEY": "${input:apiKey}"
         }
       }
     }
@@ -171,10 +222,10 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
   ],
   "servers": {
     "scrapegraph": {
-      "command": "npx",
-      "args": ["-y", "@scrapegraphai/mcp-server"],
+      "command": "python3",
+      "args": ["-m", "scrapegraph_mcp.server"],
       "env": {
-        "SCRAPEGRAPH_API_KEY": "${input:apiKey}"
+        "SGAI_API_KEY": "${input:apiKey}"
       }
     }
   }
@@ -185,23 +236,46 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 
 Add this to the Claude config file:
 
+First, install the Python package:
+
+```bash
+pip install scrapegraph-mcp
+```
+
 ```json
 {
   "mcpServers": {
-    "scrapegraph": {
-      "url": "https://mcp.scrapegraphai.com/{YOUR_API_KEY}/sse"
+    "local sgai": {
+      "command": "python3",
+      "args": [
+        "-m",
+        "scrapegraph_mcp.server"
+      ],
+      "env": {
+        "SGAI_API_KEY": "YOUR_KEY"
+      }
     }
   }
 }
 ```
 
-### Running on Claude Code
+#### Alternative: Claude config using CLI entry point
 
-Add the ScrapeGraphAI MCP server using the Claude Code CLI:
+If the `scrapegraph-mcp` CLI is on your PATH, you can use:
 
-```bash
-claude mcp add scrapegraph -e SCRAPEGRAPH_API_KEY=your-api-key -- npx -y @scrapegraphai/mcp-server
+```json
+{
+  "mcpServers": {
+    "local sgai": {
+      "command": "scrapegraph-mcp",
+      "env": {
+        "SGAI_API_KEY": "YOUR_KEY"
+      }
+    }
+  }
+}
 ```
+
 
 ## Configuration
 
@@ -227,39 +301,7 @@ claude mcp add scrapegraph -e SCRAPEGRAPH_API_KEY=your-api-key -- npx -y @scrape
 
 ```bash
 export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
-npx -y @scrapegraphai/mcp-server
 ```
-
-#### Custom API URL
-
-```bash
-export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
-export SCRAPEGRAPH_API_URL=http://localhost:8000
-npx -y @scrapegraphai/mcp-server
-```
-
-#### Local SSE Mode
-
-```bash
-export SCRAPEGRAPH_API_KEY=sg-your-api-key-here
-export SSE_LOCAL=true
-export PORT=3001
-npx -y @scrapegraphai/mcp-server
-```
-
-### Custom configuration with Claude Desktop
-
-```json
-{
-  "mcpServers": {
-    "scrapegraph": {
-      "url": "https://mcp.scrapegraphai.com/{YOUR_API_KEY}/sse",
-      "description": "ScrapeGraphAI MCP Server for web scraping"
-    }
-  }
-}
-```
-
 ### System Configuration
 
 The server automatically handles:
