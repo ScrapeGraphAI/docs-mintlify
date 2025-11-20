@@ -1,0 +1,146 @@
+---
+title: 'Google ADK'
+description: 'Use ScrapeGraphAI with Google Agent Development Kit (ADK)'
+---
+
+## Overview
+
+The Google ADK (Agent Development Kit) integration enables your agents to leverage ScrapeGraphAI's powerful web scraping, crawling, and data extraction capabilities. This integration allows you to build sophisticated AI agents that can understand and process web content intelligently.
+
+<Card
+  title="Official Google ADK Documentation"
+  icon="book"
+  href="https://github.com/google/adk-docs"
+>
+  View the integration in Google ADK's official documentation
+</Card>
+
+## Installation
+
+Install the ScrapeGraphAI MCP server package (requires Python 3.13 or higher):
+
+```bash
+pip install scrapegraph-mcp
+```
+
+## Use with Agent
+
+### Local MCP Server
+
+```python
+from google.adk.agents import Agent
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
+from google.adk.tools.mcp_tool.mcp_session_manager import StdioConnectionParams
+from mcp import StdioServerParameters
+
+SGAI_API_KEY = "YOUR_SCRAPEGRAPHAI_API_KEY"
+
+root_agent = Agent(
+    model="gemini-2.5-pro",
+    name="scrapegraph_assistant_agent",
+    instruction="""Help the user with web scraping and data extraction using
+ScrapeGraph AI. You can convert webpages to markdown, extract
+structured data using AI, perform web searches, crawl
+multiple pages, and automate complex scraping workflows.""",
+    tools=[
+        MCPToolset(
+            connection_params=StdioConnectionParams(
+                server_params=StdioServerParameters(
+                    # The following CLI command is available
+                    # from `pip install scrapegraph-mcp`
+                    command="scrapegraph-mcp",
+                    env={
+                        "SGAI_API_KEY": SGAI_API_KEY,
+                    },
+                ),
+                timeout=300,
+            ),
+            # Optional: Filter which tools from the MCP server are exposed
+            # tool_filter=["markdownify", "smartscraper", "searchscraper"]
+        ),
+    ],
+)
+```
+
+## Available Tools
+
+| Tool | Description |
+| ---- | ----------- |
+| `markdownify` | Transform any webpage into clean, structured markdown format |
+| `smartscraper` | Leverage AI to extract structured data from any webpage with support for infinite scrolling |
+| `searchscraper` | Execute AI-powered web searches with structured, actionable results |
+| `scrape` | Basic scraping endpoint to fetch page content with optional heavy JavaScript rendering |
+| `sitemap` | Extract sitemap URLs and structure for any website |
+| `smartcrawler_initiate` | Initiate intelligent multi-page web crawling (asynchronous operation) |
+| `smartcrawler_fetch_results` | Retrieve results from asynchronous crawling operations |
+| `agentic_scrapper` | Run advanced agentic scraping workflows with customizable steps and structured output schemas |
+
+## Configuration
+
+Set your ScrapeGraphAI API key:
+
+```python
+SGAI_API_KEY = "your-api-key-here"
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Tool Filtering
+
+You can optionally filter which tools from the MCP server are exposed to your agent:
+
+```python
+MCPToolset(
+    connection_params=StdioConnectionParams(...),
+    tool_filter=["markdownify", "smartscraper", "searchscraper"]
+)
+```
+
+This allows you to limit the agent's capabilities to only the tools you need for your specific use case.
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Research Agents" icon="magnifying-glass">
+    Create agents that gather and analyze web data intelligently
+  </Card>
+  <Card title="Data Collection" icon="database">
+    Automate structured data extraction from websites
+  </Card>
+  <Card title="Content Processing" icon="file-lines">
+    Convert web content into markdown for further processing
+  </Card>
+  <Card title="Web Crawling" icon="spider">
+    Automate multi-page crawling and data extraction workflows
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+- [ScrapeGraphAI MCP Server Documentation](/services/mcp-server)
+- [ScrapeGraphAI MCP Server Repository](https://github.com/ScrapeGraphAI/scrapegraph-mcp)
+- [Google ADK Documentation](https://github.com/google/adk-docs)
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-mcp/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
+

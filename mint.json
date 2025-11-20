@@ -29,7 +29,7 @@
       "url": "mailto:contact@scrapegraphai.com"
     },
     {
-      "name": "⭐ 21.7k+",
+      "name": "⭐ 21.8k+",
       "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
     }
   ],
@@ -119,6 +119,10 @@
     {
       "group": "Official SDKs",
       "pages": ["sdks/python", "sdks/javascript", "sdks/mocking"]
+    },
+    {
+      "group": "Google ADK",
+      "pages": ["integrations/google-adk"]
     },
     {
       "group": "Integrations",
