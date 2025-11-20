@@ -121,6 +121,10 @@
       "pages": ["sdks/python", "sdks/javascript", "sdks/mocking"]
     },
     {
+      "group": "Official Integrations",
+      "pages": ["services/mcp-server"]
+    },
+    {
       "group": "Google ADK",
       "pages": ["integrations/google-adk"]
     },
