@@ -105,7 +105,6 @@
         "services/markdownify",
         "services/scrape",
         "services/toonify",
-        "services/mcp-server",
         {
           "group": "Additional Parameters",
           "pages": ["services/additional-parameters/headers", "services/additional-parameters/pagination"]
