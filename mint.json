@@ -120,14 +120,6 @@
       "pages": ["sdks/python", "sdks/javascript", "sdks/mocking"]
     },
     {
-      "group": "Official Integrations",
-      "pages": ["services/mcp-server"]
-    },
-    {
-      "group": "Google ADK",
-      "pages": ["integrations/google-adk"]
-    },
-    {
       "group": "Integrations",
       "pages": [
         "integrations/langchain",
@@ -135,7 +127,9 @@
         "integrations/crewai",
         "integrations/agno",
         "integrations/langflow",
-        "integrations/vercel_ai"
+        "integrations/vercel_ai",
+        "integrations/google-adk",
+        "services/mcp-server"
       ]
     },
     {
