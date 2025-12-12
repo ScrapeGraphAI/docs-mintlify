@@ -34,12 +34,16 @@ sgai_client = Client(api_key="your-api-key")
 # Scrape request
 response = sgai_client.htmlify(
     website_url="https://example.com",
-    render_heavy_js=False  # Set to True for heavy JavaScript rendering
+    render_heavy_js=False,  # Set to True for heavy JavaScript rendering
+    branding=True           # Set to True to extract brand design and metadata
 )
 
 print("HTML Content:", response.html)
 print("Request ID:", response.scrape_request_id)
 print("Status:", response.status)
+# Optional branding result
+if response.branding:
+    print("Branding extracted")
 ```
 
 ```javascript JavaScript
@@ -49,10 +53,14 @@ const apiKey = 'your-api-key';
 const url = 'https://example.com';
 
 try {
-  const response = await htmlify(apiKey, url, false); // Set third parameter to true for heavy JS rendering
+  // htmlify(apiKey, url, renderHeavyJs = false, options = { branding: true })
+  const response = await htmlify(apiKey, url, false, { branding: true }); // enable branding extraction
   console.log('HTML Content:', response.html);
   console.log('Request ID:', response.scrape_request_id);
   console.log('Status:', response.status);
+  if (response.branding) {
+    console.log('Branding extracted');
+  }
 } catch (error) {
   console.error('Error:', error);
 }
@@ -64,7 +72,8 @@ curl -X POST https://api.scrapegraphai.com/v1/scrape \
   -H "SGAI-APIKEY: your-api-key" \
   -d '{
     "website_url": "https://example.com",
-    "render_heavy_js": false
+    "render_heavy_js": false,
+    "branding": true
   }'
 ```
 
@@ -75,29 +84,85 @@ curl -X POST https://api.scrapegraphai.com/v1/scrape \
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage to scrape. |
+| website_url | string | Yes | The URL of the webpage to scrape. |
 | render_heavy_js | boolean | No | Set to true for heavy JavaScript rendering. Default: false |
+| branding | boolean | No | Return extracted brand design and metadata. Default: false |
+| stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds additional credits. Default: false |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
 
-<Accordion title="Example Response" icon="terminal">
+<Accordion title="Example Response (without branding)" icon="terminal">
 ```json
 {
-  "request_id": "sg-req-sc456",
+  "scrape_request_id": "2f0f7a7e-7eb3-4bd2-8f8d-ae8a7f2d9c1a",
   "status": "completed",
-  "website_url": "https://example.com",
   "html": "<!DOCTYPE html><html><head><title>Example Page</title></head><body><h1>Welcome to Example.com</h1><p>This is the raw HTML content...</p></body></html>",
   "error": ""
 }
 ```
 
 The response includes:
-- `request_id`: Unique identifier for tracking your request
+- `scrape_request_id`: Unique identifier for tracking your request
 - `status`: Current status of the scraping operation
 - `html`: Raw HTML content of the webpage
 - `error`: Error message (if any occurred during scraping)
+</Accordion>
+
+<Accordion title="Example Response (with branding=true)" icon="terminal">
+```json
+{
+  "scrape_request_id": "2f0f7a7e-7eb3-4bd2-8f8d-ae8a7f2d9c1a",
+  "status": "completed",
+  "html": "<!DOCTYPE html><html>...</html>",
+  "error": "",
+  "branding": {
+    "branding": {
+      "colorScheme": "light",
+      "colors": {
+        "primary": "#0B5FFF",
+        "accent": "#FF8A00",
+        "background": "#FFFFFF",
+        "textPrimary": "#111827",
+        "link": "#0B5FFF"
+      },
+      "fonts": [
+        { "family": "Inter", "role": "body" }
+      ],
+      "typography": {
+        "fontFamilies": { "primary": "Inter", "heading": "Inter" },
+        "fontStacks": { "heading": ["Inter"], "body": ["Inter"] },
+        "fontSizes": { "h1": "32px", "h2": "24px", "body": "16px" }
+      },
+      "spacing": { "baseUnit": 4, "borderRadius": "6px" },
+      "components": {
+        "input": { "borderColor": "#E5E7EB", "borderRadius": "6px" },
+        "buttonPrimary": {
+          "background": "#0B5FFF",
+          "textColor": "#FFFFFF",
+          "borderRadius": "6px",
+          "shadow": "..."
+        }
+      },
+      "images": {
+        "logo": "https://example.com/logo.svg",
+        "favicon": "https://example.com/favicon.ico",
+        "ogImage": "https://example.com/og.png"
+      },
+      "designSystem": { "framework": "tailwind", "componentLibrary": null },
+      "confidence": { "overall": 0.86 }
+    },
+    "metadata": {
+      "title": "Example",
+      "language": "en",
+      "favicon": "https://example.com/favicon.ico"
+    }
+  }
+}
+```
+
+When `branding=true` is passed, the response includes a `branding` object with brand design data and page metadata.
 </Accordion>
 
 ## Key Features
@@ -108,6 +173,9 @@ The response includes:
   </Card>
   <Card title="JavaScript Rendering" icon="bolt">
     Optional support for heavy JavaScript rendering
+  </Card>
+  <Card title="Branding Extraction" icon="palette">
+    Optionally extract brand colors, fonts, typography, UI components, images, and metadata
   </Card>
   <Card title="Fast Processing" icon="clock">
     Quick extraction for simple HTML content
@@ -263,9 +331,7 @@ Check out our [cookbook](/cookbook/introduction) for real-world examples:
 
 ## API Reference
 
-For detailed API documentation, see:
-- [Start Scrape Job](/api-reference/endpoint/scrape/start)
-- [Get Job Status](/api-reference/endpoint/scrape/get-status)
+For detailed API documentation, see the [API Reference](/api-reference/introduction).
 
 ## Support & Resources
 
