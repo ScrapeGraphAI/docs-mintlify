@@ -89,7 +89,6 @@
           "pages": [
             "dashboard/overview",
             "dashboard/playground",
-            "dashboard/jobs",
             "dashboard/settings"
           ]
         }
