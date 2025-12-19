@@ -127,7 +127,12 @@
         "integrations/agno",
         "integrations/langflow",
         "integrations/vercel_ai",
-        "integrations/google-adk",
+        "integrations/google-adk"
+      ]
+    },
+    {
+      "group": "MCP",
+      "pages": [
         "services/mcp-server"
       ]
     },
