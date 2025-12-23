@@ -29,7 +29,7 @@
       "url": "mailto:contact@scrapegraphai.com"
     },
     {
-      "name": "⭐ 21.9k+",
+      "name": "⭐ 22.0k+",
       "url": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
     }
   ],
@@ -219,5 +219,8 @@
   },
   "feedback": {
     "thumbsRating": true
+  },
+  "contextual": {
+    "options": ["copy"]
   }
 }
