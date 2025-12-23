@@ -100,7 +100,7 @@ curl -X 'POST' \
 | depth             | int     | No       | How many link levels to follow (default: 1). |
 | max_pages         | int     | No       | Maximum number of pages to crawl (default: 20). |
 | schema            | object  | No       | Pydantic or Zod schema for structured output. |
-| rules             | object  | No       | Crawl rules (see below). |
+| rules             | object  | No       | Crawl rules object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See below for details. |
 | sitemap           | bool    | No       | Use sitemap.xml for discovery (default: false). |
 
 
@@ -236,9 +236,13 @@ rules = {
 | Field        | Type    | Default | Description |
 |--------------|---------|---------|-------------|
 | exclude      | list    | []      | List of URL patterns (regex) to exclude from crawling. Matches full URL. |
-| include_paths | list   | []      | List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty, all paths are included. |
-| exclude_paths | list   | []      | List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. |
+| include_paths | list   | []      | **(Optional)** List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty or not specified, all paths are included. |
+| exclude_paths | list   | []      | **(Optional)** List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. If empty or not specified, no paths are excluded. |
 | same_domain  | bool    | True    | Restrict crawl to the same domain |
+
+<Note>
+Both `include_paths` and `exclude_paths` are optional. If `include_paths` is not specified or empty, all paths are included. If `exclude_paths` is not specified or empty, no paths are excluded. The `exclude_paths` patterns take precedence over `include_paths` patterns.
+</Note>
 
 ### Example Response
 
@@ -445,7 +449,7 @@ POST https://api.scrapegraphai.com/v1/crawl
 | number_of_scrolls| int     | No       | Infinite scroll per page |
 | depth            | int     | No       | Crawl depth |
 | max_pages        | int     | No       | Max pages to crawl |
-| rules            | object  | No       | Crawl rules |
+| rules            | object  | No       | Crawl rules object with optional fields: `exclude` (regex URL patterns), `include_paths` (path patterns to include), `exclude_paths` (path patterns to exclude), `same_domain` (boolean) |
 | sitemap          | bool    | No       | Use sitemap.xml |
 
 #### Response Format

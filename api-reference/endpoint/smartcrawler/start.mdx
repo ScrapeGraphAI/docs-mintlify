@@ -53,7 +53,7 @@ Content-Type: `application/json`
 | same_domain_only | boolean | No | true | Whether to crawl only the same domain |
 | batch_size | integer | No | 1 | Number of pages to process in each batch |
 | schema | object | No | - | JSON Schema object for structured output |
-| rules | object | No | - | Crawl rules for filtering URLs (see Rules section below) |
+| rules | object | No | - | Crawl rules for filtering URLs. Object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See Rules section below for details. |
 | sitemap | boolean | No | false | Use sitemap.xml for discovery |
 | render_heavy_js | boolean | No | false | Enable heavy JavaScript rendering |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
@@ -174,9 +174,13 @@ Control which URLs to crawl using the `rules` object:
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | exclude | array | [] | List of URL patterns (regex) to exclude from crawling. Matches full URL. |
-| include_paths | array | [] | List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty, all paths are included. |
-| exclude_paths | array | [] | List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. |
+| include_paths | array | [] | **(Optional)** List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty or not specified, all paths are included. |
+| exclude_paths | array | [] | **(Optional)** List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. If empty or not specified, no paths are excluded. |
 | same_domain | boolean | true | Restrict crawling to same domain |
+
+<Note>
+Both `include_paths` and `exclude_paths` are optional. If `include_paths` is not specified or empty, all paths are included. If `exclude_paths` is not specified or empty, no paths are excluded. The `exclude_paths` patterns take precedence over `include_paths` patterns.
+</Note>
 
 <Note>
 When `extraction_mode: false`, the `prompt` parameter is not required. This mode converts HTML to clean markdown with metadata extraction at only 2 credits per page (80% savings compared to AI mode).
