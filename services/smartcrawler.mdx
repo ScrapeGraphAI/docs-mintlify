@@ -32,7 +32,12 @@ response = client.crawl(
     url="https://scrapegraphai.com/",
     prompt="Extract info about the company",
     depth=2,
-    max_pages=10
+    max_pages=10,
+    rules={
+        "include_paths": ["/about", "/services/*"],
+        "exclude_paths": ["/admin/*", "/api/**"],
+        "same_domain": True
+    }
 )
 ```
 
@@ -44,9 +49,14 @@ const url = 'https://scrapegraphai.com';
 const prompt = 'Extract info about the company';
 const depth = 2;
 const maxPages = 10;
+const rules = {
+  include_paths: ['/about', '/services/*'],
+  exclude_paths: ['/admin/*', '/api/**'],
+  same_domain: true
+};
 
 try {
-  const response = await smartCrawler(apiKey, url, prompt, depth, maxPages);
+  const response = await smartCrawler(apiKey, url, prompt, depth, maxPages, null, rules);
   console.log(response);
 } catch (error) {
   console.error(error);
@@ -63,7 +73,12 @@ curl -X 'POST' \
   "url": "https://scrapegraphai.com/",
   "prompt": "Extract info about the company",
   "depth": 2,
-  "max_pages": 10
+  "max_pages": 10,
+  "rules": {
+    "include_paths": ["/about", "/services/*"],
+    "exclude_paths": ["/admin/*", "/api/**"],
+    "same_domain": true
+  }
 }'
 ```
 
@@ -119,7 +134,12 @@ response = client.crawl(
     url="https://scrapegraphai.com/",
     extraction_mode=False,  # False = Markdown conversion (NO AI/LLM)
     depth=2,
-    max_pages=5
+    max_pages=5,
+    rules={
+        "include_paths": ["/docs/*", "/blog/**"],
+        "exclude_paths": ["/admin/*"],
+        "same_domain": True
+    }
 )
 ```
 
@@ -134,7 +154,12 @@ try {
   const response = await crawl(apiKey, url, null, null, {
     extractionMode: false,  // false = Markdown conversion (NO AI/LLM)
     depth: 2,
-    maxPages: 5
+    maxPages: 5,
+    rules: {
+      include_paths: ['/docs/*', '/blog/**'],
+      exclude_paths: ['/admin/*'],
+      same_domain: true
+    }
   });
   console.log(response);
 } catch (error) {
@@ -152,7 +177,12 @@ curl -X 'POST' \
   "url": "https://scrapegraphai.com/",
   "extraction_mode": false,
   "depth": 2,
-  "max_pages": 5
+  "max_pages": 5,
+  "rules": {
+    "include_paths": ["/docs/*", "/blog/**"],
+    "exclude_paths": ["/admin/*"],
+    "same_domain": true
+  }
 }'
 ```
 
@@ -196,14 +226,18 @@ You can control the crawl behavior with the `rules` object:
 
 ```python Python
 rules = {
-    "exclude": ["/logout", "/private"],  # List of URL patterns to exclude
+    "exclude": ["https://example.com/logout", "https://example.com/admin/*"],  # Regex patterns for full URLs to exclude
+    "include_paths": ["/products/*", "/blog/**"],  # Path patterns to include
+    "exclude_paths": ["/admin/*", "/api/**", "/private/*"],  # Path patterns to exclude (takes precedence)
     "same_domain": True  # Only crawl links on the same domain
 }
 ```
 
 | Field        | Type    | Default | Description |
 |--------------|---------|---------|-------------|
-| exclude      | list    | []      | List of URL substrings to skip |
+| exclude      | list    | []      | List of URL patterns (regex) to exclude from crawling. Matches full URL. |
+| include_paths | list   | []      | List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty, all paths are included. |
+| exclude_paths | list   | []      | List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. |
 | same_domain  | bool    | True    | Restrict crawl to the same domain |
 
 ### Example Response
@@ -299,7 +333,12 @@ response = client.crawl(
     prompt="Extract company info",
     schema=CompanyData,
     depth=1,
-    max_pages=5
+    max_pages=5,
+    rules={
+        "include_paths": ["/about", "/company/*"],
+        "exclude_paths": ["/admin/*", "/private/**"],
+        "same_domain": True
+    }
 )
 ```
 
@@ -313,7 +352,13 @@ const CompanySchema = z.object({
   features: z.array(z.string()).describe('Features')
 });
 
-const response = await smartCrawler(apiKey, url, prompt, 1, 5, CompanySchema);
+const rules = {
+  include_paths: ['/about', '/company/*'],
+  exclude_paths: ['/admin/*', '/private/**'],
+  same_domain: true
+};
+
+const response = await smartCrawler(apiKey, url, prompt, 1, 5, CompanySchema, rules);
 ```
 
 </CodeGroup>
@@ -334,7 +379,12 @@ async def main():
             url="https://scrapegraphai.com/",
             prompt="Extract info about the company",
             depth=2,
-            max_pages=10
+            max_pages=10,
+            rules={
+                "include_paths": ["/about", "/services/*"],
+                "exclude_paths": ["/admin/*", "/api/**"],
+                "same_domain": True
+            }
         )
         # Poll for result
         result = await client.get_crawl_result(task["task_id"])
@@ -347,7 +397,17 @@ if __name__ == "__main__":
 ```javascript JavaScript
 import { AsyncSmartCrawler } from 'scrapegraph-js';
 const scraper = new AsyncSmartCrawler(apiKey);
-const task = await scraper.crawl({ url, prompt, depth: 2, maxPages: 10 });
+const task = await scraper.crawl({ 
+  url, 
+  prompt, 
+  depth: 2, 
+  maxPages: 10,
+  rules: {
+    include_paths: ['/about', '/services/*'],
+    exclude_paths: ['/admin/*', '/api/**'],
+    same_domain: true
+  }
+});
 const result = await scraper.getResult(task.taskId);
 ```
 
@@ -456,7 +516,9 @@ POST https://api.scrapegraphai.com/v1/crawl
 
 ### General
 - Set reasonable `max_pages` and `depth` limits
-- Use `rules` to avoid unwanted pages (like /logout)
+- Use `rules` with `include_paths` and `exclude_paths` to precisely control which pages to crawl
+- Use `exclude` for full URL regex patterns when needed
+- `exclude_paths` takes precedence over `include_paths`
 - Always handle errors and poll for results
 - Monitor your credit usage and rate limits
 

@@ -27,7 +27,16 @@ Content-Type: `application/json`
   "max_pages": "integer",
   "same_domain_only": "boolean",
   "batch_size": "integer",
-  "schema": { /* JSON Schema object */ }
+  "schema": { /* JSON Schema object */ },
+  "rules": {
+    "exclude": ["string"],
+    "include_paths": ["string"],
+    "exclude_paths": ["string"],
+    "same_domain": "boolean"
+  },
+  "sitemap": "boolean",
+  "render_heavy_js": "boolean",
+  "stealth": "boolean"
 }
 ```
 
@@ -44,6 +53,9 @@ Content-Type: `application/json`
 | same_domain_only | boolean | No | true | Whether to crawl only the same domain |
 | batch_size | integer | No | 1 | Number of pages to process in each batch |
 | schema | object | No | - | JSON Schema object for structured output |
+| rules | object | No | - | Crawl rules for filtering URLs (see Rules section below) |
+| sitemap | boolean | No | false | Use sitemap.xml for discovery |
+| render_heavy_js | boolean | No | false | Enable heavy JavaScript rendering |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
 
 ### Example
@@ -57,6 +69,11 @@ Content-Type: `application/json`
   "same_domain_only": true,
   "batch_size": 1,
   "stealth": true,
+  "rules": {
+    "include_paths": ["/privacy", "/terms", "/about"],
+    "exclude_paths": ["/admin/*", "/api/**"],
+    "same_domain": true
+  },
   "schema": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ScrapeGraphAI Website Content",
@@ -124,9 +141,42 @@ For cost-effective HTML to markdown conversion without AI processing:
   "depth": 2,
   "max_pages": 5,
   "same_domain_only": true,
-  "stealth": true
+  "stealth": true,
+  "rules": {
+    "include_paths": ["/docs/*", "/blog/**"],
+    "exclude_paths": ["/admin/*", "/api/**"],
+    "same_domain": true
+  }
 }
 ```
+
+### Rules Example
+
+Control which URLs to crawl using the `rules` object:
+
+```json
+{
+  "url": "https://example.com/",
+  "prompt": "Extract product information",
+  "depth": 3,
+  "max_pages": 50,
+  "rules": {
+    "exclude": ["https://example.com/logout", "https://example.com/admin/*"],
+    "include_paths": ["/products/*", "/blog/**"],
+    "exclude_paths": ["/admin/*", "/api/**", "/private/*"],
+    "same_domain": true
+  }
+}
+```
+
+#### Rules Parameters
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| exclude | array | [] | List of URL patterns (regex) to exclude from crawling. Matches full URL. |
+| include_paths | array | [] | List of path patterns to include (e.g., `["/products/*", "/blog/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. If empty, all paths are included. |
+| exclude_paths | array | [] | List of path patterns to exclude (e.g., `["/admin/*", "/api/**"]`). Supports wildcards: `*` matches any characters, `**` matches any path segments. Takes precedence over `include_paths`. |
+| same_domain | boolean | true | Restrict crawling to same domain |
 
 <Note>
 When `extraction_mode: false`, the `prompt` parameter is not required. This mode converts HTML to clean markdown with metadata extraction at only 2 credits per page (80% savings compared to AI mode).
