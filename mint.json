@@ -103,6 +103,14 @@
         "services/agenticscraper",
         "services/markdownify",
         "services/scrape",
+        {
+          "group": "MCP Server",
+          "icon": "/logo/mcp.svg",
+          "pages": [
+            "services/mcp-server/cursor",
+            "services/mcp-server/claude"
+          ]
+        },
         "services/toonify",
         {
           "group": "Additional Parameters",
@@ -128,12 +136,6 @@
         "integrations/langflow",
         "integrations/vercel_ai",
         "integrations/google-adk"
-      ]
-    },
-    {
-      "group": "MCP",
-      "pages": [
-        "services/mcp-server"
       ]
     },
     {
