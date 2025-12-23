@@ -1,0 +1,91 @@
+---
+title: 'Claude Desktop'
+description: 'Configure ScrapeGraph MCP in Claude Desktop (remote-first)'
+icon: '/logo/claude-color.svg'
+---
+
+## Claude Desktop Setup
+
+Use the remote HTTP MCP endpoint with a lightweight proxy:
+
+```
+https://mcp.scrapegraphai.com/mcp
+```
+
+Add to your Claude config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "command": "npx",
+      "args": [
+        "mcp-remote@0.1.25",
+        "https://mcp.scrapegraphai.com/mcp",
+        "--header",
+        "X-API-Key:YOUR_API_KEY"
+      ]
+    }
+  }
+}
+```
+
+### Local (stdio) alternative
+
+Install and run locally:
+
+```bash
+pip install scrapegraph-mcp
+export SGAI_API_KEY=your-api-key
+```
+
+Config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp-local": {
+      "command": "python3",
+      "args": ["-m", "scrapegraph_mcp.server"],
+      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+#### Alternative: use the CLI directly
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "command": "scrapegraph-mcp",
+      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+#### Windows tip
+
+If setting environment variables is problematic on Windows:
+
+```bash
+cmd /c "set SGAI_API_KEY=YOUR_API_KEY && python -m scrapegraph_mcp.server"
+```
+
+<Note>
+  - Make sure the CLI is on your <code>PATH</code> (might be in <code>~/.local/bin</code> or the venv).<br/>
+  - You can provide an absolute <code>python</code> path if needed (pyenv/venv).<br/>
+  - Use <code>python3</code> on macOS if <code>python</code> points to Python 2.
+</Note>
+
+### Optional: Smithery
+
+```bash
+npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
+```
+
+Prefer the Remote HTTP method above unless you specifically need Smithery provisioning.
+
+

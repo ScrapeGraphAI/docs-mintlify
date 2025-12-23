@@ -1,0 +1,88 @@
+---
+title: 'Cursor'
+description: 'Configure ScrapeGraph MCP in Cursor (remote-first)'
+icon: '/logo/APP_ICON_2D_DARK.png'
+---
+
+## Cursor Setup
+
+Use the remote HTTP MCP endpoint (recommended):
+
+```
+https://mcp.scrapegraphai.com/mcp
+```
+
+Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "url": "https://mcp.scrapegraphai.com/mcp",
+      "headers": {
+        "X-API-Key": "YOUR_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Local (stdio) alternative
+
+If you prefer running locally:
+
+```bash
+pip install scrapegraph-mcp
+export SGAI_API_KEY=your-api-key
+```
+
+`~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp-local": {
+      "command": "python3",
+      "args": ["-m", "scrapegraph_mcp.server"],
+      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+#### Alternative: use the CLI directly
+
+```json
+{
+  "mcpServers": {
+    "scrapegraph-mcp": {
+      "command": "scrapegraph-mcp",
+      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    }
+  }
+}
+```
+
+#### Windows tip
+
+If environment variables are tricky in Cursor on Windows:
+
+```bash
+cmd /c "set SGAI_API_KEY=YOUR_API_KEY && python -m scrapegraph_mcp.server"
+```
+
+<Note>
+  - Ensure the CLI is on your <code>PATH</code> (it may be in <code>~/.local/bin</code> or your venv).<br/>
+  - You can use an absolute Python path if needed (e.g., from pyenv/venv).<br/>
+  - Use <code>python3</code> on macOS if <code>python</code> points to Python 2.
+</Note>
+
+### Optional: Smithery
+
+```bash
+npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
+```
+
+Use this only if you specifically want Smithery provisioning. Remote HTTP (above) is the simplest path.
+
+
