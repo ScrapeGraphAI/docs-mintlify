@@ -114,7 +114,7 @@
         "services/toonify",
         {
           "group": "Additional Parameters",
-          "pages": ["services/additional-parameters/headers", "services/additional-parameters/pagination"]
+          "pages": ["services/additional-parameters/headers", "services/additional-parameters/pagination", "services/additional-parameters/proxy"]
         },
         {
           "group": "Browser Extensions",

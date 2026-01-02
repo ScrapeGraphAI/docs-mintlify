@@ -1,0 +1,457 @@
+---
+title: 'Proxy Configuration'
+description: 'Configure proxy settings and geotargeting for web scraping requests'
+icon: 'globe'
+---
+
+<Frame>
+  <img src="/services/images/smartscraper-banner.png" alt="Proxy Configuration" />
+</Frame>
+
+## Overview
+
+The ScrapeGraphAI API uses an intelligent proxy system that automatically handles web scraping requests through multiple proxy providers. The system uses a fallback strategy to ensure maximum reliability - if one provider fails, it automatically tries the next one.
+
+**No configuration required**: The proxy system is fully automatic and transparent to API users. You don't need to configure proxy credentials or settings yourself.
+
+## How It Works
+
+The API automatically routes your scraping requests through multiple proxy providers in a smart order:
+
+1. The system tries different proxy providers automatically
+2. If one provider fails, it automatically falls back to the next one
+3. Successful providers are cached for each domain to improve performance
+4. Everything happens transparently - you just make your API request as normal
+
+## Country Selection (Geotargeting)
+
+You can optionally specify a country code to route requests through proxies in a specific country. This is useful for:
+
+- Accessing geo-restricted content
+- Getting localized versions of websites
+- Complying with regional requirements
+- Testing location-specific features
+
+### Using Country Code
+
+Include the `country_code` parameter in your API request:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Request with country code
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information",
+    country_code="us"  # Route through US proxies
+)
+```
+
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+// Request with country code
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  'Extract product information',
+  null, // schema
+  null, // numberOfScrolls
+  null, // totalPages
+  null, // cookies
+  { country_code: 'us' } // options with country code
+);
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/smartscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://example.com",
+  "user_prompt": "Extract product information",
+  "country_code": "us"
+}'
+```
+
+</CodeGroup>
+
+### Supported Country Codes
+
+The API supports geotargeting for a wide range of countries using ISO 3166-1 alpha-2 country codes:
+
+<Accordion title="View All Supported Countries" icon="list">
+
+| Code | Country | Code | Country | Code | Country |
+|------|---------|------|---------|------|---------|
+| `us` | United States | `uk` / `gb` | United Kingdom | `ca` | Canada |
+| `au` | Australia | `de` | Germany | `fr` | France |
+| `it` | Italy | `es` | Spain | `nl` | Netherlands |
+| `be` | Belgium | `ch` | Switzerland | `at` | Austria |
+| `se` | Sweden | `no` | Norway | `dk` | Denmark |
+| `fi` | Finland | `pl` | Poland | `cz` | Czech Republic |
+| `ie` | Ireland | `pt` | Portugal | `gr` | Greece |
+| `jp` | Japan | `kr` | South Korea | `cn` | China |
+| `in` | India | `sg` | Singapore | `hk` | Hong Kong |
+| `mx` | Mexico | `br` | Brazil | `ar` | Argentina |
+| `cl` | Chile | `co` | Colombia | `pe` | Peru |
+| `za` | South Africa | `eg` | Egypt | `ae` | UAE |
+| `sa` | Saudi Arabia | `il` | Israel | `tr` | Turkey |
+| `ru` | Russia | `ua` | Ukraine | `nz` | New Zealand |
+
+And many more! The API supports over 100 countries. Use standard ISO 3166-1 alpha-2 country codes.
+
+</Accordion>
+
+## Available Parameters
+
+The following parameters in API requests can affect proxy behavior:
+
+### `country_code` (optional)
+- **Type**: String
+- **Description**: Two-letter ISO country code to route requests through proxies in a specific country
+- **Example**: `"us"`, `"uk"`, `"de"`, `"it"`, `"fr"`
+- **Default**: No specific country (uses optimal routing)
+- **Format**: ISO 3166-1 alpha-2 (e.g., `us`, `gb`, `de`)
+
+### `render_heavy_js` (optional)
+- **Type**: Boolean
+- **Description**: Whether to render JavaScript-heavy pages. This may affect which proxy provider is used.
+- **Default**: `false`
+
+## Usage Examples
+
+### Basic Request (Automatic Proxy Selection)
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Automatic proxy selection - no configuration needed
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information"
+)
+```
+
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+// Automatic proxy selection
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  'Extract product information'
+);
+```
+
+</CodeGroup>
+
+### Request with Country Code
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Route through US proxies
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information",
+    country_code="us"
+)
+
+# Route through UK proxies
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information",
+    country_code="uk"
+)
+```
+
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+// Route through US proxies
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  'Extract product information',
+  null, // schema
+  null, // numberOfScrolls
+  null, // totalPages
+  null, // cookies
+  { country_code: 'us' } // options
+);
+```
+
+</CodeGroup>
+
+### Request with JavaScript Rendering and Country Code
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Combine JavaScript rendering with geotargeting
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information",
+    render_heavy_js=True,
+    country_code="uk"
+)
+```
+
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+// Combine JavaScript rendering with geotargeting
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  'Extract product information',
+  null, // schema
+  null, // numberOfScrolls
+  null, // totalPages
+  null, // cookies
+  { country_code: 'uk' }, // options
+  false, // plain_text
+  true   // renderHeavyJs
+);
+```
+
+</CodeGroup>
+
+### Real-World Use Cases
+
+#### Accessing Geo-Restricted Content
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Access US-only content
+response = client.smartscraper(
+    website_url="https://us-only-service.com",
+    user_prompt="Extract available services",
+    country_code="us"
+)
+```
+
+#### Getting Localized Content
+
+```python
+# Get German version of a website
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product prices in local currency",
+    country_code="de"
+)
+
+# Get French version
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product prices in local currency",
+    country_code="fr"
+)
+```
+
+#### E-commerce Price Comparison
+
+```python
+# Compare prices from different regions
+countries = ["us", "uk", "de", "fr"]
+
+for country in countries:
+    response = client.smartscraper(
+        website_url="https://ecommerce-site.com/product/123",
+        user_prompt="Extract product price and availability",
+        country_code=country
+    )
+    print(f"{country}: {response['result']}")
+```
+
+## Best Practices
+
+### 1. Use Country Code When Needed
+
+Only specify a country code if you have a specific requirement:
+- ✅ Accessing geo-restricted content
+- ✅ Getting localized versions of websites
+- ✅ Complying with regional requirements
+- ❌ Don't specify if you don't need it - let the system optimize automatically
+
+### 2. Let the System Handle Routing
+
+The API automatically selects the best proxy provider for each request:
+- No manual proxy selection needed
+- Automatic failover ensures reliability
+- Performance is optimized automatically
+
+### 3. Handle Errors Gracefully
+
+If a request fails, the system has already tried multiple providers:
+
+```python
+from scrapegraph_py import Client
+import time
+
+client = Client(api_key="your-api-key")
+
+def scrape_with_retry(url, prompt, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            response = client.smartscraper(
+                website_url=url,
+                user_prompt=prompt,
+                country_code="us"
+            )
+            return response
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                time.sleep(2 ** attempt)  # Exponential backoff
+            else:
+                raise e
+```
+
+### 4. Monitor Rate Limits
+
+Be aware of your API rate limits:
+- The proxy system respects these limits automatically
+- Monitor your usage in the [dashboard](/dashboard/overview)
+- Implement appropriate delays between requests
+
+## Troubleshooting
+
+### Request Failures
+
+<Accordion title="Request Failures" icon="exclamation-triangle">
+If your scraping request fails:
+
+1. **Verify the URL**: Make sure the URL is correct and accessible
+2. **Check the website**: Some websites may block automated access regardless of proxy
+3. **Retry the request**: The system uses automatic retries, but you can manually retry after a delay
+4. **Try different parameters**: Sometimes using `render_heavy_js: true` can help with JavaScript-heavy sites
+5. **Try a different country**: If geo-restriction is the issue, try a different `country_code`
+</Accordion>
+
+### Rate Limiting
+
+<Accordion title="Rate Limiting" icon="clock">
+If you receive rate limit errors (HTTP 429):
+
+- Wait a few minutes before making new requests
+- The API automatically handles rate limits on proxy providers
+- Consider implementing exponential backoff in your application
+- Check your API usage limits in the dashboard
+</Accordion>
+
+### Geo-Restricted Content
+
+<Accordion title="Geo-Restricted Content" icon="globe">
+If you're trying to access geo-restricted content:
+
+- Use the `country_code` parameter to specify the required country
+- Make sure the content is available in that country
+- Some content may still be restricted regardless of proxy location
+- Try multiple country codes if one doesn't work
+</Accordion>
+
+### Proxy Selection Issues
+
+<Accordion title="Proxy Selection Issues" icon="network">
+If you're experiencing proxy-related issues:
+
+- The system automatically tries multiple providers
+- No manual configuration is needed
+- If issues persist, contact support with your request ID
+- Check if the issue is specific to certain websites or domains
+</Accordion>
+
+## FAQ
+
+<Accordion title="Do I need to configure proxy credentials?" icon="question">
+**A**: No, the proxy system is fully managed and automatic. You don't need to provide any proxy credentials or configuration.
+</Accordion>
+
+<Accordion title="Can I choose which proxy provider to use?" icon="question">
+**A**: No, the system automatically selects the best proxy provider for each request. This ensures optimal performance and reliability.
+</Accordion>
+
+<Accordion title="How do I know which proxy was used?" icon="question">
+**A**: The proxy selection is handled automatically and transparently. You don't need to know which proxy was used - just use the API as normal.
+</Accordion>
+
+<Accordion title="Can I use my own proxies?" icon="question">
+**A**: The API uses managed proxy services. If you have specific proxy requirements, please contact support.
+</Accordion>
+
+<Accordion title="What happens if all proxies fail?" icon="question">
+**A**: The API will return an error. The system tries multiple providers with automatic fallback, so this is rare. If it happens, verify the URL and try again.
+</Accordion>
+
+<Accordion title="Does using country_code cost more?" icon="question">
+**A**: No, the `country_code` parameter doesn't affect pricing. Credits are charged the same regardless of proxy location.
+</Accordion>
+
+<Accordion title="Can I use country_code with all services?" icon="question">
+**A**: Yes, `country_code` is available for all scraping services including SmartScraper, SearchScraper, SmartCrawler, and Markdownify.
+</Accordion>
+
+<Accordion title="What's the difference between 'uk' and 'gb' country codes?" icon="question">
+**A**: Both `uk` and `gb` refer to the United Kingdom. The API accepts both codes for compatibility.
+</Accordion>
+
+## API Reference
+
+For detailed API documentation, see:
+- [SmartScraper Start Job](/api-reference/endpoint/smartscraper/start)
+- [SearchScraper Start Job](/api-reference/endpoint/searchscraper/start)
+- [SmartCrawler Start Job](/api-reference/endpoint/smartcrawler/start)
+- [Markdownify Start Job](/api-reference/endpoint/markdownify/start)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Dashboard" icon="dashboard" href="/dashboard/overview">
+    Monitor your API usage and credits
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Need Help?" icon="question" href="mailto:support@scrapegraphai.com">
+  Contact our support team for assistance with proxy configuration, geotargeting, or any other questions!
+</Card>
+
