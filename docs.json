@@ -1,0 +1,263 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "ScrapeGraphAI",
+  "colors": {
+    "primary": "#9333ea",
+    "light": "#9f52eb",
+    "dark": "#1f2937"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Home",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              {
+                "group": "Use Cases",
+                "pages": [
+                  "use-cases/overview",
+                  "use-cases/ai-llm",
+                  "use-cases/lead-generation",
+                  "use-cases/market-intelligence",
+                  "use-cases/content-aggregation",
+                  "use-cases/research-analysis",
+                  "use-cases/seo-analytics"
+                ]
+              },
+              {
+                "group": "Dashboard",
+                "pages": [
+                  "dashboard/overview",
+                  "dashboard/playground",
+                  "dashboard/settings"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "services/smartscraper",
+              "services/searchscraper",
+              "services/smartcrawler",
+              "services/agenticscraper",
+              "services/markdownify",
+              "services/scrape",
+              {
+                "group": "MCP Server",
+                "icon": "/logo/mcp.svg",
+                "pages": [
+                  "services/mcp-server/cursor",
+                  "services/mcp-server/claude"
+                ]
+              },
+              "services/toonify",
+              {
+                "group": "Additional Parameters",
+                "pages": [
+                  "services/additional-parameters/headers",
+                  "services/additional-parameters/pagination",
+                  "services/additional-parameters/proxy"
+                ]
+              },
+              {
+                "group": "Browser Extensions",
+                "pages": [
+                  "services/extensions/firefox",
+                  "services/extensions/chrome"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Official SDKs",
+            "pages": [
+              "sdks/python",
+              "sdks/javascript",
+              "sdks/mocking"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/langchain",
+              "integrations/llamaindex",
+              "integrations/crewai",
+              "integrations/agno",
+              "integrations/langflow",
+              "integrations/vercel_ai",
+              "integrations/google-adk"
+            ]
+          },
+          {
+            "group": "Contribute",
+            "pages": [
+              "contribute/opensource",
+              "contribute/feedback"
+            ]
+          },
+          {
+            "group": "Resources",
+            "icon": "puzzle-piece",
+            "pages": [
+              "resources/badge",
+              "resources/mastering-prompts"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Cookbook",
+        "groups": [
+          {
+            "group": "Cookbook",
+            "pages": [
+              "cookbook/introduction"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "cookbook/examples/company-info",
+              "cookbook/examples/github-trending",
+              "cookbook/examples/wired",
+              "cookbook/examples/homes",
+              "cookbook/examples/research-agent",
+              "cookbook/examples/chat-webpage",
+              "cookbook/examples/pagination",
+              "cookbook/examples/cookies"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Documentation",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "SmartScraper",
+            "pages": [
+              "api-reference/endpoint/smartscraper/start",
+              "api-reference/endpoint/smartscraper/get-status"
+            ]
+          },
+          {
+            "group": "SearchScraper",
+            "pages": [
+              "api-reference/endpoint/searchscraper/start",
+              "api-reference/endpoint/searchscraper/get-status"
+            ]
+          },
+          {
+            "group": "SmartCrawler",
+            "pages": [
+              "api-reference/endpoint/smartcrawler/start",
+              "api-reference/endpoint/smartcrawler/get-status"
+            ]
+          },
+          {
+            "group": "Sitemap",
+            "pages": [
+              "api-reference/endpoint/sitemap/start",
+              "api-reference/endpoint/sitemap/get-status"
+            ]
+          },
+          {
+            "group": "Markdownify",
+            "pages": [
+              "api-reference/endpoint/markdownify/start",
+              "api-reference/endpoint/markdownify/get-status"
+            ]
+          },
+          {
+            "group": "User",
+            "pages": [
+              "api-reference/endpoint/user/get-credits",
+              "api-reference/endpoint/user/submit-feedback"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Official Website",
+          "href": "https://scrapegraphai.com/",
+          "icon": "globe"
+        },
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/uJN7TYcpNa",
+          "icon": "discord"
+        },
+        {
+          "anchor": "Blog",
+          "href": "https://scrapegraphai.com/blog",
+          "icon": "newspaper"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://docs.scrapegraphai.com"
+  },
+  "background": {
+    "color": {
+      "dark": "#101725"
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Status",
+        "href": "https://scrapegraphapi.openstatus.dev/"
+      },
+      {
+        "label": "Support",
+        "href": "mailto:contact@scrapegraphai.com"
+      },
+      {
+        "label": "⭐ 21.9k+",
+        "href": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.scrapegraphai.com"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/scrapegraphai",
+      "github": "https://github.com/ScrapeGraphAI",
+      "linkedin": "https://www.linkedin.com/company/scrapegraphai/"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  }
+}
