@@ -61,7 +61,8 @@
                 "group": "Additional Parameters",
                 "pages": [
                   "services/additional-parameters/headers",
-                  "services/additional-parameters/pagination"
+                  "services/additional-parameters/pagination",
+                  "services/additional-parameters/proxy"
                 ]
               },
               {
