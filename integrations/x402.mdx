@@ -1,0 +1,273 @@
+---
+title: 'x402'
+description: 'Pay-per-use API endpoints with stablecoins'
+---
+
+## Overview
+
+These endpoints use the x402 payment protocol, enabling pay-per-use access with stablecoin payments. Each request requires a payment header for authentication and payment.
+
+<Info>
+  **Pay-Per-Use Endpoints**
+
+  All endpoints listed below accept stablecoin payments via the x402 protocol. No subscription required - pay only for what you use.
+</Info>
+
+## Authentication
+
+Include the payment header with your requests:
+
+```
+X-Payment: {{paymentHeader}}
+```
+
+The payment is automatically processed and verified before your request is fulfilled.
+
+---
+
+## Scrapegraphai API
+
+### Payment-Enabled Endpoints
+
+#### POST /v1/markdownify
+
+Convert any webpage into clean, readable Markdown format.
+
+[View Documentation](https://docs.scrapegraphai.com/api-reference/endpoint/markdownify/start)
+
+**Price:** $0.01 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/markdownify' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "website_url": "example",
+    "headers": "",
+    "stealth": true
+  }'
+```
+
+---
+
+#### POST /v1/scrape
+
+Extract raw HTML content from web pages with JavaScript rendering support
+
+[View Documentation](https://docs.scrapegraphai.com/services/scrape#example-response-with-branding-true)
+
+**Price:** $0.01 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/scrape' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "website_url": "example",
+    "render_heavy_js": true,
+    "branding": true,
+    "stealth": "example"
+  }'
+```
+
+---
+
+#### POST /v1/crawl
+
+Start a new web crawl request with AI extraction or markdown conversion
+
+[View Documentation](https://docs.scrapegraphai.com/api-reference/endpoint/smartcrawler/start)
+
+**Price:** $0.04 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/crawl' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "url": "example",
+    "prompt": "example",
+    "extraction_mode": true,
+    "cache_website": true,
+    "depth": 123,
+    "max_pages": 123,
+    "same_domain_only": true,
+    "batch_size": "",
+    "schema": "",
+    "rules": "",
+    "sitemap": "example",
+    "render_heavy_js": "example",
+    "stealth": "example"
+  }'
+```
+
+---
+
+#### POST /v1/smartscraper
+
+Extract content from a webpage using AI by providing a natural language prompt and a URL.
+
+[View Documentation](https://docs.scrapegraphai.com/api-reference/endpoint/smartscraper/start)
+
+**Price:** $0.04 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/smartscraper' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "user_prompt": "example",
+    "website_url": "example",
+    "website_html": "example",
+    "headers": "",
+    "output_schema": "",
+    "stealth": true,
+    " website_markdown": "example",
+    "total_pages": 123,
+    " number_of_scrolls": 123,
+    " render_heavy_js": true,
+    " mock": true,
+    " cookies": "",
+    " steps": ""
+  }'
+```
+
+---
+
+#### POST /v1/sitemap
+
+Extract all URLs from a website sitemap automatically.
+
+[View Documentation](https://docs.scrapegraphai.com/api-reference/introduction)
+
+**Price:** $0.01 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/sitemap' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "website_url": "example",
+    "headers": "",
+    "mock": true,
+    "stealth": true
+  }'
+```
+
+---
+
+#### POST /v1/searchscraper
+
+Start a new AI-powered web search request
+
+[View Documentation](https://docs.scrapegraphai.com/api-reference/endpoint/searchscraper/start)
+
+**Price:** $0.12 per request
+
+**Network:** Base (USDC)
+
+```bash
+curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Payment: {{paymentHeader}}' \
+  -d '{
+    "user_prompt": "example",
+    "headers": "",
+    "output_schema": "",
+    "mock": "example",
+    " stealth": true
+  }'
+```
+
+---
+
+### Standard Endpoints
+
+These endpoints do not require payment:
+
+- **GET** `/v1/searchscraper/{request_id}` - Get the status and results of a previous search request ([docs](https://docs.scrapegraphai.com/api-reference/endpoint/searchscraper/get-status))
+- **GET** `/v1/markdownify/{request_id}` - Check the status and retrieve results of a Markdownify request. ([docs](https://docs.scrapegraphai.com/api-reference/endpoint/markdownify/get-status))
+- **GET** `/v1/sitemap/{request_id}` - Check the status and retrieve results of a Sitemap request. ([docs](https://docs.scrapegraphai.com/api-reference/endpoint/sitemap/get-status))
+- **GET** `/v1/crawl/{task_id}` - Get the status and results of a previous smartcrawl request ([docs](https://docs.scrapegraphai.com/api-reference/endpoint/smartcrawler/get-status))
+- **GET** `/v1/smartscraper/{request_id}` - Check the status and retrieve results of a SmartScraper request. ([docs](https://docs.scrapegraphai.com/api-reference/endpoint/smartscraper/get-status))
+
+---
+
+## How x402 Works
+
+The payment flow is handled automatically by the x402 SDK:
+
+1. **Make Request** - Send a request to the endpoint
+2. **Payment Required** - Server responds with payment requirements (402 status)
+3. **Auto-Payment** - SDK automatically creates and submits payment
+4. **Get Response** - Receive your API response
+
+## Getting Started
+
+Install the x402 SDK for your language:
+
+```bash
+# Node.js
+npm install x402-fetch viem
+
+# Python
+pip install x402 eth-account
+```
+
+## Example Usage
+
+<CodeGroup>
+```javascript Node.js
+import { wrapFetchWithPayment } from "x402-fetch";
+import { privateKeyToAccount } from "viem/accounts";
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY);
+const fetchWithPayment = wrapFetchWithPayment(fetch, account);
+
+// Make a paid request - payment is automatic
+const response = await fetchWithPayment("https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper/{request_id}", {
+  method: "GET"
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import os
+import requests
+from eth_account import Account
+from x402.clients.requests import x402_http_adapter
+
+account = Account.from_key(os.getenv("PRIVATE_KEY"))
+session = requests.Session()
+adapter = x402_http_adapter(account)
+session.mount("https://", adapter)
+
+# Make a paid request - payment is automatic
+response = session.get(
+    "https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper/{request_id}"
+)
+
+print(response.json())
+```
+</CodeGroup>
+
+## Learn More
+
+- [x402 Protocol Docs](https://x402.org)
+- [Coinbase x402 Guide](https://docs.cdp.coinbase.com/x402/)
+
+---
+
+Powered by [Orthogonal](https://orthogonal.sh)
