@@ -40,7 +40,7 @@ Convert any webpage into clean, readable Markdown format.
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/markdownify' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/markdownify' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -63,7 +63,7 @@ Extract raw HTML content from web pages with JavaScript rendering support
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/scrape' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/scrape' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -87,7 +87,7 @@ Start a new web crawl request with AI extraction or markdown conversion
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/crawl' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/crawl' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -120,7 +120,7 @@ Extract content from a webpage using AI by providing a natural language prompt a
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/smartscraper' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/smartscraper' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -153,7 +153,7 @@ Extract all URLs from a website sitemap automatically.
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/sitemap' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/sitemap' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -177,7 +177,7 @@ Start a new AI-powered web search request
 **Network:** Base (USDC)
 
 ```bash
-curl -X POST 'https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper' \
+curl -X POST 'https://api.scrapegraphai.com/x402/v1/searchscraper' \
   -H 'Content-Type: application/json' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
@@ -235,7 +235,7 @@ const account = privateKeyToAccount(process.env.PRIVATE_KEY);
 const fetchWithPayment = wrapFetchWithPayment(fetch, account);
 
 // Make a paid request - payment is automatic
-const response = await fetchWithPayment("https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper/{request_id}", {
+const response = await fetchWithPayment("https://api.scrapegraphai.com/x402/v1/searchscraper/{request_id}", {
   method: "GET"
 });
 
@@ -256,7 +256,7 @@ session.mount("https://", adapter)
 
 # Make a paid request - payment is automatic
 response = session.get(
-    "https://api.orth.sh/pay/SuHunNEB9/v1/searchscraper/{request_id}"
+    "https://api.scrapegraphai.com/x402/v1/searchscraper/{request_id}"
 )
 
 print(response.json())
