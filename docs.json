@@ -98,8 +98,7 @@
           {
             "group": "Contribute",
             "pages": [
-              "contribute/opensource",
-              "contribute/feedback"
+              "contribute/opensource"
             ]
           },
           {
@@ -231,7 +230,7 @@
         "href": "mailto:contact@scrapegraphai.com"
       },
       {
-        "label": "⭐ 22.2k+",
+        "label": "⭐ 22.3k+",
         "href": "https://github.com/ScrapeGraphAI/Scrapegraph-ai"
       }
     ],
