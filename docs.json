@@ -100,13 +100,6 @@
             "pages": [
               "contribute/opensource"
             ]
-          },
-          {
-            "group": "Resources",
-            "icon": "puzzle-piece",
-            "pages": [
-              "resources/badge"
-            ]
           }
         ]
       },
@@ -128,8 +121,7 @@
               "cookbook/examples/homes",
               "cookbook/examples/research-agent",
               "cookbook/examples/chat-webpage",
-              "cookbook/examples/pagination",
-              "cookbook/examples/cookies"
+              "cookbook/examples/pagination"
             ]
           }
         ]
