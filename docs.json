@@ -17,6 +17,7 @@
             "group": "Get Started",
             "pages": [
               "introduction",
+              "install",
               {
                 "group": "Use Cases",
                 "pages": [
