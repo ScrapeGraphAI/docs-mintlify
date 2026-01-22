@@ -53,8 +53,10 @@
                 "group": "MCP Server",
                 "icon": "/logo/mcp.svg",
                 "pages": [
+                  "services/mcp-server/introduction",
                   "services/mcp-server/cursor",
-                  "services/mcp-server/claude"
+                  "services/mcp-server/claude",
+                  "services/mcp-server/smithery"
                 ]
               },
               "services/toonify",

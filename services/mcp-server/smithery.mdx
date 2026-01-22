@@ -1,0 +1,98 @@
+---
+title: 'Smithery'
+description: 'Install ScrapeGraph MCP Server via Smithery'
+icon: 'package'
+---
+
+## Smithery Setup
+
+[Smithery](https://smithery.ai) is a platform that simplifies MCP server installation and management. It provides an easy way to discover, install, and configure MCP servers for various clients.
+
+<Card
+  title="View on Smithery"
+  icon="external-link"
+  href="https://smithery.ai/server/@ScrapeGraphAI/scrapegraph-mcp"
+>
+  Check out the ScrapeGraph MCP Server on Smithery
+</Card>
+
+## Installation
+
+Install the ScrapeGraph MCP Server using Smithery's CLI:
+
+```bash
+npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
+```
+
+This command will:
+- Automatically download and configure the MCP server
+- Set up the necessary configuration files
+- Prompt you for your API key if needed
+
+## Supported Clients
+
+Smithery currently supports installation for:
+- **Claude Desktop** - Full support with automatic configuration
+- Other MCP-compatible clients may be added in the future
+
+## Configuration
+
+After installation, Smithery will configure your client's MCP settings. You may need to:
+
+1. **Provide your API key** - Enter your ScrapeGraph API key when prompted
+2. **Restart your client** - Restart Claude Desktop or your MCP client to load the new server
+3. **Verify connection** - Test the connection by asking your AI assistant to use one of the MCP tools
+
+## API Key
+
+You'll need a ScrapeGraph API key to use the MCP server. Get one from the [ScrapeGraph Dashboard](https://dashboard.scrapegraphai.com) if you haven't already.
+
+## Alternative Installation Methods
+
+While Smithery provides a convenient installation method, you can also set up the MCP server using:
+
+<CardGroup cols={2}>
+  <Card
+    title="Remote HTTP Endpoint"
+    icon="cloud"
+    href="/services/mcp-server/cursor"
+  >
+    Use the hosted endpoint - no installation required
+  </Card>
+  <Card
+    title="Local Python Installation"
+    icon="server"
+    href="/services/mcp-server"
+  >
+    Install and run the Python package locally
+  </Card>
+</CardGroup>
+
+## When to Use Smithery
+
+Smithery is a good choice if you:
+- Prefer automated installation and configuration
+- Want to manage multiple MCP servers easily
+- Use Claude Desktop as your primary client
+- Like the convenience of a package manager approach
+
+## Troubleshooting
+
+If you encounter issues with Smithery installation:
+
+1. **Check Node.js version** - Ensure you have Node.js installed (npx requires Node.js)
+2. **Verify API key** - Make sure your ScrapeGraph API key is valid
+3. **Check client logs** - Review Claude Desktop logs for connection errors:
+   - macOS: `~/Library/Logs/Claude/`
+   - Windows: `%APPDATA%\\Claude\\Logs\\`
+4. **Manual configuration** - If Smithery doesn't work, try the [manual setup methods](/services/mcp-server/cursor)
+
+## Learn More
+
+- Visit [Smithery.ai](https://smithery.ai) to explore other MCP servers
+- Check the [ScrapeGraph MCP Server page](https://smithery.ai/server/@ScrapeGraphAI/scrapegraph-mcp) on Smithery
+- Read the [full MCP Server documentation](/services/mcp-server) for advanced features
+
+<Note>
+  For most users, the <a href="/services/mcp-server/cursor">Remote HTTP endpoint</a> is the simplest setup method. Smithery is recommended if you specifically want automated provisioning and management.
+</Note>

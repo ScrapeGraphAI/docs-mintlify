@@ -1,0 +1,122 @@
+---
+title: 'Introduction'
+description: 'Get started with ScrapeGraphAI MCP Server - Connect LLMs to web scraping tools'
+---
+
+## Overview
+
+The ScrapeGraphAI MCP Server is a production-ready Model Context Protocol (MCP) server that connects Large Language Models (LLMs) to the ScrapeGraph AI API. It enables AI assistants like Claude and Cursor to perform AI-powered web scraping, research, and crawling directly through natural language interactions.
+
+<Card
+  title="⭐ Star us on GitHub"
+  icon="star"
+  href="https://github.com/ScrapeGraphAI/scrapegraph-mcp"
+>
+  If this server is helpful, a star goes a long way. Thanks!
+</Card>
+
+## What is MCP?
+
+The Model Context Protocol (MCP) is a standardized way for AI assistants to access external tools and data sources. By using the ScrapeGraphAI MCP Server, your AI assistant gains access to powerful web scraping capabilities without needing to write code.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="8 Powerful Tools" icon="tools">
+    Access markdown conversion, AI extraction, search, crawling, sitemap discovery, and agentic workflows
+  </Card>
+  <Card title="Remote & Local" icon="server">
+    Use the hosted HTTP endpoint or run locally via Python
+  </Card>
+  <Card title="Universal Compatibility" icon="plug">
+    Works with Cursor, Claude Desktop, and any MCP-compatible client
+  </Card>
+  <Card title="Production Ready" icon="shield-check">
+    Robust error handling, timeouts, and reliability tested in production
+  </Card>
+</CardGroup>
+
+## Available Tools
+
+The MCP server exposes 8 enterprise-ready tools:
+
+1. **markdownify** - Convert webpages to clean markdown
+2. **smartscraper** - AI-powered extraction with optional infinite scrolls
+3. **searchscraper** - Search the web and extract structured results
+4. **scrape** - Fetch raw HTML with optional JavaScript rendering
+5. **sitemap** - Discover a site's URLs and structure
+6. **smartcrawler_initiate** - Start async multi-page crawls
+7. **smartcrawler_fetch_results** - Poll crawl results
+8. **agentic_scrapper** - Multi-step workflows with session persistence
+
+## Quick Start
+
+<Steps>
+  <Step title="Get Your API Key">
+    Create an account and copy your API key from the [ScrapeGraph Dashboard](https://dashboard.scrapegraphai.com)
+  </Step>
+  <Step title="Choose Your Client">
+    Select your preferred AI assistant: <a href="/services/mcp-server/cursor">Cursor</a> or <a href="/services/mcp-server/claude">Claude Desktop</a>
+  </Step>
+  <Step title="Configure MCP">
+    Follow the setup guide for your client to connect the MCP server
+  </Step>
+  <Step title="Start Scraping">
+    Ask your AI assistant to scrape websites, extract data, or perform research
+  </Step>
+</Steps>
+
+## Setup Guides
+
+<CardGroup cols={2}>
+  <Card
+    title="Cursor Setup"
+    icon="/logo/APP_ICON_2D_DARK.png"
+    href="/services/mcp-server/cursor"
+  >
+    Configure ScrapeGraph MCP in Cursor (remote-first)
+  </Card>
+  <Card
+    title="Claude Desktop Setup"
+    icon="/logo/claude-color.svg"
+    href="/services/mcp-server/claude"
+  >
+    Configure ScrapeGraph MCP in Claude Desktop (remote-first)
+  </Card>
+</CardGroup>
+
+## Recommended: Remote HTTP Endpoint
+
+The easiest way to get started is using our hosted MCP endpoint:
+
+```
+https://mcp.scrapegraphai.com/mcp
+```
+
+This requires no local installation and works seamlessly with both Cursor and Claude Desktop. See the setup guides above for configuration details.
+
+## Local Installation
+
+Prefer running locally? You can install the Python package and run it via stdio. This gives you more control and doesn't require internet connectivity for the MCP connection itself.
+
+<Note>
+  The remote endpoint is recommended for most users as it's simpler to set up and maintain.
+</Note>
+
+## Use Cases
+
+- **Research & Analysis** - Extract data from multiple sources for research
+- **Content Aggregation** - Collect and structure content from websites
+- **Market Intelligence** - Monitor competitors and market trends
+- **Lead Generation** - Extract contact information and company data
+- **Data Collection** - Build datasets from web sources
+
+## Next Steps
+
+- Read the detailed setup guide for <a href="/services/mcp-server/cursor">Cursor</a>
+- Read the detailed setup guide for <a href="/services/mcp-server/claude">Claude Desktop</a>
+- Explore the full <a href="/services/mcp-server">MCP Server documentation</a> for advanced features
+
+<Card title="Ready to Start?" icon="rocket" href="/services/mcp-server/cursor">
+  Choose your client and start scraping with AI!
+</Card>
