@@ -37,6 +37,7 @@ Content-Type: `application/json`
   "sitemap": "boolean",
   "render_heavy_js": "boolean",
   "stealth": "boolean"
+  "webhook_url: str
 }
 ```
 
@@ -57,6 +58,7 @@ Content-Type: `application/json`
 | sitemap | boolean | No | false | Use sitemap.xml for discovery |
 | render_heavy_js | boolean | No | false | Enable heavy JavaScript rendering |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
+| webhook_url | str | No | None | Webhook URL to send the job result to
 
 ### Example
 ```json
@@ -74,6 +76,7 @@ Content-Type: `application/json`
     "exclude_paths": ["/admin/*", "/api/**"],
     "same_domain": true
   },
+  "webhook_url":"https://api.example.com/handle/webhook"
   "schema": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ScrapeGraphAI Website Content",
@@ -146,7 +149,8 @@ For cost-effective HTML to markdown conversion without AI processing:
     "include_paths": ["/docs/*", "/blog/**"],
     "exclude_paths": ["/admin/*", "/api/**"],
     "same_domain": true
-  }
+  },
+  "webhook_url":"https://api.example.com/handle/webhook"
 }
 ```
 
