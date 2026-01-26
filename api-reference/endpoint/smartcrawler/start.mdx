@@ -24,6 +24,7 @@ Content-Type: `application/json`
   "extraction_mode": "boolean",
   "cache_website": "boolean",
   "depth": "integer",
+  "breadth": "integer",
   "max_pages": "integer",
   "same_domain_only": "boolean",
   "batch_size": "integer",
@@ -50,6 +51,7 @@ Content-Type: `application/json`
 | extraction_mode | boolean | No | true | When `false`, enables markdown conversion mode (NO AI/LLM processing, 2 credits per page) |
 | cache_website | boolean | No | false | Whether to cache the website content |
 | depth | integer | No | 1 | Maximum crawl depth |
+| breadth | integer | No | null | Maximum number of links to crawl per depth level. If null/undefined, unlimited (default). Controls the 'width' of exploration at each depth. Useful for limiting crawl scope on large sites. Note: max_pages always takes priority. Ignored when sitemap=true. |
 | max_pages | integer | No | 10 | Maximum number of pages to crawl |
 | same_domain_only | boolean | No | true | Whether to crawl only the same domain |
 | batch_size | integer | No | 1 | Number of pages to process in each batch |
@@ -67,6 +69,7 @@ Content-Type: `application/json`
   "prompt": "What does the company do? and I need text content from there privacy and terms",
   "cache_website": true,
   "depth": 2,
+  "breadth": null,
   "max_pages": 2,
   "same_domain_only": true,
   "batch_size": 1,
@@ -142,6 +145,7 @@ For cost-effective HTML to markdown conversion without AI processing:
   "url": "https://scrapegraphai.com/",
   "extraction_mode": false,
   "depth": 2,
+  "breadth": null,
   "max_pages": 5,
   "same_domain_only": true,
   "stealth": true,
@@ -163,6 +167,7 @@ Control which URLs to crawl using the `rules` object:
   "url": "https://example.com/",
   "prompt": "Extract product information",
   "depth": 3,
+  "breadth": null,
   "max_pages": 50,
   "rules": {
     "exclude": ["https://example.com/logout", "https://example.com/admin/*"],

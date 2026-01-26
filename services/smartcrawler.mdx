@@ -32,6 +32,7 @@ response = client.crawl(
     url="https://scrapegraphai.com/",
     prompt="Extract info about the company",
     depth=2,
+    breadth=None,
     max_pages=10,
     rules={
         "include_paths": ["/about", "/services/*"],
@@ -48,6 +49,7 @@ const apiKey = 'your-api-key';
 const url = 'https://scrapegraphai.com';
 const prompt = 'Extract info about the company';
 const depth = 2;
+const breadth = null;
 const maxPages = 10;
 const rules = {
   include_paths: ['/about', '/services/*'],
@@ -56,7 +58,7 @@ const rules = {
 };
 
 try {
-  const response = await smartCrawler(apiKey, url, prompt, depth, maxPages, null, rules);
+  const response = await smartCrawler(apiKey, url, prompt, depth, breadth, maxPages, null, rules);
   console.log(response);
 } catch (error) {
   console.error(error);
@@ -73,6 +75,7 @@ curl -X 'POST' \
   "url": "https://scrapegraphai.com/",
   "prompt": "Extract info about the company",
   "depth": 2,
+  "breadth": null,
   "max_pages": 10,
   "rules": {
     "include_paths": ["/about", "/services/*"],
@@ -98,6 +101,7 @@ curl -X 'POST' \
 | prompt            | string  | No*      | Instructions for what to extract (*required when extraction_mode=true). |
 | extraction_mode   | bool    | No       | When `false`, enables markdown conversion mode (default: true). |
 | depth             | int     | No       | How many link levels to follow (default: 1). |
+| breadth           | int     | No       | Maximum number of links to crawl per depth level. If null/undefined, unlimited (default). Controls the 'width' of exploration at each depth. Useful for limiting crawl scope on large sites. Note: max_pages always takes priority. Ignored when sitemap=true. |
 | max_pages         | int     | No       | Maximum number of pages to crawl (default: 20). |
 | schema            | object  | No       | Pydantic or Zod schema for structured output. |
 | rules             | object  | No       | Crawl rules object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See below for details. |
@@ -134,6 +138,7 @@ response = client.crawl(
     url="https://scrapegraphai.com/",
     extraction_mode=False,  # False = Markdown conversion (NO AI/LLM)
     depth=2,
+    breadth=None,
     max_pages=5,
     rules={
         "include_paths": ["/docs/*", "/blog/**"],
@@ -154,6 +159,7 @@ try {
   const response = await crawl(apiKey, url, null, null, {
     extractionMode: false,  // false = Markdown conversion (NO AI/LLM)
     depth: 2,
+    breadth: null,
     maxPages: 5,
     rules: {
       include_paths: ['/docs/*', '/blog/**'],
@@ -177,6 +183,7 @@ curl -X 'POST' \
   "url": "https://scrapegraphai.com/",
   "extraction_mode": false,
   "depth": 2,
+  "breadth": null,
   "max_pages": 5,
   "rules": {
     "include_paths": ["/docs/*", "/blog/**"],
@@ -337,6 +344,7 @@ response = client.crawl(
     prompt="Extract company info",
     schema=CompanyData,
     depth=1,
+    breadth=None,
     max_pages=5,
     rules={
         "include_paths": ["/about", "/company/*"],
@@ -362,7 +370,7 @@ const rules = {
   same_domain: true
 };
 
-const response = await smartCrawler(apiKey, url, prompt, 1, 5, CompanySchema, rules);
+const response = await smartCrawler(apiKey, url, prompt, 1, null, 5, CompanySchema, rules);
 ```
 
 </CodeGroup>
@@ -383,6 +391,7 @@ async def main():
             url="https://scrapegraphai.com/",
             prompt="Extract info about the company",
             depth=2,
+            breadth=None,
             max_pages=10,
             rules={
                 "include_paths": ["/about", "/services/*"],
@@ -405,6 +414,7 @@ const task = await scraper.crawl({
   url, 
   prompt, 
   depth: 2, 
+  breadth: null,
   maxPages: 10,
   rules: {
     include_paths: ['/about', '/services/*'],
@@ -448,6 +458,7 @@ POST https://api.scrapegraphai.com/v1/crawl
 | headers          | object  | No       | Custom headers |
 | number_of_scrolls| int     | No       | Infinite scroll per page |
 | depth            | int     | No       | Crawl depth |
+| breadth          | int     | No       | Maximum number of links to crawl per depth level. If null/undefined, unlimited (default). Controls the 'width' of exploration at each depth. Useful for limiting crawl scope on large sites. Note: max_pages always takes priority. Ignored when sitemap=true. |
 | max_pages        | int     | No       | Max pages to crawl |
 | rules            | object  | No       | Crawl rules object with optional fields: `exclude` (regex URL patterns), `include_paths` (path patterns to include), `exclude_paths` (path patterns to exclude), `same_domain` (boolean) |
 | sitemap          | bool    | No       | Use sitemap.xml |
