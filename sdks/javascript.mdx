@@ -230,7 +230,10 @@ Search and extract information from multiple web sources using AI:
 ```javascript
 const response = await searchScraper(
   apiKey,
-  "Find the best restaurants in San Francisco"
+  "Find the best restaurants in San Francisco",
+  {
+    locationGeoCode: "us" // Optional: Geo code for location-based search
+  }
 );
 ```
 
@@ -243,6 +246,7 @@ const response = await searchScraper(
 | numResults       | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
 | extractionMode   | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
 | schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
+| locationGeoCode  | string  | No       | Optional geo code for location-based search (e.g., "us")                          |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -261,7 +265,10 @@ const ArticleSchema = z.object({
 const response = await searchScraper(
   apiKey,
   "Find news about the latest trends in AI",
-  ArticleSchema
+  ArticleSchema,
+  {
+    locationGeoCode: "us" // Optional: Geo code for location-based search
+  }
 );
 
 console.log(`Title: ${response.result.title}`);
@@ -301,7 +308,10 @@ const RestaurantSchema = z.object({
 const response = await searchScraper(
   apiKey,
   "Find the best restaurants in San Francisco",
-  RestaurantSchema
+  RestaurantSchema,
+  {
+    locationGeoCode: "us" // Optional: Geo code for location-based search
+  }
 );
 ```
 
@@ -321,7 +331,10 @@ try {
     apiKey,
     'Latest developments in artificial intelligence',
     3,    // Search 3 websites
-    false // Enable markdown mode (2 credits per page vs 10 credits)
+    false, // Enable markdown mode (2 credits per page vs 10 credits)
+    {
+      locationGeoCode: "us" // Optional: Geo code for location-based search
+    }
   );
 
   // Access the raw markdown content
