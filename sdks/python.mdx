@@ -197,6 +197,7 @@ response = client.searchscraper(
 | num_results      | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
 | extraction_mode  | boolean | No       | **True** = AI extraction mode (10 credits/page), **False** = markdown mode (2 credits/page). Default: True |
 | output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response (AI extraction mode only) |
+| location_geo_code| string  | No       | Optional geo code for location-based search (e.g., "us")                          |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema for structured search results:
@@ -214,7 +215,8 @@ class ProductInfo(BaseModel):
 
 response = client.searchscraper(
     user_prompt="Find information about iPhone 15 Pro",
-    output_schema=ProductInfo
+    output_schema=ProductInfo,
+    location_geo_code="us"  # Optional: Geo code for location-based search
 )
 
 print(f"Product: {response.name}")
@@ -255,7 +257,8 @@ class MarketAnalysis(BaseModel):
 # Perform comprehensive market research
 response = client.searchscraper(
     user_prompt="Analyze the current AI chip market landscape",
-    output_schema=MarketAnalysis
+    output_schema=MarketAnalysis,
+    location_geo_code="us"  # Optional: Geo code for location-based search
 )
 
 # Access structured market data
@@ -290,7 +293,8 @@ client = Client(api_key="your-api-key")
 response = client.searchscraper(
     user_prompt="Latest developments in artificial intelligence",
     num_results=3,
-    extraction_mode=False  # Enable markdown mode (2 credits per page vs 10 credits)
+    extraction_mode=False,  # Enable markdown mode (2 credits per page vs 10 credits)
+    location_geo_code="us"  # Optional: Geo code for location-based search
 )
 
 # Access the raw markdown content

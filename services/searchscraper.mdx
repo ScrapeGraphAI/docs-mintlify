@@ -118,6 +118,57 @@ curl -X 'POST' \
 
 </CodeGroup>
 
+#### Geo-Targeted Search
+
+Filter search results to a specific geographic region using the `location_geo_code` parameter:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.searchscraper(
+    user_prompt="What are the best local restaurants?",
+    location_geo_code="us"  # Filter results to United States
+)
+```
+
+```javascript JavaScript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+const prompt = 'What are the best local restaurants?';
+
+try {
+  const response = await searchScraper(apiKey, prompt, {
+    locationGeoCode: 'us'  // Filter results to United States
+  });
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/searchscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "user_prompt": "What are the best local restaurants?",
+  "location_geo_code": "us"
+}'
+```
+
+</CodeGroup>
+
+<Note>
+<b>Geo-Targeting:</b> Use standard country codes (e.g., "us" for United States, "gb" for United Kingdom, "de" for Germany) to filter search results to a specific region. This is useful for location-specific queries like local businesses, regional news, or country-specific information.
+</Note>
+
 #### Parameters
 
 | Parameter        | Type    | Required | Description                                                                 |
@@ -127,6 +178,7 @@ curl -X 'POST' \
 | numResults       | number  | No       | Number of websites to search (3-20). Default: 3. Higher = deeper research.  |
 | extraction_mode  | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
 | schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
+| location_geo_code | string | No       | Geographic location code for geo-targeted search results (e.g., "us", "gb", "de"). Filters results to the specified region. |
 | mock             | boolean | No       | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual search. Useful for testing and development. Default: false |
 
 <Note>
