@@ -41,10 +41,9 @@ Endpoint:
 https://mcp.scrapegraphai.com/mcp
 ```
 
-Click to open setup guides:
+Follow the instructions below:
 
-<details>
-<summary><strong>Cursor (HTTP MCP)</strong></summary>
+### Cursor (HTTP MCP)
 
 Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 
@@ -61,10 +60,8 @@ Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 }
 ```
 
-</details>
 
-<details>
-<summary><strong>Claude Desktop (via mcp-remote)</strong></summary>
+### Claude Desktop (via mcp-remote)
 
 Claude Desktop connects to HTTP MCP via a lightweight proxy. Add the following to `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS (adjust path on Windows):
 
@@ -84,7 +81,11 @@ Claude Desktop connects to HTTP MCP via a lightweight proxy. Add the following t
 }
 ```
 
-</details>
+### Smithery (optional)
+
+```bash
+npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
+```
 
 ---
 
@@ -117,7 +118,7 @@ scrapegraph-mcp
 python -m scrapegraph_mcp.server
 ```
 
-<details>
+<details open>
 <summary><strong>Cursor (Local stdio)</strong></summary>
 
 `~/.cursor/mcp.json`:
@@ -138,7 +139,7 @@ python -m scrapegraph_mcp.server
 
 </details>
 
-<details>
+<details open>
 <summary><strong>Claude Desktop (Local stdio)</strong></summary>
 
 `~/Library/Application Support/Claude/claude_desktop_config.json`:
@@ -160,12 +161,6 @@ python -m scrapegraph_mcp.server
 </details>
 
 ---
-
-## Optional: Install via Smithery
-
-```bash
-npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
-```
 
 ---
 
