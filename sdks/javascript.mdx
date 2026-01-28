@@ -232,7 +232,8 @@ const response = await searchScraper(
   apiKey,
   "Find the best restaurants in San Francisco",
   {
-    locationGeoCode: "us" // Optional: Geo code for location-based search
+    locationGeoCode: "us", // Optional: Geo code for location-based search
+    timeRange: "past_week" // Optional: Filter results by time range
   }
 );
 ```
@@ -247,6 +248,7 @@ const response = await searchScraper(
 | extractionMode   | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
 | schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
 | locationGeoCode  | string  | No       | Optional geo code for location-based search (e.g., "us")                          |
+| timeRange        | string  | No       | Optional time range filter for search results. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year" |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -267,7 +269,8 @@ const response = await searchScraper(
   "Find news about the latest trends in AI",
   ArticleSchema,
   {
-    locationGeoCode: "us" // Optional: Geo code for location-based search
+    locationGeoCode: "us", // Optional: Geo code for location-based search
+    timeRange: "past_week" // Optional: Filter results by time range
   }
 );
 
@@ -310,7 +313,8 @@ const response = await searchScraper(
   "Find the best restaurants in San Francisco",
   RestaurantSchema,
   {
-    locationGeoCode: "us" // Optional: Geo code for location-based search
+    locationGeoCode: "us", // Optional: Geo code for location-based search
+    timeRange: "past_month" // Optional: Filter results by time range
   }
 );
 ```
@@ -333,7 +337,8 @@ try {
     3,    // Search 3 websites
     false, // Enable markdown mode (2 credits per page vs 10 credits)
     {
-      locationGeoCode: "us" // Optional: Geo code for location-based search
+      locationGeoCode: "us", // Optional: Geo code for location-based search
+      timeRange: "past_week" // Optional: Filter results by time range
     }
   );
 
@@ -356,6 +361,50 @@ try {
 - **Full content**: Get complete page content in markdown format
 - **Faster**: No AI processing overhead
 - **Perfect for**: Content analysis, bulk data collection, building datasets
+
+</Accordion>
+
+<Accordion title="Time Range Filter Example" icon="code">
+Filter search results by date range to get only recent information:
+
+```javascript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+try {
+  // Search for recent news from the past week
+  const response = await searchScraper(
+    apiKey,
+    'Latest news about AI developments',
+    5,
+    null,
+    null,
+    {
+      timeRange: 'past_week' // Options: 'past_hour', 'past_24_hours', 'past_week', 'past_month', 'past_year'
+    }
+  );
+
+  console.log('Recent AI news:', response.result);
+  console.log('Reference URLs:', response.reference_urls);
+  
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+**Time Range Options:**
+- `past_hour` - Results from the past hour
+- `past_24_hours` - Results from the past 24 hours
+- `past_week` - Results from the past week
+- `past_month` - Results from the past month
+- `past_year` - Results from the past year
+
+**Use Cases:**
+- Finding recent news and updates
+- Tracking time-sensitive information
+- Getting latest product releases
+- Monitoring recent market changes
 
 </Accordion>
 

@@ -169,6 +169,65 @@ curl -X 'POST' \
 <b>Geo-Targeting:</b> Use standard country codes (e.g., "us" for United States, "gb" for United Kingdom, "de" for Germany) to filter search results to a specific region. This is useful for location-specific queries like local businesses, regional news, or country-specific information.
 </Note>
 
+#### Time Range Filter
+
+Filter search results by date range using the `time_range` parameter:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+from scrapegraph_py.models import TimeRange
+
+client = Client(api_key="your-api-key")
+
+response = client.searchscraper(
+    user_prompt="Latest news about AI",
+    time_range=TimeRange.PAST_WEEK  # Only results from the past week
+)
+```
+
+```javascript JavaScript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+const prompt = 'Latest news about AI';
+
+try {
+  const response = await searchScraper(apiKey, prompt, 5, null, null, {
+    timeRange: 'past_week'  // Only results from the past week
+  });
+  console.log(response);
+} catch (error) {
+  console.error(error);
+}
+```
+
+```bash cURL
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/searchscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "user_prompt": "Latest news about AI",
+  "time_range": "past_week"
+}'
+```
+
+</CodeGroup>
+
+<Note>
+<b>Time Range Filtering:</b> Use the time range filter to get only recent results. Available options:
+- `past_hour` - Results from the past hour
+- `past_24_hours` - Results from the past 24 hours
+- `past_week` - Results from the past week
+- `past_month` - Results from the past month
+- `past_year` - Results from the past year
+
+This is particularly useful for finding recent news, updates, or time-sensitive information.
+</Note>
+
 #### Parameters
 
 | Parameter        | Type    | Required | Description                                                                 |
@@ -179,6 +238,7 @@ curl -X 'POST' \
 | extraction_mode  | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
 | schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
 | location_geo_code | string | No       | Geographic location code for geo-targeted search results (e.g., "us", "gb", "de"). Filters results to the specified region. |
+| time_range        | string | No       | Date range filter for search results. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year". Filters results to the specified time period. |
 | mock             | boolean | No       | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual search. Useful for testing and development. Default: false |
 
 <Note>

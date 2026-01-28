@@ -954,6 +954,19 @@
             "title": "Stealth",
             "description": "Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost",
             "default": false
+          },
+          "time_range": {
+            "type": "string",
+            "title": "Time Range",
+            "description": "Optional time range filter for search results. Controls how recent the search results should be. Options: past_hour, past_24_hours, past_week, past_month, past_year",
+            "enum": [
+              "past_hour",
+              "past_24_hours",
+              "past_week",
+              "past_month",
+              "past_year"
+            ],
+            "example": "past_week"
           }
         },
         "type": "object",

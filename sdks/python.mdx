@@ -184,8 +184,11 @@ print(f"Available: {response['result']['availability']}")
 Search and extract information from multiple web sources using AI:
 
 ```python
+from scrapegraph_py.models import TimeRange
+
 response = client.searchscraper(
-    user_prompt="What are the key features and pricing of ChatGPT Plus?"
+    user_prompt="What are the key features and pricing of ChatGPT Plus?",
+    time_range=TimeRange.PAST_WEEK  # Optional: Filter results by time range
 )
 ```
 
@@ -198,6 +201,7 @@ response = client.searchscraper(
 | extraction_mode  | boolean | No       | **True** = AI extraction mode (10 credits/page), **False** = markdown mode (2 credits/page). Default: True |
 | output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response (AI extraction mode only) |
 | location_geo_code| string  | No       | Optional geo code for location-based search (e.g., "us")                          |
+| time_range       | TimeRange| No      | Optional time range filter for search results. Options: TimeRange.PAST_HOUR, TimeRange.PAST_24_HOURS, TimeRange.PAST_WEEK, TimeRange.PAST_MONTH, TimeRange.PAST_YEAR |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema for structured search results:
@@ -213,10 +217,13 @@ class ProductInfo(BaseModel):
     features: List[str] = Field(description="List of key features")
     availability: str = Field(description="Availability information")
 
+from scrapegraph_py.models import TimeRange
+
 response = client.searchscraper(
     user_prompt="Find information about iPhone 15 Pro",
     output_schema=ProductInfo,
-    location_geo_code="us"  # Optional: Geo code for location-based search
+    location_geo_code="us",  # Optional: Geo code for location-based search
+    time_range=TimeRange.PAST_MONTH  # Optional: Filter results by time range
 )
 
 print(f"Product: {response.name}")
@@ -254,11 +261,14 @@ class MarketAnalysis(BaseModel):
     challenges: List[str] = Field(description="Industry challenges")
     opportunities: List[str] = Field(description="Market opportunities")
 
+from scrapegraph_py.models import TimeRange
+
 # Perform comprehensive market research
 response = client.searchscraper(
     user_prompt="Analyze the current AI chip market landscape",
     output_schema=MarketAnalysis,
-    location_geo_code="us"  # Optional: Geo code for location-based search
+    location_geo_code="us",  # Optional: Geo code for location-based search
+    time_range=TimeRange.PAST_MONTH  # Optional: Filter results by time range
 )
 
 # Access structured market data
@@ -289,12 +299,15 @@ from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
 
+from scrapegraph_py.models import TimeRange
+
 # Enable markdown mode for cost-effective content gathering
 response = client.searchscraper(
     user_prompt="Latest developments in artificial intelligence",
     num_results=3,
     extraction_mode=False,  # Enable markdown mode (2 credits per page vs 10 credits)
-    location_geo_code="us"  # Optional: Geo code for location-based search
+    location_geo_code="us",  # Optional: Geo code for location-based search
+    time_range=TimeRange.PAST_WEEK  # Optional: Filter results by time range
 )
 
 # Access the raw markdown content
@@ -319,6 +332,41 @@ print("Content saved to ai_research_content.md")
 - **Full content**: Get complete page content in markdown format
 - **Faster**: No AI processing overhead
 - **Perfect for**: Content analysis, bulk data collection, building datasets
+
+</Accordion>
+
+<Accordion title="Time Range Filter Example" icon="code">
+Filter search results by date range to get only recent information:
+
+```python
+from scrapegraph_py import Client
+from scrapegraph_py.models import TimeRange
+
+client = Client(api_key="your-api-key")
+
+# Search for recent news from the past week
+response = client.searchscraper(
+    user_prompt="Latest news about AI developments",
+    num_results=5,
+    time_range=TimeRange.PAST_WEEK  # Options: PAST_HOUR, PAST_24_HOURS, PAST_WEEK, PAST_MONTH, PAST_YEAR
+)
+
+print("Recent AI news:", response['result'])
+print("Reference URLs:", response['reference_urls'])
+```
+
+**Time Range Options:**
+- `TimeRange.PAST_HOUR` - Results from the past hour
+- `TimeRange.PAST_24_HOURS` - Results from the past 24 hours
+- `TimeRange.PAST_WEEK` - Results from the past week
+- `TimeRange.PAST_MONTH` - Results from the past month
+- `TimeRange.PAST_YEAR` - Results from the past year
+
+**Use Cases:**
+- Finding recent news and updates
+- Tracking time-sensitive information
+- Getting latest product releases
+- Monitoring recent market changes
 
 </Accordion>
 

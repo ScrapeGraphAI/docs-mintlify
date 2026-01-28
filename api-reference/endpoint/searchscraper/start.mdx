@@ -52,6 +52,19 @@ description: 'Start a new AI-powered web search request'
   Default: false
 </ParamField>
 
+<ParamField body="time_range" type="string">
+  Optional parameter to filter search results by date range. Controls how recent the search results should be. This is useful for finding recent news, updates, or time-sensitive information.
+  
+  Available options:
+  - `past_hour` - Results from the past hour
+  - `past_24_hours` - Results from the past 24 hours
+  - `past_week` - Results from the past week
+  - `past_month` - Results from the past month
+  - `past_year` - Results from the past year
+  
+  Example: "past_week"
+</ParamField>
+
 ## Response
 
 <ResponseField name="request_id" type="string">
@@ -95,7 +108,8 @@ curl -X POST 'https://api.scrapegraphai.com/v1/searchscraper' \
     "required": ["version", "release_date", "major_features"]
   },
   "mock": false,
-  "stealth": true
+  "stealth": true,
+  "time_range": "past_week"
 }'
 ```
 
