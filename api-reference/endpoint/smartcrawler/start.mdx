@@ -60,7 +60,7 @@ Content-Type: `application/json`
 | sitemap | boolean | No | false | Use sitemap.xml for discovery |
 | render_heavy_js | boolean | No | false | Enable heavy JavaScript rendering |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
-| webhook_url | str | No | None | Webhook URL to send the job result to
+| webhook_url | str | No | None | Webhook URL to send the job result to. When provided, a signed webhook notification will be sent upon job completion. See [Webhook Signature Verification](#webhook-signature-verification) below.
 
 ### Example
 ```json
@@ -203,3 +203,107 @@ When `extraction_mode: false`, the `prompt` parameter is not required. This mode
 - **422 Unprocessable Entity**: Validation error.
 
 See the [Get Crawl Result](./get-status) endpoint for the full response structure.
+
+---
+
+## Webhook Signature Verification
+
+When you provide a `webhook_url`, SmartCrawler will send a POST request to your endpoint upon job completion. Each webhook request includes a signature header for verification.
+
+### Webhook Headers
+
+| Header | Description |
+|--------|-------------|
+| Content-Type | application/json |
+| X-Webhook-Signature | Signature for verifying the webhook authenticity |
+
+### Signature Format
+
+The `X-Webhook-Signature` header contains your webhook secret in the format:
+
+```
+sha256={your_webhook_secret}
+```
+
+### Verifying Webhooks
+
+To verify that a webhook request is authentic:
+
+1. Retrieve your webhook secret from the [dashboard](https://dashboard.scrapegraphai.com)
+2. Compare the `X-Webhook-Signature` header value with `sha256={your_secret}`
+
+<CodeGroup>
+
+```python Python
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+WEBHOOK_SECRET = "your_webhook_secret"
+
+@app.route("/webhook", methods=["POST"])
+def handle_webhook():
+    signature = request.headers.get("X-Webhook-Signature")
+    expected_signature = f"sha256={WEBHOOK_SECRET}"
+
+    if signature != expected_signature:
+        abort(401, "Invalid signature")
+
+    # Process the webhook payload
+    data = request.json
+    print(f"Received webhook for job: {data['request_id']}")
+    return {"status": "ok"}
+```
+
+```javascript JavaScript
+const express = require('express');
+const app = express();
+
+const WEBHOOK_SECRET = 'your_webhook_secret';
+
+app.post('/webhook', express.json(), (req, res) => {
+  const signature = req.headers['x-webhook-signature'];
+  const expectedSignature = `sha256=${WEBHOOK_SECRET}`;
+
+  if (signature !== expectedSignature) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  // Process the webhook payload
+  console.log(`Received webhook for job: ${req.body.request_id}`);
+  res.json({ status: 'ok' });
+});
+```
+
+</CodeGroup>
+
+### Webhook Payload
+
+The webhook POST request contains the following JSON payload:
+
+```json
+{
+  "event": "crawler_completed",
+  "request_id": "uuid-of-the-crawl-job",
+  "webhook_id": "uuid-of-this-webhook-delivery",
+  "status": "success | failed",
+  "timestamp": "2024-01-28T12:00:00Z",
+  "duration_seconds": 45.2,
+  "errors": [],
+  "result": "..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| event | string | Always "crawler_completed" |
+| request_id | string | The crawl job ID (same as task_id) |
+| webhook_id | string | Unique ID for this webhook delivery |
+| status | string | "success" or "failed" |
+| timestamp | string | ISO 8601 timestamp of completion |
+| duration_seconds | float | Total job duration in seconds |
+| errors | array | List of error messages (empty if successful) |
+| result | string | The crawl result data (null if failed) |
+
+<Note>
+Make sure to configure your webhook secret in the [dashboard](https://dashboard.scrapegraphai.com) before using webhooks. Each user has a unique webhook secret for secure verification.
+</Note>
