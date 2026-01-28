@@ -106,6 +106,7 @@ curl -X 'POST' \
 | schema            | object  | No       | Pydantic or Zod schema for structured output. |
 | rules             | object  | No       | Crawl rules object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See below for details. |
 | sitemap           | bool    | No       | Use sitemap.xml for discovery (default: false). |
+| webhook_url       | string  | No       | URL to receive webhook notification on job completion. |
 
 
 <Note>
@@ -494,8 +495,8 @@ POST https://api.scrapegraphai.com/v1/crawl
   <Card title="Schema Support" icon="code">
     Define custom output schemas for structured results
   </Card>
-  <Card title="Dual Mode Support" icon="toggle-on">
-    Choose between AI extraction or markdown conversion
+  <Card title="Webhook Notifications" icon="bell">
+    Get notified when crawl jobs complete with signed webhooks
   </Card>
 </CardGroup>
 
@@ -536,6 +537,28 @@ POST https://api.scrapegraphai.com/v1/crawl
 - `exclude_paths` takes precedence over `include_paths`
 - Always handle errors and poll for results
 - Monitor your credit usage and rate limits
+
+## Webhooks
+
+SmartCrawler supports webhook notifications for job completion. When you provide a `webhook_url`, you'll receive a POST request when the crawl finishes.
+
+### Setting Up Webhooks
+
+1. Configure your webhook secret in the [dashboard](https://dashboard.scrapegraphai.com)
+2. Provide a `webhook_url` in your crawl request
+3. Verify incoming webhooks using the `X-Webhook-Signature` header
+
+```python Python
+response = client.crawl(
+    url="https://example.com",
+    prompt="Extract product data",
+    webhook_url="https://your-server.com/webhook"
+)
+```
+
+<Note>
+Each webhook request includes an `X-Webhook-Signature` header for verification. See the [API Reference](/api-reference/endpoint/smartcrawler/start#webhook-signature-verification) for detailed verification examples.
+</Note>
 
 ## API Reference
 
