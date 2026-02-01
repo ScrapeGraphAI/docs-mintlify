@@ -45,10 +45,11 @@
             "pages": [
               "services/smartscraper",
               "services/searchscraper",
-              "services/smartcrawler",
-              "services/agenticscraper",
               "services/markdownify",
               "services/scrape",
+              "services/smartcrawler",
+              "services/sitemap",
+              "services/agenticscraper",
               {
                 "group": "MCP Server",
                 "icon": "/logo/mcp.svg",
@@ -154,6 +155,13 @@
             ]
           },
           {
+            "group": "Markdownify",
+            "pages": [
+              "api-reference/endpoint/markdownify/start",
+              "api-reference/endpoint/markdownify/get-status"
+            ]
+          },
+          {
             "group": "SmartCrawler",
             "pages": [
               "api-reference/endpoint/smartcrawler/start",
@@ -165,13 +173,6 @@
             "pages": [
               "api-reference/endpoint/sitemap/start",
               "api-reference/endpoint/sitemap/get-status"
-            ]
-          },
-          {
-            "group": "Markdownify",
-            "pages": [
-              "api-reference/endpoint/markdownify/start",
-              "api-reference/endpoint/markdownify/get-status"
             ]
           },
           {

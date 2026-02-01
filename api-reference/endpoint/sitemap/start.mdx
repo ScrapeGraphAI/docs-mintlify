@@ -38,12 +38,11 @@ Sitemap allows you to extract all URLs from a website's sitemap.xml file automat
 ## Example Request
 
 ```bash
-curl -X POST 'https://api.scrapegraphai.com/v1/sitemap' \
--H 'SGAI-APIKEY: YOUR_API_KEY' \
--H 'Content-Type: application/json' \
--d '{
-  "website_url": "https://scrapegraphai.com",
-  "stealth": true
+curl -X POST https://api.scrapegraphai.com/v1/sitemap \
+  -H "Content-Type: application/json" \
+  -H "SGAI-APIKEY: YOUR_API_KEY" \
+  -d '{
+  "website_url": "https://scrapegraphai.com"
 }'
 ```
 
@@ -72,52 +71,35 @@ curl -X POST 'https://api.scrapegraphai.com/v1/sitemap' \
 
 ```python
 from scrapegraph_py import Client
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Initialize the client
+client = Client(api_key="YOUR_API_KEY")
 
-# Initialize client
-client = Client.from_env()
+# Sitemap request
+response = client.sitemap(
+    website_url="https://scrapegraphai.com"
+)
 
-try:
-    # Extract sitemap URLs
-    response = client.sitemap(
-        website_url="https://scrapegraphai.com",
-        stealth=True
-    )
-    
-    print(f"Found {len(response.urls)} URLs")
-    
-    # Display first 10 URLs
-    for url in response.urls[:10]:
-        print(url)
-        
-finally:
-    client.close()
+print("Result:", response)
 ```
 
 ## JavaScript Example
 
 ```javascript
-import { sitemap } from 'scrapegraph-js';
-import 'dotenv/config';
+import { Client } from 'scrapegraph-js';
 
-const apiKey = process.env.SGAI_APIKEY;
-const url = 'https://scrapegraphai.com/';
+// Initialize the client
+const client = new Client({ apiKey: 'YOUR_API_KEY' });
 
+// Sitemap request
 try {
-  const response = await sitemap(apiKey, url, { stealth: true });
-  
-  console.log(`Total URLs found: ${response.urls.length}`);
-  
-  // Display first 10 URLs
-  response.urls.slice(0, 10).forEach((url, index) => {
-    console.log(`${index + 1}. ${url}`);
+  const response = await client.sitemap({
+    websiteUrl: "https://scrapegraphai.com"
   });
-  
+
+  console.log('Result:', response);
 } catch (error) {
-  console.error('Error:', error.message);
+  console.error('Error:', error);
 }
 ```
 
@@ -128,29 +110,23 @@ You can combine the Sitemap endpoint with SmartScraper to scrape multiple pages 
 ```python
 from scrapegraph_py import Client
 
-client = Client.from_env()
+client = Client(api_key="YOUR_API_KEY")
 
-try:
-    # Step 1: Get all URLs from sitemap
-    sitemap_response = client.sitemap(
-        website_url="https://scrapegraphai.com",
-        stealth=True
+# Step 1: Get all URLs from sitemap
+sitemap_response = client.sitemap(
+    website_url="https://scrapegraphai.com"
+)
+
+# Step 2: Filter for specific pages (e.g., blog posts)
+blog_urls = [url for url in sitemap_response.urls if '/blog/' in url]
+
+# Step 3: Scrape each blog post
+for url in blog_urls[:5]:  # Scrape first 5 blog posts
+    result = client.smartscraper(
+        website_url=url,
+        user_prompt="Extract the title, author, and main content"
     )
-    
-    # Step 2: Filter for specific pages (e.g., blog posts)
-    blog_urls = [url for url in sitemap_response.urls if '/blog/' in url]
-    
-    # Step 3: Scrape each blog post
-    for url in blog_urls[:5]:  # Scrape first 5 blog posts
-        result = client.smartscraper(
-            website_url=url,
-            user_prompt="Extract the title, author, and main content",
-            stealth=True
-        )
-        print(f"Scraped: {url}")
-        
-finally:
-    client.close()
+    print(f"Scraped: {url}")
 ```
 
 ## Features

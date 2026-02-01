@@ -1,0 +1,135 @@
+---
+title: 'Sitemap'
+description: 'Extract all URLs from a website sitemap automatically'
+icon: 'sitemap'
+---
+
+<Frame>
+  <img src="/services/images/markdownify-banner.png" alt="Sitemap Service" />
+</Frame>
+
+## Overview
+
+Sitemap is our service that extracts all URLs from a website's sitemap.xml file automatically. The API discovers the sitemap from robots.txt, common locations like /sitemap.xml, or sitemap index files—perfect for discovering pages for bulk scraping, content inventory, or combining with other endpoints.
+
+<Note>
+Try Sitemap instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) - no coding required!
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+# Initialize the client
+client = Client(api_key="YOUR_API_KEY")
+
+# Sitemap request
+response = client.sitemap(
+    website_url="https://scrapegraphai.com"
+)
+
+print("Result:", response)
+```
+
+```javascript JavaScript
+import { Client } from 'scrapegraph-js';
+
+// Initialize the client
+const client = new Client({ apiKey: 'YOUR_API_KEY' });
+
+// Sitemap request
+try {
+  const response = await client.sitemap({
+    websiteUrl: "https://scrapegraphai.com"
+  });
+
+  console.log('Result:', response);
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/v1/sitemap \
+  -H "Content-Type: application/json" \
+  -H "SGAI-APIKEY: YOUR_API_KEY" \
+  -d '{
+  "website_url": "https://scrapegraphai.com"
+}'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| apiKey | string | Yes | The ScrapeGraph API Key. |
+| websiteUrl | string | Yes | The URL of the website to extract the sitemap from. The API will automatically locate the sitemap.xml file. |
+| headers | object | No | Optional headers (user agent, cookies, etc.). |
+| mock | boolean | No | Enable mock mode for testing. Default: false |
+| stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds +4 credits. Default: false |
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "request_id": "65401e0d-8cd6-4d6a-88f6-e21255d1c06a",
+  "status": "completed",
+  "website_url": "https://scrapegraphai.com",
+  "urls": [
+    "https://scrapegraphai.com/",
+    "https://scrapegraphai.com/about",
+    "https://scrapegraphai.com/blog",
+    "https://scrapegraphai.com/docs",
+    "https://scrapegraphai.com/pricing",
+    "https://scrapegraphai.com/contact"
+  ],
+  "error": ""
+}
+```
+
+The response includes:
+- `request_id`: Unique identifier for tracking your request
+- `status`: Current status of the extraction
+- `website_url`: The website that was processed
+- `urls`: Array of all URLs found in the sitemap
+- `error`: Error message (if any)
+</Accordion>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Automatic Discovery" icon="magnifying-glass">
+    Finds sitemap from robots.txt or common locations
+  </Card>
+  <Card title="Sitemap Index Support" icon="layer-group">
+    Handles sitemap index files with multiple sitemaps
+  </Card>
+  <Card title="Fast Extraction" icon="bolt">
+    Retrieves all URLs without scraping each page
+  </Card>
+  <Card title="Integration Ready" icon="puzzle-piece">
+    Combine with SmartScraper for bulk operations
+  </Card>
+</CardGroup>
+
+## Use Cases
+
+- Discover all pages on a website for bulk scraping
+- Build content inventory from a website
+- Monitor website structure changes
+- Combine with [SmartScraper](/services/smartscraper) to scrape multiple pages
+- Create site maps for SEO analysis
+
+## API Reference
+
+For full request/response details and async status polling, see the [Sitemap API reference](/api-reference/endpoint/sitemap/start).
