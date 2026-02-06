@@ -1,0 +1,131 @@
+---
+title: 'Gemini'
+description: 'Use ScrapeGraphAI with Google Gemini AI for web scraping + AI workflows'
+---
+
+> Integrate ScrapeGraphAI with Google's Gemini for AI applications powered by web data.
+
+## Setup
+
+```bash
+npm install scrapegraph-js @google/genai
+```
+
+Create `.env` file:
+
+```bash
+SGAI_APIKEY=your_scrapegraph_key
+GEMINI_API_KEY=your_gemini_key
+```
+
+<Note>
+If using Node < 20, install `dotenv` and add `import 'dotenv/config'` to your code.
+</Note>
+
+## Scrape + Summarize
+
+This example demonstrates a simple workflow: scrape a website and summarize the content using Gemini.
+
+```typescript
+import { smartScraper } from 'scrapegraph-js';
+import { GoogleGenAI } from '@google/genai';
+
+const apiKey = process.env.SGAI_APIKEY;
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const scrapeResult = await smartScraper(
+    apiKey,
+    'https://scrapegraphai.com',
+    'Extract all content from this page'
+);
+
+console.log('Scraped content length:', JSON.stringify(scrapeResult.result).length);
+
+const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: `Summarize: ${JSON.stringify(scrapeResult.result)}`,
+});
+
+console.log('Summary:', response.text);
+```
+
+## Content Analysis
+
+This example shows how to analyze website content using Gemini's multi-turn conversation capabilities.
+
+```typescript
+import { smartScraper } from 'scrapegraph-js';
+import { GoogleGenAI } from '@google/genai';
+
+const apiKey = process.env.SGAI_APIKEY;
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const scrapeResult = await smartScraper(
+    apiKey,
+    'https://news.ycombinator.com/',
+    'Extract all content from this page'
+);
+
+console.log('Scraped content length:', JSON.stringify(scrapeResult.result).length);
+
+const chat = ai.chats.create({
+    model: 'gemini-2.5-flash'
+});
+
+// Ask for the top 3 stories on Hacker News
+const result1 = await chat.sendMessage({
+    message: `Based on this website content from Hacker News, what are the top 3 stories right now?\n\n${JSON.stringify(scrapeResult.result)}`
+});
+console.log('Top 3 Stories:', result1.text);
+
+// Ask for the 4th and 5th stories on Hacker News
+const result2 = await chat.sendMessage({
+    message: `Now, what are the 4th and 5th top stories on Hacker News from the same content?`
+});
+console.log('4th and 5th Stories:', result2.text);
+```
+
+## Structured Extraction
+
+This example demonstrates how to extract structured data using Gemini's JSON mode from scraped website content.
+
+```typescript
+import { smartScraper } from 'scrapegraph-js';
+import { GoogleGenAI, Type } from '@google/genai';
+
+const apiKey = process.env.SGAI_APIKEY;
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+const scrapeResult = await smartScraper(
+    apiKey,
+    'https://stripe.com',
+    'Extract all content from this page'
+);
+
+console.log('Scraped content length:', JSON.stringify(scrapeResult.result).length);
+
+const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: `Extract company information: ${JSON.stringify(scrapeResult.result)}`,
+    config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+                name: { type: Type.STRING },
+                industry: { type: Type.STRING },
+                description: { type: Type.STRING },
+                products: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                }
+            },
+            propertyOrdering: ['name', 'industry', 'description', 'products']
+        }
+    }
+});
+
+console.log('Extracted company info:', response?.text);
+```
+
+For more examples, check the [Gemini documentation](https://ai.google.dev/docs).

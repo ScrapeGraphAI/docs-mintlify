@@ -100,6 +100,13 @@
             ]
           },
           {
+            "group": "LLM SDKs & Frameworks",
+            "pages": [
+              "developer-guides/llm-sdks-and-frameworks/gemini",
+              "developer-guides/llm-sdks-and-frameworks/anthropic"
+            ]
+          },
+          {
             "group": "Contribute",
             "pages": [
               "contribute/opensource"
