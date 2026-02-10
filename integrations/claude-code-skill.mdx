@@ -1,0 +1,160 @@
+---
+title: 'Claude Code Skill'
+description: 'Give Claude Code and AI coding agents the power of web scraping'
+icon: '/logo/claude-color.svg'
+---
+
+## Overview
+
+The ScrapeGraphAI [Claude Code Skill](https://github.com/ScrapeGraphAI/skill) gives AI coding agents full access to ScrapeGraphAI's web scraping, search, and crawling APIs. Once installed, agents like Claude Code, Cursor, Copilot, and Cline can scrape websites, extract structured data, and crawl pages — all from natural language prompts.
+
+<Card
+  title="GitHub Repository"
+  icon="github"
+  href="https://github.com/ScrapeGraphAI/skill"
+>
+  View the skill source code and documentation
+</Card>
+
+## Installation
+
+<Steps>
+
+### Option 1: Install via skills.sh (Recommended)
+
+The fastest way to install. Requires [Node.js](https://nodejs.org).
+
+```bash
+npx skills add ScrapeGraphAI/skill
+```
+
+This clones the skill and symlinks it into your `~/.claude/skills/` directory automatically.
+
+### Option 2: Manual install
+
+Clone the repository and create the symlink yourself:
+
+```bash
+git clone https://github.com/ScrapeGraphAI/skill.git ~/.claude/skills/scrapegraphai
+ln -sf ~/.claude/skills/scrapegraphai/SKILL.md ~/.claude/skills/scrapegraphai.md
+```
+
+### Option 3: Project-level install
+
+Install the skill for a single project only:
+
+```bash
+mkdir -p .claude/skills
+git clone https://github.com/ScrapeGraphAI/skill.git .claude/skills/scrapegraphai
+ln -sf .claude/skills/scrapegraphai/SKILL.md .claude/skills/scrapegraphai.md
+```
+
+</Steps>
+
+## Setup
+
+Set your ScrapeGraphAI API key as an environment variable:
+
+```bash
+export SGAI_API_KEY="sgai-..."
+```
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com).
+</Note>
+
+## What's Included
+
+The skill installs the following files:
+
+| File | Description |
+|------|-------------|
+| `SKILL.md` | Main skill file with API reference, examples, and decision guide |
+| `references/api-endpoints.md` | Full parameter tables for all endpoints |
+| `references/sdk-examples.md` | Python and JavaScript SDK examples |
+| `references/advanced-features.md` | Stealth mode, schemas, scrolling, pagination, and more |
+
+## Capabilities
+
+<CardGroup cols={2}>
+  <Card title="SmartScraper" icon="wand-magic-sparkles">
+    Extract structured data from any webpage using natural language prompts
+  </Card>
+  <Card title="SearchScraper" icon="magnifying-glass">
+    Search the web and extract results with AI or as markdown
+  </Card>
+  <Card title="Markdownify" icon="file-code">
+    Convert any webpage into clean, formatted markdown
+  </Card>
+  <Card title="SmartCrawler" icon="spider">
+    Crawl multiple pages from a website with depth and path controls
+  </Card>
+  <Card title="Sitemap" icon="sitemap">
+    Extract all URLs from a website's sitemap
+  </Card>
+  <Card title="Agentic Scraper" icon="robot">
+    Browser automation — login, click, navigate, fill forms, then extract
+  </Card>
+</CardGroup>
+
+## Example Prompts
+
+Once the skill is installed, you can use natural language prompts directly in your AI coding agent:
+
+```text
+Scrape https://example.com/products and extract all product names, prices, and ratings
+```
+
+```text
+Search the web for "best React UI libraries 2025" and extract the top 5 with pros and cons
+```
+
+```text
+Convert https://example.com/docs/getting-started to markdown and save it to docs/
+```
+
+```text
+Crawl https://example.com/blog with depth 2 and extract the title and summary from each post
+```
+
+```text
+Get all URLs from the sitemap of https://example.com
+```
+
+```text
+Log into https://example.com/dashboard, click "Reports", and extract the table data
+```
+
+The agent will automatically select the right ScrapeGraphAI endpoint, handle authentication, poll for async results, and return structured data.
+
+## Supported Agents
+
+This skill works with any AI coding agent that supports the skills protocol:
+
+- **Claude Code** — Anthropic's CLI agent
+- **Cursor** — AI-powered code editor
+- **GitHub Copilot** — AI pair programmer
+- **Cline** — VS Code AI agent
+- **Windsurf** — AI coding assistant
+- And any other agent supporting [skills.sh](https://skills.sh)
+
+## Support
+
+Need help with the skill?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/skill/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
