@@ -89,7 +89,6 @@
           {
             "group": "Integrations",
             "pages": [
-              "integrations/claude-code-skill",
               "integrations/langchain",
               "integrations/llamaindex",
               "integrations/crewai",
