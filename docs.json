@@ -66,7 +66,8 @@
                 "pages": [
                   "services/additional-parameters/headers",
                   "services/additional-parameters/pagination",
-                  "services/additional-parameters/proxy"
+                  "services/additional-parameters/proxy",
+                  "services/additional-parameters/wait-ms"
                 ]
               },
               {
