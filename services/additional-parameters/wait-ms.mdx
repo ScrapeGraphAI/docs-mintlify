@@ -1,0 +1,209 @@
+---
+title: 'Wait Time'
+description: 'Control how long the scraper waits before capturing page content'
+icon: 'clock'
+---
+
+<Frame>
+  <img src="/services/images/smartscraper-banner.png" alt="Wait Time Configuration" />
+</Frame>
+
+## Overview
+
+The `wait_ms` parameter controls how many milliseconds the scraper waits before capturing page content. This is useful for pages that load content dynamically after the initial page load, such as:
+
+- Single Page Applications (SPAs)
+- Pages with lazy-loaded content
+- Websites that render content via client-side JavaScript
+- Pages with animations or delayed content loading
+
+## Parameter Details
+
+| Field | Value |
+|-------|-------|
+| **Parameter** | `wait_ms` |
+| **Type** | Integer |
+| **Required** | No |
+| **Default** | `3000` (3 seconds) |
+| **Validation** | Must be a positive integer |
+
+## Supported Services
+
+The `wait_ms` parameter is available on the following endpoints:
+
+- **SmartScraper** - AI-powered structured data extraction
+- **Scrape** - Raw HTML content extraction
+- **Markdownify** - Web content to markdown conversion
+
+## Usage Examples
+
+### Python SDK
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# SmartScraper with custom wait time
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract product information",
+    wait_ms=5000  # Wait 5 seconds before scraping
+)
+
+# Scrape with custom wait time
+response = client.scrape(
+    website_url="https://example.com",
+    wait_ms=5000
+)
+
+# Markdownify with custom wait time
+response = client.markdownify(
+    website_url="https://example.com",
+    wait_ms=5000
+)
+```
+
+### JavaScript SDK
+
+```javascript
+import { smartScraper, scrape, markdownify } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+// SmartScraper with custom wait time
+const response = await smartScraper(
+  apiKey,
+  'https://example.com',
+  'Extract product information',
+  null, // schema
+  null, // numberOfScrolls
+  null, // totalPages
+  null, // cookies
+  { waitMs: 5000 } // Wait 5 seconds before scraping
+);
+
+// Scrape with custom wait time
+const scrapeResponse = await scrape(apiKey, 'https://example.com', {
+  waitMs: 5000
+});
+
+// Markdownify with custom wait time
+const mdResponse = await markdownify(apiKey, 'https://example.com', {
+  waitMs: 5000
+});
+```
+
+### cURL
+
+```bash
+curl -X 'POST' \
+  'https://api.scrapegraphai.com/v1/smartscraper' \
+  -H 'accept: application/json' \
+  -H 'SGAI-APIKEY: your-api-key' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website_url": "https://example.com",
+  "user_prompt": "Extract product information",
+  "wait_ms": 5000
+}'
+```
+
+### Async Python SDK
+
+```python
+from scrapegraph_py import AsyncClient
+
+async def scrape_with_wait():
+    client = AsyncClient(api_key="your-api-key")
+
+    # SmartScraper with custom wait time
+    response = await client.smartscraper(
+        website_url="https://example.com",
+        user_prompt="Extract product information",
+        wait_ms=5000
+    )
+
+    # Markdownify with custom wait time
+    response = await client.markdownify(
+        website_url="https://example.com",
+        wait_ms=5000
+    )
+```
+
+## When to Adjust `wait_ms`
+
+### Increase wait time when:
+- The target page loads content dynamically via JavaScript
+- You're scraping a SPA (React, Vue, Angular) that needs time to hydrate
+- The page fetches data from APIs after initial load
+- You're seeing incomplete or empty results with the default wait time
+
+### Decrease wait time when:
+- The target page is static HTML with no dynamic content
+- You want faster scraping for simple pages
+- You're scraping many pages and want to optimize throughput
+
+## Best Practices
+
+1. **Start with the default** - The default value of 3000ms works well for most websites. Only adjust if you're seeing incomplete results.
+
+2. **Test incrementally** - If the default doesn't capture all content, try increasing in 1000ms increments (4000, 5000, etc.) rather than setting a very high value.
+
+3. **Combine with other parameters** - Use `wait_ms` together with `render_heavy_js` for JavaScript-heavy pages:
+
+```python
+response = client.smartscraper(
+    website_url="https://heavy-js-site.com",
+    user_prompt="Extract all products",
+    wait_ms=8000,
+    render_heavy_js=True
+)
+```
+
+4. **Balance speed and completeness** - Higher wait times ensure more content is captured but increase response time and resource usage.
+
+## Troubleshooting
+
+<Accordion title="Content still missing after increasing wait_ms" icon="exclamation-triangle">
+If increasing `wait_ms` doesn't capture all content:
+
+- Try enabling `render_heavy_js=True` for JavaScript-heavy pages
+- Check if the content requires user interaction (clicks, scrolls) - use `number_of_scrolls` for infinite scroll pages
+- Verify the content isn't behind authentication - use custom headers/cookies
+</Accordion>
+
+<Accordion title="Scraping is too slow" icon="clock">
+If scraping is taking longer than expected:
+
+- Lower the `wait_ms` value for static pages
+- Use the default (omit the parameter) unless you specifically need a longer wait
+- Consider using async clients for parallel scraping
+</Accordion>
+
+## API Reference
+
+For detailed API documentation, see:
+- [SmartScraper Start Job](/api-reference/endpoint/smartscraper/start)
+- [Markdownify Start Job](/api-reference/endpoint/markdownify/start)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Dashboard" icon="dashboard" href="/dashboard/overview">
+    Monitor your API usage and credits
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
+
+<Card title="Need Help?" icon="question" href="mailto:support@scrapegraphai.com">
+  Contact our support team for assistance with wait time configuration or any other questions!
+</Card>
