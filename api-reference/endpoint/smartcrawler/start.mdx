@@ -37,8 +37,9 @@ Content-Type: `application/json`
   },
   "sitemap": "boolean",
   "render_heavy_js": "boolean",
-  "stealth": "boolean"
-  "webhook_url": str
+  "stealth": "boolean",
+  "webhook_url": "string",
+  "wait_ms": "integer"
 }
 ```
 
@@ -60,7 +61,8 @@ Content-Type: `application/json`
 | sitemap | boolean | No | false | Use sitemap.xml for discovery |
 | render_heavy_js | boolean | No | false | Enable heavy JavaScript rendering |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
-| webhook_url | str | No | None | Webhook URL to send the job result to. When provided, a signed webhook notification will be sent upon job completion. See [Webhook Signature Verification](#webhook-signature-verification) below.
+| webhook_url | string | No | None | Webhook URL to send the job result to. When provided, a signed webhook notification will be sent upon job completion. See [Webhook Signature Verification](#webhook-signature-verification) below. |
+| wait_ms | integer | No | 3000 | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering that need extra time to load. |
 
 ### Example
 ```json
