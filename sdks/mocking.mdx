@@ -422,7 +422,7 @@ async function basicMockUsage() {
   
   try {
     // Test scrape endpoint
-    const scrapeResult = await scrape(API_KEY, 'https://example.com', { renderHeavyJs: true });
+    const scrapeResult = await scrape(API_KEY, 'https://example.com');
     console.log('Scrape result:', scrapeResult);
     
     // Test smartScraper endpoint
