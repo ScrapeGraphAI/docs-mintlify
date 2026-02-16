@@ -34,8 +34,7 @@ sgai_client = Client(api_key="your-api-key")
 # Scrape request
 response = sgai_client.htmlify(
     website_url="https://example.com",
-    render_heavy_js=False,  # Set to True for heavy JavaScript rendering
-    branding=True           # Set to True to extract brand design and metadata
+    branding=True  # Set to True to extract brand design and metadata
 )
 
 print("HTML Content:", response.html)
@@ -53,8 +52,7 @@ const apiKey = 'your-api-key';
 const url = 'https://example.com';
 
 try {
-  // htmlify(apiKey, url, renderHeavyJs = false, options = { branding: true })
-  const response = await htmlify(apiKey, url, false, { branding: true }); // enable branding extraction
+  const response = await htmlify(apiKey, url, { branding: true }); // enable branding extraction
   console.log('HTML Content:', response.html);
   console.log('Request ID:', response.scrape_request_id);
   console.log('Status:', response.status);
@@ -72,7 +70,6 @@ curl -X POST https://api.scrapegraphai.com/v1/scrape \
   -H "SGAI-APIKEY: your-api-key" \
   -d '{
     "website_url": "https://example.com",
-    "render_heavy_js": false,
     "branding": true
   }'
 ```
@@ -85,7 +82,6 @@ curl -X POST https://api.scrapegraphai.com/v1/scrape \
 |-----------|------|----------|-------------|
 | apiKey | string | Yes | The ScrapeGraph API Key. |
 | website_url | string | Yes | The URL of the webpage to scrape. |
-| render_heavy_js | boolean | No | Set to true for heavy JavaScript rendering. Default: false |
 | branding | boolean | No | Return extracted brand design and metadata. Default: false |
 | stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds additional credits. Default: false |
 
@@ -171,9 +167,6 @@ When `branding=true` is passed, the response includes a `branding` object with b
   <Card title="Raw HTML Access" icon="code">
     Get complete HTML structure including all elements
   </Card>
-  <Card title="JavaScript Rendering" icon="bolt">
-    Optional support for heavy JavaScript rendering
-  </Card>
   <Card title="Branding Extraction" icon="palette">
     Optionally extract brand colors, fonts, typography, UI components, images, and metadata
   </Card>
@@ -209,24 +202,6 @@ When `branding=true` is passed, the response includes a `branding` object with b
 Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
 </Note>
 
-## JavaScript Rendering
-
-The `render_heavy_js` parameter controls whether JavaScript should be executed on the target page:
-
-### When to Use JavaScript Rendering
-
-- **Single Page Applications (SPAs)**: React, Vue, Angular apps
-- **Dynamic Content**: Content loaded via AJAX/fetch
-- **Interactive Elements**: Dropdowns, modals, infinite scroll
-- **Client-side Routing**: Hash-based or history API routing
-
-### When to Skip JavaScript Rendering
-
-- **Static HTML Pages**: Traditional server-rendered content
-- **Performance**: Faster processing for simple pages
-- **Cost Optimization**: Lower API usage for basic scraping
-- **Reliability**: More predictable results for static content
-
 ## Advanced Usage
 
 ### Async Support
@@ -240,8 +215,7 @@ import asyncio
 async def main():
     async with AsyncClient(api_key="your-api-key") as client:
         response = await client.htmlify(
-            website_url="https://example.com",
-            render_heavy_js=True
+            website_url="https://example.com"
         )
         print(response)
 
@@ -271,7 +245,7 @@ async def main():
         "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
     ]
 
-    tasks = [sgai_client.htmlify(website_url=url, render_heavy_js=False) for url in urls]
+    tasks = [sgai_client.htmlify(website_url=url) for url in urls]
 
     # Execute requests concurrently
     responses = await asyncio.gather(*tasks, return_exceptions=True)
@@ -304,8 +278,7 @@ if __name__ == "__main__":
 ## Best Practices
 
 ### Performance Optimization
-1. Use `render_heavy_js=false` for static content
-2. Process multiple URLs concurrently
+1. Process multiple URLs concurrently
 3. Cache results when possible
 4. Monitor API usage and costs
 

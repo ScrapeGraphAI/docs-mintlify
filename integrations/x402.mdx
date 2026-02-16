@@ -68,7 +68,6 @@ curl -X POST 'https://x402.orth.sh/scrapegraph/v1/scrape' \
   -H 'X-Payment: {{paymentHeader}}' \
   -d '{
     "website_url": "example",
-    "render_heavy_js": true,
     "branding": true,
     "stealth": "example"
   }'
@@ -102,7 +101,6 @@ curl -X POST 'https://x402.orth.sh/scrapegraph/v1/crawl' \
     "schema": "",
     "rules": "",
     "sitemap": "example",
-    "render_heavy_js": "example",
     "stealth": "example"
   }'
 ```
@@ -133,7 +131,6 @@ curl -X POST 'https://x402.orth.sh/scrapegraph/v1/smartscraper' \
     " website_markdown": "example",
     "total_pages": 123,
     " number_of_scrolls": 123,
-    " render_heavy_js": true,
     " mock": true,
     " cookies": "",
     " steps": ""

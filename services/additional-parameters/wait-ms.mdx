@@ -150,25 +150,13 @@ async def scrape_with_wait():
 
 2. **Test incrementally** - If the default doesn't capture all content, try increasing in 1000ms increments (4000, 5000, etc.) rather than setting a very high value.
 
-3. **Combine with other parameters** - Use `wait_ms` together with `render_heavy_js` for JavaScript-heavy pages:
-
-```python
-response = client.smartscraper(
-    website_url="https://heavy-js-site.com",
-    user_prompt="Extract all products",
-    wait_ms=8000,
-    render_heavy_js=True
-)
-```
-
-4. **Balance speed and completeness** - Higher wait times ensure more content is captured but increase response time and resource usage.
+3. **Balance speed and completeness** - Higher wait times ensure more content is captured but increase response time and resource usage.
 
 ## Troubleshooting
 
 <Accordion title="Content still missing after increasing wait_ms" icon="exclamation-triangle">
 If increasing `wait_ms` doesn't capture all content:
 
-- Try enabling `render_heavy_js=True` for JavaScript-heavy pages
 - Check if the content requires user interaction (clicks, scrolls) - use `number_of_scrolls` for infinite scroll pages
 - Verify the content isn't behind authentication - use custom headers/cookies
 </Accordion>
