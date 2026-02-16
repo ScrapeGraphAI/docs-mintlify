@@ -122,11 +122,6 @@ The following parameters in API requests can affect proxy behavior:
 - **Default**: No specific country (uses optimal routing)
 - **Format**: ISO 3166-1 alpha-2 (e.g., `us`, `gb`, `de`)
 
-### `render_heavy_js` (optional)
-- **Type**: Boolean
-- **Description**: Whether to render JavaScript-heavy pages. This may affect which proxy provider is used.
-- **Default**: `false`
-
 ## Usage Examples
 
 ### Basic Request (Automatic Proxy Selection)
@@ -199,46 +194,6 @@ const response = await smartScraper(
   null, // totalPages
   null, // cookies
   { country_code: 'us' } // options
-);
-```
-
-</CodeGroup>
-
-### Request with JavaScript Rendering and Country Code
-
-<CodeGroup>
-
-```python Python
-from scrapegraph_py import Client
-
-client = Client(api_key="your-api-key")
-
-# Combine JavaScript rendering with geotargeting
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product information",
-    render_heavy_js=True,
-    country_code="uk"
-)
-```
-
-```javascript JavaScript
-import { smartScraper } from 'scrapegraph-js';
-
-const apiKey = 'your-api-key';
-
-// Combine JavaScript rendering with geotargeting
-const response = await smartScraper(
-  apiKey,
-  'https://example.com',
-  'Extract product information',
-  null, // schema
-  null, // numberOfScrolls
-  null, // totalPages
-  null, // cookies
-  { country_code: 'uk' }, // options
-  false, // plain_text
-  true   // renderHeavyJs
 );
 ```
 
@@ -355,8 +310,7 @@ If your scraping request fails:
 1. **Verify the URL**: Make sure the URL is correct and accessible
 2. **Check the website**: Some websites may block automated access regardless of proxy
 3. **Retry the request**: The system uses automatic retries, but you can manually retry after a delay
-4. **Try different parameters**: Sometimes using `render_heavy_js: true` can help with JavaScript-heavy sites
-5. **Try a different country**: If geo-restriction is the issue, try a different `country_code`
+4. **Try a different country**: If geo-restriction is the issue, try a different `country_code`
 </Accordion>
 
 ### Rate Limiting

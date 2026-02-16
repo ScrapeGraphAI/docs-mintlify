@@ -94,7 +94,6 @@ const response = await smartScraper(
 | websiteUrl      | string  | Yes      | The URL of the webpage that needs to be scraped.                                    |
 | prompt          | string  | Yes      | A textual description of what you want to achieve.                                  |
 | schema          | object  | No       | The Pydantic or Zod object that describes the structure and format of the response. |
-| renderHeavyJs   | boolean | No       | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: false |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -201,8 +200,7 @@ try {
     apiKey,
     'https://example-react-store.com/products/123',
     'Extract product details including name, price, description, and availability',
-    ProductSchema,
-    true  // Enable render_heavy_js for JavaScript-heavy sites
+    ProductSchema
   );
   
   console.log('Product:', response.result.name);
@@ -213,13 +211,6 @@ try {
   console.error('Error:', error);
 }
 ```
-
-**When to use `renderHeavyJs`:**
-- React, Vue, or Angular applications
-- Single Page Applications (SPAs)
-- Sites with heavy client-side rendering
-- Dynamic content loaded via JavaScript
-- Interactive elements that depend on JavaScript execution
 
 </Accordion>
 
