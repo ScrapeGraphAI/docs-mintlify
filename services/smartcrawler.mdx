@@ -85,6 +85,12 @@ curl -X 'POST' \
 }'
 ```
 
+```bash CLI
+just-scrape crawl https://scrapegraphai.com/ -p "Extract info about the company" \
+  --depth 2 --max-pages 10 \
+  --rules '{"include_paths":["/about","/services/*"],"exclude_paths":["/admin/*","/api/**"],"same_domain":true}'
+```
+
 </CodeGroup>
 
 ##### Required Headers
@@ -193,6 +199,12 @@ curl -X 'POST' \
     "same_domain": true
   }
 }'
+```
+
+```bash CLI
+just-scrape crawl https://scrapegraphai.com/ --no-extraction \
+  --depth 2 --max-pages 5 \
+  --rules '{"include_paths":["/docs/*","/blog/**"],"exclude_paths":["/admin/*"],"same_domain":true}'
 ```
 
 </CodeGroup>

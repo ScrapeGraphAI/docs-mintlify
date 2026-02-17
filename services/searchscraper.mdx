@@ -67,6 +67,10 @@ curl -X 'POST' \
 }'
 ```
 
+```bash CLI
+just-scrape search-scraper "What are the key features and pricing of ChatGPT Plus?" --num-results 5
+```
+
 </CodeGroup>
 
 #### Markdown Mode (Cost-Effective)
@@ -114,6 +118,10 @@ curl -X 'POST' \
   "num_results": 3,
   "extraction_mode": false
 }'
+```
+
+```bash CLI
+just-scrape search-scraper "Latest developments in artificial intelligence" --num-results 3 --no-extraction
 ```
 
 </CodeGroup>
