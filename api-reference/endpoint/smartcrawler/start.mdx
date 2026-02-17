@@ -36,8 +36,9 @@ Content-Type: `application/json`
     "same_domain": "boolean"
   },
   "sitemap": "boolean",
-  "stealth": "boolean"
-  "webhook_url": str
+  "stealth": "boolean",
+  "webhook_url": "string",
+  "wait_ms": "integer"
 }
 ```
 
@@ -58,7 +59,8 @@ Content-Type: `application/json`
 | rules | object | No | - | Crawl rules for filtering URLs. Object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See Rules section below for details. |
 | sitemap | boolean | No | false | Use sitemap.xml for discovery |
 | stealth | boolean | No | false | Enable stealth mode to bypass bot protection using advanced anti-detection techniques. Adds +4 credits to the request cost |
-| webhook_url | str | No | None | Webhook URL to send the job result to. When provided, a signed webhook notification will be sent upon job completion. See [Webhook Signature Verification](#webhook-signature-verification) below.
+| webhook_url | string | No | None | Webhook URL to send the job result to. When provided, a signed webhook notification will be sent upon job completion. See [Webhook Signature Verification](#webhook-signature-verification) below. |
+| wait_ms | integer | No | 3000 | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering that need extra time to load. |
 
 ### Example
 ```json

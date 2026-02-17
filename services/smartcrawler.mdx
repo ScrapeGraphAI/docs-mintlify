@@ -107,6 +107,7 @@ curl -X 'POST' \
 | rules             | object  | No       | Crawl rules object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See below for details. |
 | sitemap           | bool    | No       | Use sitemap.xml for discovery (default: false). |
 | webhook_url       | string  | No       | URL to receive webhook notification on job completion. |
+| wait_ms           | int     | No       | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering that need extra time to load (default: 3000). |
 
 
 <Note>
@@ -463,6 +464,7 @@ POST https://api.scrapegraphai.com/v1/crawl
 | max_pages        | int     | No       | Max pages to crawl |
 | rules            | object  | No       | Crawl rules object with optional fields: `exclude` (regex URL patterns), `include_paths` (path patterns to include), `exclude_paths` (path patterns to exclude), `same_domain` (boolean) |
 | sitemap          | bool    | No       | Use sitemap.xml |
+| wait_ms          | int     | No       | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering (default: 3000). |
 
 #### Response Format
 ```json
