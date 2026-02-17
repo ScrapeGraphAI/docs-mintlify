@@ -24,6 +24,10 @@ npm install -g just-scrape
 pnpm add -g just-scrape
 ```
 
+```bash yarn
+yarn global add just-scrape
+```
+
 ```bash bun
 bun add -g just-scrape
 ```
@@ -79,6 +83,7 @@ just-scrape smart-scraper <url> -p <prompt> --schema <json>
 just-scrape smart-scraper <url> -p <prompt> --scrolls <n>
 just-scrape smart-scraper <url> -p <prompt> --pages <n>
 just-scrape smart-scraper <url> -p <prompt> --stealth
+just-scrape smart-scraper <url> -p <prompt> --cookies <json> --headers <json>
 just-scrape smart-scraper <url> -p <prompt> --plain-text
 ```
 
@@ -91,6 +96,7 @@ just-scrape search-scraper <prompt>
 just-scrape search-scraper <prompt> --num-results <n>
 just-scrape search-scraper <prompt> --no-extraction
 just-scrape search-scraper <prompt> --schema <json>
+just-scrape search-scraper <prompt> --stealth --headers <json>
 ```
 
 ### Markdownify
@@ -114,6 +120,8 @@ just-scrape crawl <url> -p <prompt> --depth <n>
 just-scrape crawl <url> --no-extraction --max-pages <n>
 just-scrape crawl <url> -p <prompt> --schema <json>
 just-scrape crawl <url> -p <prompt> --rules <json>
+just-scrape crawl <url> -p <prompt> --no-sitemap
+just-scrape crawl <url> -p <prompt> --stealth
 ```
 
 ### Scrape
@@ -163,7 +171,9 @@ Browse request history for any service.
 ```bash
 just-scrape history <service>
 just-scrape history <service> <request-id>
-just-scrape history <service> --json --page-size 100
+just-scrape history <service> --page <n>
+just-scrape history <service> --page-size <n>
+just-scrape history <service> --json
 ```
 
 Services: `markdownify`, `smartscraper`, `searchscraper`, `scrape`, `crawl`, `agentic-scraper`, `sitemap`
