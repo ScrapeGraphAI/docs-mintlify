@@ -36,8 +36,8 @@ git log -1 --pretty=%s                      # Last commit message
 
    - Check current branch: `git branch --show-current`
    - If on main/master/next, create feature branch with conventional naming
-   - Switch to new branch: `git checkout -b  <username>/<features|fixes>/<branch-name>`
-   - Current branch convention `<username>/<features|fixes>/<branch-name>`
+   - Branch convention: `<username>/<type>/<description>` (e.g., `fzuppichini/features/new-feature`)
+   - Switch to new branch: `git checkout -b <username>/<type>/<description>`
 
 2. **Analyze & Stage**:
 
@@ -160,8 +160,11 @@ When updating existing PRs, use these comment templates to preserve the original
 1. Create branch and make changes
 2. Stage, commit, push → triggers PR creation
 3. Each subsequent push triggers update comment
+4. By default assume the PR is *wip* (work in progress) so open it appropriately
 
 ### Commit Message Conventions
+
+See **[docs/GIT_STYLE.md](docs/GIT_STYLE.md)** for full guide.
 
 - `feat:` - New features
 - `fix:` - Bug fixes
@@ -170,11 +173,15 @@ When updating existing PRs, use these comment templates to preserve the original
 - `test:` - Test additions/modifications
 - `chore:` - Maintenance tasks
 - `style:` - Formatting changes
+- `content:` - Content changes (blog, copy)
+- `perf:` - Performance improvements
 
 ### Branch Naming Conventions
 
-- `feature/description` - New features
-- `fix/bug-description` - Bug fixes
-- `refactor/component-name` - Code refactoring
-- `docs/update-readme` - Documentation updates
-- `test/add-unit-tests` - Test additions
+Always use `<username>/<type>/<description>` format:
+
+- `username/features/description` - New features
+- `username/fix/description` - Bug fixes
+- `username/refactor/description` - Code refactoring
+- `username/docs/description` - Documentation updates
+- `username/test/description` - Test additions

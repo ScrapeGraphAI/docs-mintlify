@@ -176,6 +176,19 @@ print(ai_response)
 client.close()
 ```
 
+```bash CLI
+# Basic scraping without AI extraction
+just-scrape agentic-scraper https://dashboard.scrapegraphai.com/ \
+  -s "Type email@gmail.com in email input box,Type test-password@123 in password inputbox,Click login" \
+  --use-session
+
+# With AI extraction
+just-scrape agentic-scraper https://dashboard.scrapegraphai.com/ \
+  -s "Type email@gmail.com in email input box,Type test-password@123 in password inputbox,Click login,wait for dashboard to load" \
+  --ai-extraction -p "Extract user info, dashboard sections, and remaining credits" \
+  --use-session
+```
+
 </CodeGroup>
 
 ### Main Parameters

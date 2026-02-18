@@ -50,6 +50,7 @@
               "services/smartcrawler",
               "services/sitemap",
               "services/agenticscraper",
+              "services/cli",
               {
                 "group": "MCP Server",
                 "icon": "/logo/mcp.svg",

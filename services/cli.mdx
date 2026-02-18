@@ -1,0 +1,220 @@
+---
+title: 'CLI'
+description: 'Command-line interface for ScrapeGraph AI'
+icon: 'terminal'
+---
+
+## Overview
+
+`just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal.
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Installation
+
+<CodeGroup>
+
+```bash npm
+npm install -g just-scrape
+```
+
+```bash pnpm
+pnpm add -g just-scrape
+```
+
+```bash yarn
+yarn global add just-scrape
+```
+
+```bash bun
+bun add -g just-scrape
+```
+
+```bash npx (no install)
+npx just-scrape --help
+```
+
+```bash bunx (no install)
+bunx just-scrape --help
+```
+
+</CodeGroup>
+
+Package: [just-scrape](https://www.npmjs.com/package/just-scrape) on npm | [GitHub](https://github.com/ScrapeGraphAI/just-scrape)
+
+## Configuration
+
+The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
+
+1. **Environment variable**: `export SGAI_API_KEY="sgai-..."`
+2. **`.env` file**: `SGAI_API_KEY=sgai-...` in project root
+3. **Config file**: `~/.scrapegraphai/config.json`
+4. **Interactive prompt**: the CLI asks and saves to config
+
+### Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `SGAI_API_KEY` | ScrapeGraph API key | — |
+| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v1` |
+| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
+| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
+
+## JSON Mode
+
+All commands support `--json` for machine-readable output. Banner, spinners, and interactive prompts are suppressed — only minified JSON on stdout. Saves tokens when piped to AI agents.
+
+```bash
+just-scrape credits --json | jq '.remaining_credits'
+just-scrape smart-scraper https://example.com -p "Extract data" --json > result.json
+```
+
+## Commands
+
+### SmartScraper
+
+Extract structured data from any URL using AI. [Full docs →](/services/smartscraper)
+
+```bash
+just-scrape smart-scraper <url> -p <prompt>
+just-scrape smart-scraper <url> -p <prompt> --schema <json>
+just-scrape smart-scraper <url> -p <prompt> --scrolls <n>
+just-scrape smart-scraper <url> -p <prompt> --pages <n>
+just-scrape smart-scraper <url> -p <prompt> --stealth
+just-scrape smart-scraper <url> -p <prompt> --cookies <json> --headers <json>
+just-scrape smart-scraper <url> -p <prompt> --plain-text
+```
+
+### SearchScraper
+
+Search the web and extract structured data from results. [Full docs →](/services/searchscraper)
+
+```bash
+just-scrape search-scraper <prompt>
+just-scrape search-scraper <prompt> --num-results <n>
+just-scrape search-scraper <prompt> --no-extraction
+just-scrape search-scraper <prompt> --schema <json>
+just-scrape search-scraper <prompt> --stealth --headers <json>
+```
+
+### Markdownify
+
+Convert any webpage to clean markdown. [Full docs →](/services/markdownify)
+
+```bash
+just-scrape markdownify <url>
+just-scrape markdownify <url> --stealth
+just-scrape markdownify <url> --headers <json>
+```
+
+### Crawl
+
+Crawl multiple pages and extract data from each. [Full docs →](/services/smartcrawler)
+
+```bash
+just-scrape crawl <url> -p <prompt>
+just-scrape crawl <url> -p <prompt> --max-pages <n>
+just-scrape crawl <url> -p <prompt> --depth <n>
+just-scrape crawl <url> --no-extraction --max-pages <n>
+just-scrape crawl <url> -p <prompt> --schema <json>
+just-scrape crawl <url> -p <prompt> --rules <json>
+just-scrape crawl <url> -p <prompt> --no-sitemap
+just-scrape crawl <url> -p <prompt> --stealth
+```
+
+### Scrape
+
+Get raw HTML content from a URL. [Full docs →](/services/scrape)
+
+```bash
+just-scrape scrape <url>
+just-scrape scrape <url> --stealth
+just-scrape scrape <url> --branding
+just-scrape scrape <url> --country-code <iso>
+```
+
+### Sitemap
+
+Get all URLs from a website's sitemap. [Full docs →](/services/sitemap)
+
+```bash
+just-scrape sitemap <url>
+just-scrape sitemap <url> --json | jq -r '.urls[]'
+```
+
+### Agentic Scraper
+
+Browser automation with AI — login, click, navigate, fill forms. [Full docs →](/services/agenticscraper)
+
+```bash
+just-scrape agentic-scraper <url> -s <steps>
+just-scrape agentic-scraper <url> -s <steps> --ai-extraction -p <prompt>
+just-scrape agentic-scraper <url> -s <steps> --schema <json>
+just-scrape agentic-scraper <url> -s <steps> --use-session
+```
+
+### Generate Schema
+
+Generate a JSON schema from a natural language description.
+
+```bash
+just-scrape generate-schema <prompt>
+just-scrape generate-schema <prompt> --existing-schema <json>
+```
+
+### History
+
+Browse request history for any service.
+
+```bash
+just-scrape history <service>
+just-scrape history <service> <request-id>
+just-scrape history <service> --page <n>
+just-scrape history <service> --page-size <n>
+just-scrape history <service> --json
+```
+
+Services: `markdownify`, `smartscraper`, `searchscraper`, `scrape`, `crawl`, `agentic-scraper`, `sitemap`
+
+### Credits
+
+Check your credit balance.
+
+```bash
+just-scrape credits
+```
+
+### Validate
+
+Validate your API key.
+
+```bash
+just-scrape validate
+```
+
+## AI Agent Integration
+
+Use `just-scrape` as a skill for AI coding agents via [Vercel's skills.sh](https://skills.sh):
+
+```bash
+bunx skills add https://github.com/ScrapeGraphAI/just-scrape
+```
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="npm Package" icon="npm" href="https://www.npmjs.com/package/just-scrape">
+    Install from npm
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/just-scrape">
+    Source code and issues
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="Dashboard" icon="gauge" href="https://dashboard.scrapegraphai.com">
+    Get your API key
+  </Card>
+</CardGroup>
