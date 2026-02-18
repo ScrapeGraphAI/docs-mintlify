@@ -68,18 +68,13 @@ response = client.smartscraper(
 import { smartScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://example-store.com/products';
-const prompt = 'Extract all product information';
 
 // Basic pagination - scrape 3 pages
-const response = await smartScraper(
-    apiKey, 
-    url, 
-    prompt, 
-    null, 
-    null, 
-    3  // total_pages
-);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example-store.com/products',
+  user_prompt: 'Extract all product information',
+  total_pages: 3,
+});
 ```
 
 ## Advanced Pagination Examples

@@ -33,19 +33,18 @@ import Anthropic from '@anthropic-ai/sdk';
 const apiKey = process.env.SGAI_APIKEY;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const scrapeResult = await smartScraper(
-    apiKey,
-    'https://scrapegraphai.com',
-    'Extract all content from this page'
-);
+const scrapeResult = await smartScraper(apiKey, {
+    website_url: 'https://scrapegraphai.com',
+    user_prompt: 'Extract all content from this page',
+});
 
-console.log('Scraped content length:', JSON.stringify(scrapeResult.result).length);
+console.log('Scraped content length:', JSON.stringify(scrapeResult.data.result).length);
 
 const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
     messages: [
-        { role: 'user', content: `Summarize in 100 words: ${JSON.stringify(scrapeResult.result)}` }
+        { role: 'user', content: `Summarize in 100 words: ${JSON.stringify(scrapeResult.data.result)}` }
     ]
 });
 
@@ -92,13 +91,12 @@ if (toolUse && toolUse.type === 'tool_use') {
     const input = toolUse.input as { url: string };
     console.log(`Calling tool: ${toolUse.name} | URL: ${input.url}`);
 
-    const result = await smartScraper(
-        apiKey,
-        input.url,
-        'Extract all content from this page'
-    );
+    const result = await smartScraper(apiKey, {
+        website_url: input.url,
+        user_prompt: 'Extract all content from this page',
+    });
 
-    console.log(`Scraped content preview: ${JSON.stringify(result.result)?.substring(0, 300)}...`);
+    console.log(`Scraped content preview: ${JSON.stringify(result.data.result)?.substring(0, 300)}...`);
     // Continue with the conversation or process the scraped content as needed
 }
 ```
@@ -121,11 +119,10 @@ const CompanyInfoSchema = z.object({
     description: z.string().optional()
 });
 
-const scrapeResult = await smartScraper(
-    apiKey,
-    'https://stripe.com',
-    'Extract all content from this page'
-);
+const scrapeResult = await smartScraper(apiKey, {
+    website_url: 'https://stripe.com',
+    user_prompt: 'Extract all content from this page',
+});
 
 const prompt = `Extract company information from this website content.
 
@@ -138,7 +135,7 @@ Output ONLY valid JSON in this exact format (no markdown, no explanation):
 }
 
 Website content:
-${JSON.stringify(scrapeResult.result)}`;
+${JSON.stringify(scrapeResult.data.result)}`;
 
 const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5',

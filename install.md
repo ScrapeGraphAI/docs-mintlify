@@ -62,14 +62,16 @@ bun add scrapegraph-js
 import { smartScraper } from "scrapegraph-js";
 
 const apiKey = "your-api-key-here";
-const websiteUrl = "https://scrapegraphai.com";
-const prompt = "What does the company do?";
 
-try {
-  const response = await smartScraper(apiKey, websiteUrl, prompt);
-  console.log(response.result);
-} catch (error) {
-  console.error("Error:", error);
+const response = await smartScraper(apiKey, {
+  website_url: "https://scrapegraphai.com",
+  user_prompt: "What does the company do?",
+});
+
+if (response.status === "error") {
+  console.error("Error:", response.error);
+} else {
+  console.log(response.data.result);
 }
 ```
 
@@ -139,13 +141,12 @@ const CompanySchema = z.object({
 });
 
 const apiKey = "your-api-key";
-const response = await smartScraper(
-  apiKey,
-  "https://scrapegraphai.com",
-  "Extract company information",
-  CompanySchema
-);
-console.log(response.result);
+const response = await smartScraper(apiKey, {
+  website_url: "https://scrapegraphai.com",
+  user_prompt: "Extract company information",
+  output_schema: CompanySchema,
+});
+console.log(response.data.result);
 ```
 
 ---

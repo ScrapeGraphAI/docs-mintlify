@@ -44,13 +44,16 @@ import { searchScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
 const prompt = 'What is the latest version of Python and what are its main features?';
-const numResults = 5; // Search 5 websites (default is 3)
 
-try {
-  const response = await searchScraper(apiKey, prompt, numResults);
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  num_results: 5,
+});
+
+if (response.status === 'success') {
+  console.log(response.data);
+} else {
+  console.error(response.error);
 }
 ```
 
@@ -97,13 +100,17 @@ import { searchScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
 const prompt = 'Latest developments in artificial intelligence';
-const numResults = 3;
 
-try {
-  const response = await searchScraper(apiKey, prompt, numResults, false); // false = markdown mode
-  console.log('Markdown content:', response.markdown_content);
-} catch (error) {
-  console.error(error);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  num_results: 3,
+  extraction_mode: false,
+});
+
+if (response.status === 'success') {
+  console.log('Markdown content:', response.data.markdown_content);
+} else {
+  console.error(response.error);
 }
 ```
 
@@ -149,13 +156,15 @@ import { searchScraper } from 'scrapegraph-js';
 const apiKey = 'your-api-key';
 const prompt = 'What are the best local restaurants?';
 
-try {
-  const response = await searchScraper(apiKey, prompt, {
-    locationGeoCode: 'us'  // Filter results to United States
-  });
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  location_geo_code: 'us',
+});
+
+if (response.status === 'success') {
+  console.log(response.data);
+} else {
+  console.error(response.error);
 }
 ```
 
@@ -201,13 +210,16 @@ import { searchScraper } from 'scrapegraph-js';
 const apiKey = 'your-api-key';
 const prompt = 'Latest news about AI';
 
-try {
-  const response = await searchScraper(apiKey, prompt, 5, null, null, {
-    timeRange: 'past_week'  // Only results from the past week
-  });
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  num_results: 5,
+  time_range: 'past_week',
+});
+
+if (response.status === 'success') {
+  console.log(response.data);
+} else {
+  console.error(response.error);
 }
 ```
 
@@ -241,10 +253,10 @@ This is particularly useful for finding recent news, updates, or time-sensitive 
 | Parameter        | Type    | Required | Description                                                                 |
 |------------------|---------|----------|-----------------------------------------------------------------------------|
 | apiKey           | string  | Yes      | The ScrapeGraph API Key.                                                    |
-| prompt           | string  | Yes      | A textual description of what you want to achieve.                          |
-| numResults       | number  | No       | Number of websites to search (3-20). Default: 3. Higher = deeper research.  |
+| user_prompt      | string  | Yes      | A textual description of what you want to achieve.                          |
+| num_results      | number  | No       | Number of websites to search (3-20). Default: 3. Higher = deeper research.  |
 | extraction_mode  | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
-| schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
+| output_schema    | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
 | location_geo_code | string | No       | Geographic location code for geo-targeted search results (e.g., "us", "gb", "de"). Filters results to the specified region. |
 | time_range        | string | No       | Date range filter for search results. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year". Filters results to the specified time period. |
 | mock             | boolean | No       | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual search. Useful for testing and development. Default: false |
@@ -274,7 +286,7 @@ Example costs:
 - 10 websites: 100 credits (AI) / 20 credits (markdown)
 - 20 websites: 200 credits (AI) / 40 credits (markdown)
 
-<b>How to use:</b> Set <code>num_results</code> (Python) or <code>numResults</code> (JS) and <code>extraction_mode</code> in your request.
+<b>How to use:</b> Set <code>num_results</code> and <code>extraction_mode</code> in your request.
 
 </Accordion>
 
@@ -487,26 +499,22 @@ import fs from 'fs';
 
 const apiKey = 'your-api-key';
 
-try {
-  const response = await searchScraper(
-    apiKey,
-    'Latest research papers on machine learning and neural networks',
-    5,
-    false // Enable markdown mode
-  );
+const response = await searchScraper(apiKey, {
+  user_prompt: 'Latest research papers on machine learning and neural networks',
+  num_results: 5,
+  extraction_mode: false,
+});
 
-  // Access the raw markdown content
-  const markdownContent = response.markdown_content;
-  
+if (response.status === 'success') {
+  const markdownContent = response.data.markdown_content;
+
   console.log(`Total content length: ${markdownContent.length} characters`);
-  console.log(`Reference URLs: ${response.reference_urls.length}`);
+  console.log(`Reference URLs: ${response.data.reference_urls.length}`);
 
-  // Save to file for analysis
   fs.writeFileSync('ai_research_content.md', markdownContent, 'utf8');
   console.log('Content saved to ai_research_content.md');
-
-} catch (error) {
-  console.error('Error:', error);
+} else {
+  console.error('Error:', response.error);
 }
 ```
 </Accordion>
@@ -524,16 +532,18 @@ If you know the response id of a previous request you made, you can retrieve all
 <CodeGroup>
 
 ```javascript JavaScript
-import { getSearchScraperRequest } from 'scrapegraph-js';
+import { history } from 'scrapegraph-js';
 
 const apiKey = 'your_api_key';
-const requestId = 'ID_of_previous_request';
 
-try {
-  const requestInfo = await getSearchScraperRequest(apiKey, requestId);
-  console.log(requestInfo);
-} catch (error) {
-  console.error(error);
+const response = await history(apiKey, {
+  service: 'searchscraper',
+  page: 1,
+  page_size: 10,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.requests);
 }
 ```
 
@@ -608,11 +618,15 @@ const CompanyProfile = z.object({
   techStack: z.array(z.string()).describe('Technologies used by the company')
 });
 
-try {
-  const response = await searchScraper(apiKey, prompt, schema);
-  console.log(response.result);
-} catch (error) {
-  console.error(error);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  output_schema: CompanyProfile,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.result);
+} else {
+  console.error(response.error);
 }
 ```
 
@@ -667,7 +681,10 @@ const Article = z.object({
   tags: z.array(z.string()).describe("Article tags or categories")
 });
 
-const response = await searchScraper(apiKey, prompt, Article);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  output_schema: Article,
+});
 ```
 
 </CodeGroup>
@@ -958,17 +975,21 @@ const apiKey = process.env.SGAI_APIKEY;
 const prompt = 'What is the latest version of Python and what are its main features?';
 const numResults = 5; // Try 3, 5, 10, or 20 for different research depth
 
-try {
-  console.log(`🔍 Searching ${numResults} websites for: ${prompt}`);
-  const response = await searchScraper(apiKey, prompt, numResults);
-  console.log('✅ Search completed successfully!');
-  console.log(`Result: ${response.result}`);
-  console.log('\n🔗 Reference URLs:');
-  response.reference_urls?.forEach((url, index) => {
+console.log(`Searching ${numResults} websites for: ${prompt}`);
+const response = await searchScraper(apiKey, {
+  user_prompt: prompt,
+  num_results: numResults,
+});
+
+if (response.status === 'success') {
+  console.log('Search completed successfully!');
+  console.log(`Result: ${response.data.result}`);
+  console.log('\nReference URLs:');
+  response.data.reference_urls?.forEach((url, index) => {
     console.log(`${index + 1}. ${url}`);
   });
-} catch (error) {
-  console.error('❌ Error:', error.message);
+} else {
+  console.error('Error:', response.error);
 }
 ```
 

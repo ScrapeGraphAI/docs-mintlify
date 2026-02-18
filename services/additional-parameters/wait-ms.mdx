@@ -72,25 +72,22 @@ import { smartScraper, scrape, markdownify } from 'scrapegraph-js';
 const apiKey = 'your-api-key';
 
 // SmartScraper with custom wait time
-const response = await smartScraper(
-  apiKey,
-  'https://example.com',
-  'Extract product information',
-  null, // schema
-  null, // numberOfScrolls
-  null, // totalPages
-  null, // cookies
-  { waitMs: 5000 } // Wait 5 seconds before scraping
-);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com',
+  user_prompt: 'Extract product information',
+  wait_ms: 5000,
+});
 
 // Scrape with custom wait time
-const scrapeResponse = await scrape(apiKey, 'https://example.com', {
-  waitMs: 5000
+const scrapeResponse = await scrape(apiKey, {
+  website_url: 'https://example.com',
+  wait_ms: 5000,
 });
 
 // Markdownify with custom wait time
-const mdResponse = await markdownify(apiKey, 'https://example.com', {
-  waitMs: 5000
+const mdResponse = await markdownify(apiKey, {
+  website_url: 'https://example.com',
+  wait_ms: 5000,
 });
 ```
 
