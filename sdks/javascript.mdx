@@ -43,8 +43,8 @@ bun add scrapegraph-js
 - **AI-Powered Extraction**: Smart web scraping with artificial intelligence
 - **Async by Design**: Fully asynchronous architecture
 - **Type Safety**: Built-in TypeScript support with Zod schemas
-- **Production Ready**: Automatic retries and detailed logging
-- **Developer Friendly**: Comprehensive error handling
+- **Zero Exceptions**: All errors wrapped in `ApiResult` — no try/catch needed
+- **Developer Friendly**: Comprehensive error handling and debug logging
 
 ## Quick Start
 
@@ -59,16 +59,17 @@ bun add scrapegraph-js
 import { smartScraper } from "scrapegraph-js";
 import "dotenv/config";
 
-// Initialize variables
-const apiKey = process.env.SGAI_APIKEY; // Set your API key as an environment variable
-const websiteUrl = "https://example.com";
-const prompt = "What does the company do?";
+const apiKey = process.env.SGAI_APIKEY;
 
-try {
-  const response = await smartScraper(apiKey, websiteUrl, prompt); // call SmartScraper function
-  console.log(response.result);
-} catch (error) {
-  console.error("Error:", error);
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "What does the company do?",
+});
+
+if (response.status === "error") {
+  console.error("Error:", response.error);
+} else {
+  console.log(response.data.result);
 }
 ```
 
@@ -79,21 +80,36 @@ try {
 Extract specific information from any webpage using AI:
 
 ```javascript
-const response = await smartScraper(
-  apiKey,
-  "https://example.com",
-  "Extract the main content"
-);
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "Extract the main content",
+});
+```
+
+All functions return an `ApiResult<T>` object:
+```typescript
+type ApiResult<T> = {
+  status: "success" | "error";
+  data: T | null;
+  error?: string;
+  elapsedMs: number;
+};
 ```
 
 #### Parameters
 
 | Parameter       | Type    | Required | Description                                                                         |
 | --------------- | ------- | -------- | ----------------------------------------------------------------------------------- |
-| apiKey          | string  | Yes      | The ScrapeGraph API Key.                                                            |
-| websiteUrl      | string  | Yes      | The URL of the webpage that needs to be scraped.                                    |
-| prompt          | string  | Yes      | A textual description of what you want to achieve.                                  |
-| schema          | object  | No       | The Pydantic or Zod object that describes the structure and format of the response. |
+| apiKey          | string  | Yes      | The ScrapeGraph API Key (first argument).                                           |
+| user_prompt     | string  | Yes      | A textual description of what you want to extract.                                  |
+| website_url     | string  | No*      | The URL of the webpage to scrape. *One of `website_url`, `website_html`, or `website_markdown` is required. |
+| output_schema   | object  | No       | A Zod schema (converted to JSON) that describes the structure of the response.      |
+| number_of_scrolls | number | No     | Number of scrolls for infinite scroll pages (0-50).                                 |
+| stealth         | boolean | No       | Enable anti-detection mode (+4 credits).                                            |
+| headers         | object  | No       | Custom HTTP headers.                                                                |
+| mock            | boolean | No       | Enable mock mode for testing.                                                       |
+| wait_ms         | number  | No       | Page load wait time in ms (default: 3000).                                          |
+| country_code    | string  | No       | Proxy routing country code (e.g., "us").                                            |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -113,16 +129,15 @@ const ArticlesArraySchema = z
   .array(ArticleSchema)
   .describe("Array of articles");
 
-const response = await smartScraper(
-  apiKey,
-  "https://example.com/blog/article",
-  "Extract the article information",
-  ArticlesArraySchema
-);
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com/blog/article",
+  user_prompt: "Extract the article information",
+  output_schema: ArticlesArraySchema,
+});
 
-console.log(`Title: ${response.result.title}`);
-console.log(`Author: ${response.result.author}`);
-console.log(`Published: ${response.result.publishDate}`);
+console.log(`Title: ${response.data.result.title}`);
+console.log(`Author: ${response.data.result.author}`);
+console.log(`Published: ${response.data.result.publishDate}`);
 ```
 
 </Accordion>
@@ -156,23 +171,20 @@ const CompanySchema = z.object({
   website: z.string().url().describe("Company website URL"),
 });
 
-// Extract comprehensive company information
-const response = await smartScraper(
-  apiKey,
-  "https://example.com/about",
-  "Extract detailed company information including employees and offices",
-  CompanySchema
-);
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com/about",
+  user_prompt: "Extract detailed company information including employees and offices",
+  output_schema: CompanySchema,
+});
 
-// Access nested data
-console.log(`Company: ${response.result.name}`);
+console.log(`Company: ${response.data.result.name}`);
 console.log("\nKey Employees:");
-response.result.employees.forEach((employee) => {
+response.data.result.employees.forEach((employee) => {
   console.log(`- ${employee.name} (${employee.position})`);
 });
 
 console.log("\nOffice Locations:");
-response.result.offices.forEach((office) => {
+response.data.result.offices.forEach((office) => {
   console.log(`- ${office.location}: ${office.address}`);
 });
 ```
@@ -195,20 +207,18 @@ const ProductSchema = z.object({
   availability: z.string().describe('Product availability status')
 });
 
-try {
-  const response = await smartScraper(
-    apiKey,
-    'https://example-react-store.com/products/123',
-    'Extract product details including name, price, description, and availability',
-    ProductSchema
-  );
-  
-  console.log('Product:', response.result.name);
-  console.log('Price:', response.result.price);
-  console.log('Available:', response.result.availability);
-  
-} catch (error) {
-  console.error('Error:', error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example-react-store.com/products/123',
+  user_prompt: 'Extract product details including name, price, description, and availability',
+  output_schema: ProductSchema,
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Product:', response.data.result.name);
+  console.log('Price:', response.data.result.price);
+  console.log('Available:', response.data.result.availability);
 }
 ```
 
@@ -219,27 +229,24 @@ try {
 Search and extract information from multiple web sources using AI:
 
 ```javascript
-const response = await searchScraper(
-  apiKey,
-  "Find the best restaurants in San Francisco",
-  {
-    locationGeoCode: "us", // Optional: Geo code for location-based search
-    timeRange: "past_week" // Optional: Filter results by time range
-  }
-);
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find the best restaurants in San Francisco",
+  location_geo_code: "us",
+  time_range: "past_week",
+});
 ```
 
 #### Parameters
 
-| Parameter        | Type    | Required | Description                                                                        |
-| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
-| apiKey           | string  | Yes      | The ScrapeGraph API Key.                                                           |
-| prompt           | string  | Yes      | A textual description of what you want to achieve.                                 |
-| numResults       | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
-| extractionMode   | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). Default: true |
-| schema           | object  | No       | The Pydantic or Zod object that describes the structure and format of the response (AI extraction mode only) |
-| locationGeoCode  | string  | No       | Optional geo code for location-based search (e.g., "us")                          |
-| timeRange        | string  | No       | Optional time range filter for search results. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year" |
+| Parameter          | Type    | Required | Description                                                                        |
+| ------------------ | ------- | -------- | ---------------------------------------------------------------------------------- |
+| apiKey             | string  | Yes      | The ScrapeGraph API Key (first argument).                                          |
+| user_prompt        | string  | Yes      | A textual description of what you want to achieve.                                 |
+| num_results        | number  | No       | Number of websites to search (3-20). Default: 3.                                   |
+| extraction_mode    | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). |
+| output_schema      | object  | No       | Zod schema for structured response format (AI extraction mode only).               |
+| location_geo_code  | string  | No       | Geo code for location-based search (e.g., "us").                                   |
+| time_range         | string  | No       | Time range filter. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year". |
 
 <Accordion title="Basic Schema Example" icon="code">
 Define a simple schema using Zod:
@@ -255,19 +262,16 @@ const ArticleSchema = z.object({
   category: z.string().describe("Article category"),
 });
 
-const response = await searchScraper(
-  apiKey,
-  "Find news about the latest trends in AI",
-  ArticleSchema,
-  {
-    locationGeoCode: "us", // Optional: Geo code for location-based search
-    timeRange: "past_week" // Optional: Filter results by time range
-  }
-);
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find news about the latest trends in AI",
+  output_schema: ArticleSchema,
+  location_geo_code: "us",
+  time_range: "past_week",
+});
 
-console.log(`Title: ${response.result.title}`);
-console.log(`Author: ${response.result.author}`);
-console.log(`Published: ${response.result.publishDate}`);
+console.log(`Title: ${response.data.result.title}`);
+console.log(`Author: ${response.data.result.author}`);
+console.log(`Published: ${response.data.result.publishDate}`);
 ```
 
 </Accordion>
@@ -298,16 +302,12 @@ const RestaurantSchema = z.object({
   website: z.string().url().describe("Restaurant website URL"),
 });
 
-// Extract comprehensive company information
-const response = await searchScraper(
-  apiKey,
-  "Find the best restaurants in San Francisco",
-  RestaurantSchema,
-  {
-    locationGeoCode: "us", // Optional: Geo code for location-based search
-    timeRange: "past_month" // Optional: Filter results by time range
-  }
-);
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find the best restaurants in San Francisco",
+  output_schema: RestaurantSchema,
+  location_geo_code: "us",
+  time_range: "past_month",
+});
 ```
 
 </Accordion>
@@ -320,30 +320,21 @@ import { searchScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
 
-try {
-  // Enable markdown mode for cost-effective content gathering
-  const response = await searchScraper(
-    apiKey,
-    'Latest developments in artificial intelligence',
-    3,    // Search 3 websites
-    false, // Enable markdown mode (2 credits per page vs 10 credits)
-    {
-      locationGeoCode: "us", // Optional: Geo code for location-based search
-      timeRange: "past_week" // Optional: Filter results by time range
-    }
-  );
+const response = await searchScraper(apiKey, {
+  user_prompt: 'Latest developments in artificial intelligence',
+  num_results: 3,
+  extraction_mode: false,
+  location_geo_code: "us",
+  time_range: "past_week",
+});
 
-  // Access the raw markdown content
-  const markdownContent = response.markdown_content;
-  
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  const markdownContent = response.data.markdown_content;
   console.log('Markdown content length:', markdownContent.length);
-  console.log('Reference URLs:', response.reference_urls);
-  
-  // Process the markdown content
+  console.log('Reference URLs:', response.data.reference_urls);
   console.log('Content preview:', markdownContent.substring(0, 500) + '...');
-  
-} catch (error) {
-  console.error('Error:', error);
 }
 ```
 
@@ -363,24 +354,17 @@ import { searchScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
 
-try {
-  // Search for recent news from the past week
-  const response = await searchScraper(
-    apiKey,
-    'Latest news about AI developments',
-    5,
-    null,
-    null,
-    {
-      timeRange: 'past_week' // Options: 'past_hour', 'past_24_hours', 'past_week', 'past_month', 'past_year'
-    }
-  );
+const response = await searchScraper(apiKey, {
+  user_prompt: 'Latest news about AI developments',
+  num_results: 5,
+  time_range: 'past_week', // Options: 'past_hour', 'past_24_hours', 'past_week', 'past_month', 'past_year'
+});
 
-  console.log('Recent AI news:', response.result);
-  console.log('Reference URLs:', response.reference_urls);
-  
-} catch (error) {
-  console.error('Error:', error);
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Recent AI news:', response.data.result);
+  console.log('Reference URLs:', response.data.reference_urls);
 }
 ```
 
@@ -404,15 +388,20 @@ try {
 Convert any webpage into clean, formatted markdown:
 
 ```javascript
-const response = await markdownify(apiKey, "https://example.com");
+const response = await markdownify(apiKey, {
+  website_url: "https://example.com",
+});
 ```
 
 #### Parameters
 
-| Parameter  | Type   | Required | Description                                    |
-| ---------- | ------ | -------- | ---------------------------------------------- |
-| apiKey     | string | Yes      | The ScrapeGraph API Key.                       |
-| websiteUrl | string | Yes      | The URL of the webpage to convert to markdown. |
+| Parameter   | Type    | Required | Description                                    |
+| ----------- | ------- | -------- | ---------------------------------------------- |
+| apiKey      | string  | Yes      | The ScrapeGraph API Key (first argument).      |
+| website_url | string  | Yes      | The URL of the webpage to convert to markdown. |
+| wait_ms     | number  | No       | Page load wait time in ms (default: 3000).     |
+| stealth     | boolean | No       | Enable anti-detection mode (+4 credits).       |
+| country_code| string  | No       | Proxy routing country code (e.g., "us").       |
 
 ## API Credits
 
@@ -421,25 +410,13 @@ Check your available API credits:
 ```javascript
 import { getCredits } from "scrapegraph-js";
 
-try {
-  const credits = await getCredits(apiKey);
-  console.log("Available credits:", credits);
-} catch (error) {
-  console.error("Error fetching credits:", error);
-}
-```
+const credits = await getCredits(apiKey);
 
-## Feedback
-
-Help us improve by submitting feedback programmatically:
-
-```javascript
-import { sendFeedback } from "scrapegraph-js";
-
-try {
-  await sendFeedback(apiKey, "request-id", 5, "Great results!");
-} catch (error) {
-  console.error("Error sending feedback:", error);
+if (credits.status === "error") {
+  console.error("Error fetching credits:", credits.error);
+} else {
+  console.log("Remaining credits:", credits.data.remaining_credits);
+  console.log("Total used:", credits.data.total_credits_used);
 }
 ```
 
@@ -449,7 +426,7 @@ try {
   <Card
     title="GitHub"
     icon="github"
-    href="https://github.com/ScrapeGraphAI/scrapegraph-sdk"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-js"
   >
     Report issues and contribute to the SDK
   </Card>
@@ -464,6 +441,6 @@ try {
 
 <Accordion title="License" icon="scale">
   This project is licensed under the MIT License. See the
-  [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE)
+  [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-js/blob/main/LICENSE)
   file for details.
 </Accordion>

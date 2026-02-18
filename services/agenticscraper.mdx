@@ -36,49 +36,46 @@ import { agenticScraper } from 'scrapegraph-js';
 import 'dotenv/config';
 
 const apiKey = process.env.SGAI_APIKEY;
-const url = 'https://dashboard.scrapegraphai.com/';
-const steps = [
-  'Type email@gmail.com in email input box',
-  'Type test-password@123 in password inputbox',
-  'click on login'
-];
 
-try {
-  // Basic scraping without AI extraction
-  const response = await agenticScraper(apiKey, url, steps, true, null, null, false);
-  console.log(response);
-} catch (error) {
-  console.error(error);
-}
+// Basic scraping without AI extraction
+const response = await agenticScraper(apiKey, {
+  url: 'https://dashboard.scrapegraphai.com/',
+  steps: [
+    'Type email@gmail.com in email input box',
+    'Type test-password@123 in password inputbox',
+    'click on login'
+  ],
+  use_session: true,
+  ai_extraction: false,
+});
+console.log(response.data);
 
 // With AI extraction
-const schema = {
-  dashboard_info: {
-    type: "object",
-    properties: {
-      username: { type: "string" },
-      email: { type: "string" },
-      dashboard_sections: { type: "array", items: { type: "string" } },
-      credits_remaining: { type: "number" }
-    },
-    required: ["username", "dashboard_sections"]
-  }
-};
-
-try {
-  const aiResponse = await agenticScraper(
-    apiKey,
-    url,
-    [...steps, 'wait for dashboard to load completely'],
-    true,
-    'Extract user info, dashboard sections, and remaining credits',
-    schema,
-    true
-  );
-  console.log(aiResponse);
-} catch (error) {
-  console.error(error);
-}
+const aiResponse = await agenticScraper(apiKey, {
+  url: 'https://dashboard.scrapegraphai.com/',
+  steps: [
+    'Type email@gmail.com in email input box',
+    'Type test-password@123 in password inputbox',
+    'click on login',
+    'wait for dashboard to load completely'
+  ],
+  use_session: true,
+  ai_extraction: true,
+  user_prompt: 'Extract user info, dashboard sections, and remaining credits',
+  output_schema: {
+    dashboard_info: {
+      type: "object",
+      properties: {
+        username: { type: "string" },
+        email: { type: "string" },
+        dashboard_sections: { type: "array", items: { type: "string" } },
+        credits_remaining: { type: "number" }
+      },
+      required: ["username", "dashboard_sections"]
+    }
+  },
+});
+console.log(aiResponse.data);
 ```
 
 ```bash cURL

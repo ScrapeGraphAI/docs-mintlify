@@ -37,20 +37,18 @@ print("Result:", response)
 ```
 
 ```javascript JavaScript
-import { Client } from 'scrapegraph-js';
+import { sitemap } from 'scrapegraph-js';
 
-// Initialize the client
-const client = new Client({ apiKey: 'YOUR_API_KEY' });
+const apiKey = 'YOUR_API_KEY';
 
-// Sitemap request
-try {
-  const response = await client.sitemap({
-    websiteUrl: "https://scrapegraphai.com"
-  });
+const response = await sitemap(apiKey, {
+  website_url: 'https://scrapegraphai.com',
+});
 
-  console.log('Result:', response);
-} catch (error) {
-  console.error('Error:', error);
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Result:', response.data);
 }
 ```
 
@@ -74,7 +72,7 @@ just-scrape sitemap https://scrapegraphai.com
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the website to extract the sitemap from. The API will automatically locate the sitemap.xml file. |
+| website_url | string | Yes | The URL of the website to extract the sitemap from. The API will automatically locate the sitemap.xml file. |
 | headers | object | No | Optional headers (user agent, cookies, etc.). |
 | mock | boolean | No | Enable mock mode for testing. Default: false |
 | stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds +4 credits. Default: false |

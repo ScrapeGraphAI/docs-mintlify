@@ -86,20 +86,18 @@ print("Result:", response)
 ## JavaScript Example
 
 ```javascript
-import { Client } from 'scrapegraph-js';
+import { sitemap } from 'scrapegraph-js';
 
-// Initialize the client
-const client = new Client({ apiKey: 'YOUR_API_KEY' });
+const apiKey = 'YOUR_API_KEY';
 
-// Sitemap request
-try {
-  const response = await client.sitemap({
-    websiteUrl: "https://scrapegraphai.com"
-  });
+const response = await sitemap(apiKey, {
+  website_url: 'https://scrapegraphai.com',
+});
 
-  console.log('Result:', response);
-} catch (error) {
-  console.error('Error:', error);
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Result:', response.data);
 }
 ```
 

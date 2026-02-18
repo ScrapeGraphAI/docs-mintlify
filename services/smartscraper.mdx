@@ -37,14 +37,16 @@ response = client.smartscraper(
 import { smartScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://scrapegraphai.com';
-const prompt = 'What does the company do?';
 
-try {
-  const response = await smartScraper(apiKey, url, prompt);
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://scrapegraphai.com',
+  user_prompt: 'What does the company do?',
+});
+
+if (response.status === 'error') {
+  console.error(response.error);
+} else {
+  console.log(response.data);
 }
 ```
 
@@ -70,12 +72,15 @@ just-scrape smart-scraper https://scrapegraphai.com/ -p "Extract info about the 
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage that needs to be scraped. |
-| prompt | string | Yes | A textual description of what you want to achieve. |
-| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response. |
-| mock | boolean | no | If you want mock data for testing
-| plain_text | boolean | no | If you want result as plain text instead of Json
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| user_prompt | string | Yes | A textual description of what you want to extract. |
+| website_url | string | No* | The URL of the webpage to scrape. *One of `website_url`, `website_html`, or `website_markdown` required. |
+| output_schema | object | No | Pydantic or Zod schema for structured response format. |
+| mock | boolean | No | Enable mock mode for testing. |
+| plain_text | boolean | No | Return result as plain text instead of JSON. |
+| stealth | boolean | No | Enable anti-detection mode (+4 credits). |
+| wait_ms | number | No | Page load wait time in ms (default: 3000). |
+| country_code | string | No | Proxy routing country code (e.g., "us"). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -189,20 +194,10 @@ AI-powered web scraping for modern applications.
 - Schema Support
 `;
 
-const response = await smartScraper(
-  apiKey,
-  null, // url is null when using markdown
-  'Extract info about the company',
-  null, // schema
-  null, // numberOfScrolls
-  null, // totalPages
-  null, // cookies
-  {}, // options
-  false, // plain_text
-  false, // stealth
-  null, // websiteHtml
-  markdownContent // websiteMarkdown
-);
+const response = await smartScraper(apiKey, {
+  website_markdown: markdownContent,
+  user_prompt: 'Extract info about the company',
+});
 ```
 
 This is useful when:
@@ -269,16 +264,18 @@ If you know the response id of a previous request you made, you can retrieve all
 <CodeGroup>
 
 ```javascript JavaScript
-import { getSmartScraperRequest } from 'scrapegraph-js';
+import { history } from 'scrapegraph-js';
 
 const apiKey = 'your_api_key';
-const requestId = 'ID_of_previous_request';
 
-try {
-  const requestInfo = await getSmartScraperRequest(apiKey, requestId);
-  console.log(requestInfo);
-} catch (error) {
-  console.error(error);
+const response = await history(apiKey, {
+  service: 'smartscraper',
+  page: 1,
+  page_size: 10,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.requests);
 }
 ```
 
@@ -288,8 +285,10 @@ try {
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| requestId | string | Yes | The request ID associated with the output of a previous smartScraper request. |
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| service | string | Yes | The service name (e.g., "smartscraper"). |
+| page | number | No | Page number (default: 1). |
+| page_size | number | No | Results per page (default: 10). |
 
 ### Custom Schema Example
 
@@ -318,8 +317,6 @@ import { smartScraper } from 'scrapegraph-js';
 import { z } from 'zod';
 
 const apiKey = 'your_api_key';
-const url = 'https://scrapegraphai.com/';
-const prompt = 'What does the company do? and ';
 
 const schema = z.object({
   title: z.string().describe('The title of the webpage'),
@@ -327,11 +324,14 @@ const schema = z.object({
   summary: z.string().describe('A brief summary of the webpage'),
 });
 
-try {
-  const response = await smartScraper(apiKey, url, prompt, schema);
-  console.log(response.result);
-} catch (error) {
-  console.error(error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://scrapegraphai.com/',
+  user_prompt: 'What does the company do?',
+  output_schema: schema,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.result);
 }
 ```
 
@@ -389,45 +389,38 @@ if __name__ == "__main__":
 ```
 
 ```javascript JavaScript
-import { AsyncSmartScraper } from 'scrapegraph-js';
+import { smartScraper } from 'scrapegraph-js';
 import { z } from 'zod';
 
-// Define schema using Zod
 const WebpageSchema = z.object({
   title: z.string().describe('The title of the webpage'),
   description: z.string().describe('The description of the webpage'),
   summary: z.string().describe('A brief summary of the webpage')
 });
 
-async function scrapeMultiplePages() {
-  const apiKey = 'your-api-key';
-  const scraper = new AsyncSmartScraper(apiKey);
-  
-  const urls = [
-    'https://scrapegraphai.com/',
-    'https://github.com/ScrapeGraphAI/Scrapegraph-ai'
-  ];
+const apiKey = 'your-api-key';
+const urls = [
+  'https://scrapegraphai.com/',
+  'https://github.com/ScrapeGraphAI/Scrapegraph-ai'
+];
 
-  try {
-    const results = await Promise.all(
-      urls.map(url => 
-        scraper.extract({
-          url,
-          prompt: 'Summarize the main content',
-          schema: WebpageSchema
-        })
-      )
-    );
-    
-    results.forEach((result, index) => {
-      console.log(`Results for ${urls[index]}:`, result);
-    });
-  } catch (error) {
-    console.error('Error during scraping:', error);
+const results = await Promise.all(
+  urls.map(url =>
+    smartScraper(apiKey, {
+      website_url: url,
+      user_prompt: 'Summarize the main content',
+      output_schema: WebpageSchema,
+    })
+  )
+);
+
+results.forEach((result, index) => {
+  if (result.status === 'success') {
+    console.log(`Results for ${urls[index]}:`, result.data.result);
+  } else {
+    console.error(`Error for ${urls[index]}:`, result.error);
   }
-}
-
-scrapeMultiplePages();
+});
 ```
 
 </CodeGroup>
@@ -492,16 +485,17 @@ import { smartScraper } from 'scrapegraph-js';
 import 'dotenv/config';
 
 const apiKey = process.env.SGAI_APIKEY;
-// Example URL that requires scrolling (e.g., a social media feed or infinite scroll page)
-const url = 'https://example.com/infinite-scroll-page';
-const prompt = 'Extract all the posts from the feed';
-const numberOfScrolls = 10; // Will scroll 10 times to load more content
 
-try {
-  const response = await smartScraper(apiKey, url, prompt, null, numberOfScrolls);
-  console.log('Extracted data from scrolled page:', response);
-} catch (error) {
-  console.error('Error:', error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com/infinite-scroll-page',
+  user_prompt: 'Extract all the posts from the feed',
+  number_of_scrolls: 10,
+});
+
+if (response.status === 'success') {
+  console.log('Extracted data from scrolled page:', response.data);
+} else {
+  console.error('Error:', response.error);
 }
 ```
 

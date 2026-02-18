@@ -46,21 +46,24 @@ if response.branding:
 ```
 
 ```javascript JavaScript
-import { htmlify } from 'scrapegraph-js';
+import { scrape } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://example.com';
 
-try {
-  const response = await htmlify(apiKey, url, { branding: true }); // enable branding extraction
-  console.log('HTML Content:', response.html);
-  console.log('Request ID:', response.scrape_request_id);
-  console.log('Status:', response.status);
-  if (response.branding) {
+const response = await scrape(apiKey, {
+  website_url: 'https://example.com',
+  branding: true,
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('HTML Content:', response.data.html);
+  console.log('Request ID:', response.data.scrape_request_id);
+  console.log('Status:', response.data.status);
+  if (response.data.branding) {
     console.log('Branding extracted');
   }
-} catch (error) {
-  console.error('Error:', error);
 }
 ```
 
@@ -88,6 +91,8 @@ just-scrape scrape https://example.com --branding
 | website_url | string | Yes | The URL of the webpage to scrape. |
 | branding | boolean | No | Return extracted brand design and metadata. Default: false |
 | stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds additional credits. Default: false |
+| wait_ms | integer | No | Milliseconds to wait before capturing page content. Default: 3000 |
+| country_code | string | No | Two-letter ISO country code for geo-targeted proxy routing (e.g., "us", "gb", "de"). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)

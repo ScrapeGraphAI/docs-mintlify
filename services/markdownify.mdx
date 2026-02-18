@@ -36,15 +36,16 @@ response = client.markdownify(
 import { markdownify } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://scrapegraphai.com/';
 
-try {
-  const response = await markdownify(apiKey, url);
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await markdownify(apiKey, {
+  website_url: 'https://scrapegraphai.com/',
+});
+
+if (response.status === 'error') {
+  console.error(response.error);
+} else {
+  console.log(response.data);
 }
-
 ```
 
 ```bash cURL
@@ -69,9 +70,12 @@ just-scrape markdownify https://example.com/article
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage to convert to markdown. |
-| mock | boolean | No | Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual conversion. Useful for testing and development. Default: false |
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| website_url | string | Yes | The URL of the webpage to convert to markdown. |
+| mock | boolean | No | Enable mock mode for testing. Default: false. |
+| stealth | boolean | No | Enable anti-detection mode (+4 credits). Default: false. |
+| wait_ms | number | No | Page load wait time in ms (default: 3000). |
+| country_code | string | No | Proxy routing country code (e.g., "us"). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -145,16 +149,18 @@ If you know the response id of a previous request you made, you can retrieve all
 <CodeGroup>
 
 ```javascript JavaScript
-import { getMarkdownifyRequest } from 'scrapegraph-js';
+import { history } from 'scrapegraph-js';
 
 const apiKey = 'your_api_key';
-const requestId = 'ID_of_previous_request';
 
-try {
-  const requestInfo = await getMarkdownifyRequest(apiKey, requestId);
-  console.log(requestInfo);
-} catch (error) {
-  console.error(error);
+const response = await history(apiKey, {
+  service: 'markdownify',
+  page: 1,
+  page_size: 10,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.requests);
 }
 ```
 
@@ -176,8 +182,10 @@ curl -X 'POST' \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| requestId | string | Yes | The request ID associated with the output of a previous searchScraper request. |
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| service | string | Yes | The service name (e.g., "markdownify"). |
+| page | number | No | Page number (default: 1). |
+| page_size | number | No | Results per page (default: 10). |
 
 
 ### Async Support
