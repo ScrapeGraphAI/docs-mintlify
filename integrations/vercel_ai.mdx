@@ -82,14 +82,12 @@ const result = await generateText({
         url: z.string().describe("The exact url."),
       }),
       execute: async ({ url }) => {
-        const response = await smartScraper(
-          apiKey,
-          url,
-          "Extract the article information",
-          ArticlesArraySchema
-        );
-        const result: z.infer<typeof ArticleSchema> = response;
-        return result;
+        const response = await smartScraper(apiKey, {
+          website_url: url,
+          user_prompt: "Extract the article information",
+          output_schema: ArticlesArraySchema,
+        });
+        return response.data;
       },
     }),
   },

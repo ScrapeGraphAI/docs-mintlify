@@ -54,12 +54,6 @@ SmartScraper allows you to extract specific information from any webpage using A
   Range: 0-50
 </ParamField>
 
-<ParamField body="render_heavy_js" type="boolean">
-  Optional parameter to enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, SPAs). Use when standard rendering doesn't capture all content.
-
-  Default: false
-</ParamField>
-
 <ParamField body="mock" type="boolean">
   Optional parameter to enable mock mode. When set to true, the request will return mock data instead of performing an actual extraction. Useful for testing and development.
 
@@ -117,7 +111,6 @@ curl -X POST 'https://api.scrapegraphai.com/v1/smartscraper' \
   "user_prompt": "Extract all the headlines from this section into a table with the date and URL of the news",
   "total_pages": 2,
   "stealth": true,
-  "render_heavy_js": true,
   "headers": {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
     "Cookie": "cookie1=value1; cookie2=value2"

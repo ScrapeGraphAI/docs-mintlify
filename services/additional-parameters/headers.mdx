@@ -76,23 +76,23 @@ response = client.markdownify(
 )
 ```
 
-```typescript TypeScript
-import { Client } from '@scrapegraph/sdk';
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
 
-const client = new Client('your-api-key');
+const apiKey = 'your-api-key';
 
 // Define custom headers
 const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
   'Accept-Language': 'en-US,en;q=0.9',
-  'Sec-Ch-Ua-Platform': '"Windows"'
+  'Sec-Ch-Ua-Platform': '"Windows"',
 };
 
 // Use with SmartScraper
-const response = await client.smartscraper({
-  websiteUrl: 'https://example.com',
-  userPrompt: 'Extract the main content',
-  headers: headers
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com',
+  user_prompt: 'Extract the main content',
+  headers: headers,
 });
 ```
 
@@ -138,17 +138,21 @@ response = client.smartscraper(
 )
 ```
 
-```typescript TypeScript
+```javascript JavaScript
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
 // Example with session cookies
 const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  'Cookie': 'session_id=abc123; user_id=12345; theme=dark'
+  'Cookie': 'session_id=abc123; user_id=12345; theme=dark',
 };
 
-const response = await client.smartscraper({
-  websiteUrl: 'https://example.com/dashboard',
-  userPrompt: 'Extract user information',
-  headers: headers
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com/dashboard',
+  user_prompt: 'Extract user information',
+  headers: headers,
 });
 ```
 

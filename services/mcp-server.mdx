@@ -182,8 +182,7 @@ AI‑powered extraction with optional infinite scrolls.
 smartscraper(
   user_prompt: str,
   website_url: str,
-  number_of_scrolls: int | None = None,
-  render_heavy_js: bool | None = None
+  number_of_scrolls: int | None = None
 )
 ```
 
@@ -199,10 +198,10 @@ searchscraper(
 ```
 
 ### 4. scrape
-Fetch raw HTML with optional heavy JS rendering.
+Fetch raw HTML from a URL.
 
 ```python
-scrape(website_url: str, render_heavy_js: bool | None = None)
+scrape(website_url: str)
 ```
 
 ### 5. sitemap

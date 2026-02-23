@@ -43,25 +43,24 @@ response = client.crawl(
 ```
 
 ```javascript JavaScript
-import { smartCrawler } from 'scrapegraph-js';
+import { crawl } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://scrapegraphai.com';
-const prompt = 'Extract info about the company';
-const depth = 2;
-const breadth = null;
-const maxPages = 10;
-const rules = {
-  include_paths: ['/about', '/services/*'],
-  exclude_paths: ['/admin/*', '/api/**'],
-  same_domain: true
-};
 
-try {
-  const response = await smartCrawler(apiKey, url, prompt, depth, breadth, maxPages, null, rules);
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await crawl(apiKey, {
+  url: 'https://scrapegraphai.com/',
+  prompt: 'Extract info about the company',
+  depth: 2,
+  max_pages: 10,
+  rules: {
+    include_paths: ['/about', '/services/*'],
+    exclude_paths: ['/admin/*', '/api/**'],
+    same_domain: true
+  }
+});
+
+if (response.status === 'success') {
+  console.log(response.data);
 }
 ```
 
@@ -83,6 +82,12 @@ curl -X 'POST' \
     "same_domain": true
   }
 }'
+```
+
+```bash CLI
+just-scrape crawl https://scrapegraphai.com/ -p "Extract info about the company" \
+  --depth 2 --max-pages 10 \
+  --rules '{"include_paths":["/about","/services/*"],"exclude_paths":["/admin/*","/api/**"],"same_domain":true}'
 ```
 
 </CodeGroup>
@@ -107,6 +112,7 @@ curl -X 'POST' \
 | rules             | object  | No       | Crawl rules object with optional fields: `exclude` (array of regex URL patterns), `include_paths` (array of path patterns to include, supports wildcards `*` and `**`), `exclude_paths` (array of path patterns to exclude, takes precedence over `include_paths`), `same_domain` (boolean, default: true). See below for details. |
 | sitemap           | bool    | No       | Use sitemap.xml for discovery (default: false). |
 | webhook_url       | string  | No       | URL to receive webhook notification on job completion. |
+| wait_ms           | int     | No       | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering that need extra time to load (default: 3000). |
 
 
 <Note>
@@ -153,24 +159,21 @@ response = client.crawl(
 import { crawl } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://scrapegraphai.com';
 
-try {
-  // Markdown conversion mode - no prompt needed  
-  const response = await crawl(apiKey, url, null, null, {
-    extractionMode: false,  // false = Markdown conversion (NO AI/LLM)
-    depth: 2,
-    breadth: null,
-    maxPages: 5,
-    rules: {
-      include_paths: ['/docs/*', '/blog/**'],
-      exclude_paths: ['/admin/*'],
-      same_domain: true
-    }
-  });
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await crawl(apiKey, {
+  url: 'https://scrapegraphai.com/',
+  extraction_mode: false,
+  depth: 2,
+  max_pages: 5,
+  rules: {
+    include_paths: ['/docs/*', '/blog/**'],
+    exclude_paths: ['/admin/*'],
+    same_domain: true
+  }
+});
+
+if (response.status === 'success') {
+  console.log(response.data);
 }
 ```
 
@@ -192,6 +195,12 @@ curl -X 'POST' \
     "same_domain": true
   }
 }'
+```
+
+```bash CLI
+just-scrape crawl https://scrapegraphai.com/ --no-extraction \
+  --depth 2 --max-pages 5 \
+  --rules '{"include_paths":["/docs/*","/blog/**"],"exclude_paths":["/admin/*"],"same_domain":true}'
 ```
 
 </CodeGroup>
@@ -311,10 +320,19 @@ result = client.get_crawl_result(task_id="your-task-id")
 ```
 
 ```javascript JavaScript
-import { getCrawlResult } from 'scrapegraph-js';
+import { history } from 'scrapegraph-js';
+
 const apiKey = 'your_api_key';
-const taskId = 'your-task-id';
-const result = await getCrawlResult(apiKey, taskId);
+
+const response = await history(apiKey, {
+  service: 'crawl',
+  page: 1,
+  page_size: 10,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.requests);
+}
 ```
 
 </CodeGroup>
@@ -356,8 +374,10 @@ response = client.crawl(
 ```
 
 ```javascript JavaScript
-import { smartCrawler } from 'scrapegraph-js';
+import { crawl } from 'scrapegraph-js';
 import { z } from 'zod';
+
+const apiKey = 'your-api-key';
 
 const CompanySchema = z.object({
   name: z.string().describe('Company name'),
@@ -365,13 +385,22 @@ const CompanySchema = z.object({
   features: z.array(z.string()).describe('Features')
 });
 
-const rules = {
-  include_paths: ['/about', '/company/*'],
-  exclude_paths: ['/admin/*', '/private/**'],
-  same_domain: true
-};
+const response = await crawl(apiKey, {
+  url: 'https://example.com',
+  prompt: 'Extract company info',
+  depth: 1,
+  max_pages: 5,
+  schema: CompanySchema,
+  rules: {
+    include_paths: ['/about', '/company/*'],
+    exclude_paths: ['/admin/*', '/private/**'],
+    same_domain: true
+  }
+});
 
-const response = await smartCrawler(apiKey, url, prompt, 1, null, 5, CompanySchema, rules);
+if (response.status === 'success') {
+  console.log(response.data);
+}
 ```
 
 </CodeGroup>
@@ -409,21 +438,25 @@ if __name__ == "__main__":
 ```
 
 ```javascript JavaScript
-import { AsyncSmartCrawler } from 'scrapegraph-js';
-const scraper = new AsyncSmartCrawler(apiKey);
-const task = await scraper.crawl({ 
-  url, 
-  prompt, 
-  depth: 2, 
-  breadth: null,
-  maxPages: 10,
+import { crawl } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await crawl(apiKey, {
+  url: 'https://scrapegraphai.com/',
+  prompt: 'Extract info about the company',
+  depth: 2,
+  max_pages: 10,
   rules: {
     include_paths: ['/about', '/services/*'],
     exclude_paths: ['/admin/*', '/api/**'],
     same_domain: true
   }
 });
-const result = await scraper.getResult(task.taskId);
+
+if (response.status === 'success') {
+  console.log(response.data);
+}
 ```
 
 </CodeGroup>
@@ -463,6 +496,7 @@ POST https://api.scrapegraphai.com/v1/crawl
 | max_pages        | int     | No       | Max pages to crawl |
 | rules            | object  | No       | Crawl rules object with optional fields: `exclude` (regex URL patterns), `include_paths` (path patterns to include), `exclude_paths` (path patterns to exclude), `same_domain` (boolean) |
 | sitemap          | bool    | No       | Use sitemap.xml |
+| wait_ms          | int     | No       | Milliseconds to wait before scraping each page. Useful for pages with heavy JavaScript rendering (default: 3000). |
 
 #### Response Format
 ```json

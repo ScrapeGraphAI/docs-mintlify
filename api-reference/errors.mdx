@@ -139,13 +139,17 @@ except APIError as e:
 ```
 
 ```javascript JavaScript
-try {
-  const response = await client.smartscraper({
-    websiteUrl: 'https://example.com',
-    userPrompt: 'Extract data'
-  });
-} catch (error) {
-  console.error('Error:', error.message);
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com',
+  user_prompt: 'Extract data',
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
 }
 ```
 </CodeGroup>

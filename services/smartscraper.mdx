@@ -37,14 +37,16 @@ response = client.smartscraper(
 import { smartScraper } from 'scrapegraph-js';
 
 const apiKey = 'your-api-key';
-const url = 'https://scrapegraphai.com';
-const prompt = 'What does the company do?';
 
-try {
-  const response = await smartScraper(apiKey, url, prompt);
-  console.log(response);
-} catch (error) {
-  console.error(error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://scrapegraphai.com',
+  user_prompt: 'What does the company do?',
+});
+
+if (response.status === 'error') {
+  console.error(response.error);
+} else {
+  console.log(response.data);
 }
 ```
 
@@ -60,121 +62,29 @@ curl -X 'POST' \
 }'
 ```
 
+```bash CLI
+just-scrape smart-scraper https://scrapegraphai.com/ -p "Extract info about the company"
+```
+
 </CodeGroup>
 
 #### Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| websiteUrl | string | Yes | The URL of the webpage that needs to be scraped. |
-| prompt | string | Yes | A textual description of what you want to achieve. |
-| schema | object | No | The Pydantic or Zod object that describes the structure and format of the response. |
-| render_heavy_js | boolean | No | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: false |
-| mock | boolean | no | If you want mock data for testing
-| plain_text | boolean | no | If you want result as plain text instead of Json
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| user_prompt | string | Yes | A textual description of what you want to extract. |
+| website_url | string | No* | The URL of the webpage to scrape. *One of `website_url`, `website_html`, or `website_markdown` required. |
+| output_schema | object | No | Pydantic or Zod schema for structured response format. |
+| mock | boolean | No | Enable mock mode for testing. |
+| plain_text | boolean | No | Return result as plain text instead of JSON. |
+| stealth | boolean | No | Enable anti-detection mode (+4 credits). |
+| wait_ms | number | No | Page load wait time in ms (default: 3000). |
+| country_code | string | No | Proxy routing country code (e.g., "us"). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
-
-## Enhanced JavaScript Rendering
-
-For websites that heavily rely on JavaScript frameworks like React, Vue, Angular, or other Single Page Applications (SPAs), enable the `render_heavy_js` parameter to ensure complete content rendering before extraction.
-
-### When to Use `render_heavy_js`
-
-Enable this parameter for:
-- **React/Vue/Angular Applications**: Modern web apps built with JavaScript frameworks
-- **Single Page Applications (SPAs)**: Sites that load content dynamically via JavaScript
-- **Heavy JavaScript Sites**: Websites with complex client-side rendering
-- **Dynamic Content**: Pages where content appears after JavaScript execution
-- **Interactive Elements**: Sites with JavaScript-dependent content loading
-
-<Accordion title="Enhanced JavaScript Rendering Example" icon="code">
-Here's how to use `render_heavy_js` for modern web applications:
-
-```python
-from scrapegraph_py import Client
-from pydantic import BaseModel, Field
-
-class ProductInfo(BaseModel):
-    name: str = Field(description="Product name")
-    price: str = Field(description="Product price")
-    description: str = Field(description="Product description")
-    availability: str = Field(description="Product availability status")
-
-client = Client(api_key="your-api-key")
-
-# Enable enhanced JavaScript rendering for a React-based e-commerce site
-response = client.smartscraper(
-    website_url="https://example-react-store.com/products/123",
-    user_prompt="Extract product details including name, price, description, and availability",
-    output_schema=ProductInfo,
-    render_heavy_js=True  # Enable for React/Vue/Angular sites
-)
-
-print(f"Product: {response['result']['name']}")
-print(f"Price: {response['result']['price']}")
-print(f"Available: {response['result']['availability']}")
-```
-
-```javascript
-import { smartScraper } from 'scrapegraph-js';
-import { z } from 'zod';
-
-const apiKey = 'your-api-key';
-
-const ProductSchema = z.object({
-  name: z.string().describe('Product name'),
-  price: z.string().describe('Product price'),
-  description: z.string().describe('Product description'),
-  availability: z.string().describe('Product availability status')
-});
-
-try {
-  const response = await smartScraper(
-    apiKey,
-    'https://example-react-store.com/products/123',
-    'Extract product details including name, price, description, and availability',
-    ProductSchema,
-    true  // Enable render_heavy_js for JavaScript-heavy sites
-  );
-  
-  console.log('Product:', response.result.name);
-  console.log('Price:', response.result.price);
-  console.log('Available:', response.result.availability);
-  
-} catch (error) {
-  console.error('Error:', error);
-}
-```
-
-```bash cURL
-curl -X 'POST' \
-  'https://api.scrapegraphai.com/v1/smartscraper' \
-  -H 'accept: application/json' \
-  -H 'SGAI-APIKEY: your-api-key' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "website_url": "https://example-react-store.com/products/123",
-  "user_prompt": "Extract product details including name, price, description, and availability",
-  "render_heavy_js": true
-}'
-```
-</Accordion>
-
-### Performance Considerations
-
-- **Enhanced Rendering**: `render_heavy_js=true` provides more thorough JavaScript execution
-- **Processing Time**: May take slightly longer due to enhanced rendering capabilities
-- **Use When Needed**: Only enable for sites that actually require it to avoid unnecessary overhead
-- **Default Behavior**: Standard rendering works for most websites
-
-<Note>
-**Pro Tip**: If you're getting incomplete or missing data from a modern web application, try enabling `render_heavy_js=true` to ensure all JavaScript-rendered content is captured.
-</Note>
-
 
 <Accordion title="Example Response" icon="terminal">
 ```json
@@ -284,21 +194,10 @@ AI-powered web scraping for modern applications.
 - Schema Support
 `;
 
-const response = await smartScraper(
-  apiKey,
-  null, // url is null when using markdown
-  'Extract info about the company',
-  null, // schema
-  null, // numberOfScrolls
-  null, // totalPages
-  null, // cookies
-  {}, // options
-  false, // plain_text
-  false, // renderHeavyJs
-  false, // stealth
-  null, // websiteHtml
-  markdownContent // websiteMarkdown
-);
+const response = await smartScraper(apiKey, {
+  website_markdown: markdownContent,
+  user_prompt: 'Extract info about the company',
+});
 ```
 
 This is useful when:
@@ -311,7 +210,7 @@ This is useful when:
 <Note>
 - Maximum content size: 2MB
 - You must provide exactly one of: `website_url`, `website_html`, or `website_markdown`
-- Parameters like `number_of_scrolls`, `total_pages`, `render_heavy_js`, and `stealth` are not applicable when using Markdown content
+- Parameters like `number_of_scrolls`, `total_pages`, and `stealth` are not applicable when using Markdown content
 </Note>
 </Accordion>
 
@@ -365,16 +264,18 @@ If you know the response id of a previous request you made, you can retrieve all
 <CodeGroup>
 
 ```javascript JavaScript
-import { getSmartScraperRequest } from 'scrapegraph-js';
+import { history } from 'scrapegraph-js';
 
 const apiKey = 'your_api_key';
-const requestId = 'ID_of_previous_request';
 
-try {
-  const requestInfo = await getSmartScraperRequest(apiKey, requestId);
-  console.log(requestInfo);
-} catch (error) {
-  console.error(error);
+const response = await history(apiKey, {
+  service: 'smartscraper',
+  page: 1,
+  page_size: 10,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.requests);
 }
 ```
 
@@ -384,8 +285,10 @@ try {
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| requestId | string | Yes | The request ID associated with the output of a previous smartScraper request. |
+| apiKey | string | Yes | The ScrapeGraph API Key (first argument). |
+| service | string | Yes | The service name (e.g., "smartscraper"). |
+| page | number | No | Page number (default: 1). |
+| page_size | number | No | Results per page (default: 10). |
 
 ### Custom Schema Example
 
@@ -414,8 +317,6 @@ import { smartScraper } from 'scrapegraph-js';
 import { z } from 'zod';
 
 const apiKey = 'your_api_key';
-const url = 'https://scrapegraphai.com/';
-const prompt = 'What does the company do? and ';
 
 const schema = z.object({
   title: z.string().describe('The title of the webpage'),
@@ -423,11 +324,14 @@ const schema = z.object({
   summary: z.string().describe('A brief summary of the webpage'),
 });
 
-try {
-  const response = await smartScraper(apiKey, url, prompt, schema);
-  console.log(response.result);
-} catch (error) {
-  console.error(error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://scrapegraphai.com/',
+  user_prompt: 'What does the company do?',
+  output_schema: schema,
+});
+
+if (response.status === 'success') {
+  console.log(response.data.result);
 }
 ```
 
@@ -485,45 +389,38 @@ if __name__ == "__main__":
 ```
 
 ```javascript JavaScript
-import { AsyncSmartScraper } from 'scrapegraph-js';
+import { smartScraper } from 'scrapegraph-js';
 import { z } from 'zod';
 
-// Define schema using Zod
 const WebpageSchema = z.object({
   title: z.string().describe('The title of the webpage'),
   description: z.string().describe('The description of the webpage'),
   summary: z.string().describe('A brief summary of the webpage')
 });
 
-async function scrapeMultiplePages() {
-  const apiKey = 'your-api-key';
-  const scraper = new AsyncSmartScraper(apiKey);
-  
-  const urls = [
-    'https://scrapegraphai.com/',
-    'https://github.com/ScrapeGraphAI/Scrapegraph-ai'
-  ];
+const apiKey = 'your-api-key';
+const urls = [
+  'https://scrapegraphai.com/',
+  'https://github.com/ScrapeGraphAI/Scrapegraph-ai'
+];
 
-  try {
-    const results = await Promise.all(
-      urls.map(url => 
-        scraper.extract({
-          url,
-          prompt: 'Summarize the main content',
-          schema: WebpageSchema
-        })
-      )
-    );
-    
-    results.forEach((result, index) => {
-      console.log(`Results for ${urls[index]}:`, result);
-    });
-  } catch (error) {
-    console.error('Error during scraping:', error);
+const results = await Promise.all(
+  urls.map(url =>
+    smartScraper(apiKey, {
+      website_url: url,
+      user_prompt: 'Summarize the main content',
+      output_schema: WebpageSchema,
+    })
+  )
+);
+
+results.forEach((result, index) => {
+  if (result.status === 'success') {
+    console.log(`Results for ${urls[index]}:`, result.data.result);
+  } else {
+    console.error(`Error for ${urls[index]}:`, result.error);
   }
-}
-
-scrapeMultiplePages();
+});
 ```
 
 </CodeGroup>
@@ -588,16 +485,17 @@ import { smartScraper } from 'scrapegraph-js';
 import 'dotenv/config';
 
 const apiKey = process.env.SGAI_APIKEY;
-// Example URL that requires scrolling (e.g., a social media feed or infinite scroll page)
-const url = 'https://example.com/infinite-scroll-page';
-const prompt = 'Extract all the posts from the feed';
-const numberOfScrolls = 10; // Will scroll 10 times to load more content
 
-try {
-  const response = await smartScraper(apiKey, url, prompt, null, numberOfScrolls);
-  console.log('Extracted data from scrolled page:', response);
-} catch (error) {
-  console.error('Error:', error);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com/infinite-scroll-page',
+  user_prompt: 'Extract all the posts from the feed',
+  number_of_scrolls: 10,
+});
+
+if (response.status === 'success') {
+  console.log('Extracted data from scrolled page:', response.data);
+} else {
+  console.error('Error:', response.error);
 }
 ```
 
@@ -648,7 +546,6 @@ POST https://api.scrapegraphai.com/v1/smartscraper
 | website_markdown | string | No | Raw Markdown content to process (max 2MB, mutually exclusive with website_url and website_html) |
 | user_prompt | string | Yes | Instructions for data extraction |
 | output_schema | object | No | Pydantic or Zod schema for response validation |
-| render_heavy_js | boolean | No | Enable enhanced JavaScript rendering for heavy JS websites (React, Vue, Angular, etc.). Default: false |
 | mock | boolean | no | If you want mock data for testing
 
 ##### Response Format

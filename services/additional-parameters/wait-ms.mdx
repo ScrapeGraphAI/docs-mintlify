@@ -72,25 +72,22 @@ import { smartScraper, scrape, markdownify } from 'scrapegraph-js';
 const apiKey = 'your-api-key';
 
 // SmartScraper with custom wait time
-const response = await smartScraper(
-  apiKey,
-  'https://example.com',
-  'Extract product information',
-  null, // schema
-  null, // numberOfScrolls
-  null, // totalPages
-  null, // cookies
-  { waitMs: 5000 } // Wait 5 seconds before scraping
-);
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com',
+  user_prompt: 'Extract product information',
+  wait_ms: 5000,
+});
 
 // Scrape with custom wait time
-const scrapeResponse = await scrape(apiKey, 'https://example.com', {
-  waitMs: 5000
+const scrapeResponse = await scrape(apiKey, {
+  website_url: 'https://example.com',
+  wait_ms: 5000,
 });
 
 // Markdownify with custom wait time
-const mdResponse = await markdownify(apiKey, 'https://example.com', {
-  waitMs: 5000
+const mdResponse = await markdownify(apiKey, {
+  website_url: 'https://example.com',
+  wait_ms: 5000,
 });
 ```
 
@@ -150,25 +147,13 @@ async def scrape_with_wait():
 
 2. **Test incrementally** - If the default doesn't capture all content, try increasing in 1000ms increments (4000, 5000, etc.) rather than setting a very high value.
 
-3. **Combine with other parameters** - Use `wait_ms` together with `render_heavy_js` for JavaScript-heavy pages:
-
-```python
-response = client.smartscraper(
-    website_url="https://heavy-js-site.com",
-    user_prompt="Extract all products",
-    wait_ms=8000,
-    render_heavy_js=True
-)
-```
-
-4. **Balance speed and completeness** - Higher wait times ensure more content is captured but increase response time and resource usage.
+3. **Balance speed and completeness** - Higher wait times ensure more content is captured but increase response time and resource usage.
 
 ## Troubleshooting
 
 <Accordion title="Content still missing after increasing wait_ms" icon="exclamation-triangle">
 If increasing `wait_ms` doesn't capture all content:
 
-- Try enabling `render_heavy_js=True` for JavaScript-heavy pages
 - Check if the content requires user interaction (clicks, scrolls) - use `number_of_scrolls` for infinite scroll pages
 - Verify the content isn't behind authentication - use custom headers/cookies
 </Accordion>
