@@ -1,0 +1,92 @@
+---
+title: Using JSON mode for scripting
+description: 'Pipe just-scrape output to jq, files, or other tools with --json'
+---
+
+Every `just-scrape` command supports a `--json` flag that switches to machine-readable output. When active:
+
+- The ASCII banner is hidden
+- Spinners and progress indicators are suppressed
+- Interactive prompts are disabled
+- Only minified JSON is written to stdout
+
+This makes `just-scrape` easy to use in shell scripts, CI pipelines, and AI agent workflows.
+
+## Basic usage
+
+```bash
+just-scrape <command> [args] --json
+```
+
+## Examples
+
+### Save results to a file
+
+```bash
+just-scrape smart-scraper https://store.example.com/shoes \
+  -p "Extract all product names and prices" \
+  --json > products.json
+```
+
+### Extract a specific field with jq
+
+```bash
+just-scrape credits --json | jq '.remaining_credits'
+
+just-scrape sitemap https://example.com --json | jq -r '.urls[]'
+
+just-scrape history smartscraper --json | jq '.requests[] | {id: .request_id, status}'
+```
+
+### Convert a page to markdown and save it
+
+```bash
+just-scrape markdownify https://docs.example.com/api \
+  --json | jq -r '.result' > api-docs.md
+```
+
+### Chain commands in a script
+
+```bash
+#!/bin/bash
+# Scrape a list of URLs and save each result
+while IFS= read -r url; do
+  just-scrape smart-scraper "$url" \
+    -p "Extract the page title and main content" \
+    --json >> results.jsonl
+done < urls.txt
+```
+
+### Use in a CI pipeline
+
+```yaml
+# GitHub Actions example
+- name: Extract changelog
+  run: |
+    just-scrape markdownify https://github.com/org/repo/releases \
+      --json | jq -r '.result' > CHANGELOG.md
+```
+
+## Response structure
+
+The JSON output structure varies by command. Common top-level fields:
+
+| Field | Description |
+|---|---|
+| `result` | The extracted data or markdown content |
+| `status` | Job status (`completed`, `failed`) |
+| `request_id` | Unique ID for the request |
+| `error` | Error message if the request failed |
+
+For credits:
+
+```json
+{
+  "remaining_credits": 4820,
+  "total_credits": 5000
+}
+```
+
+<Tip>
+  `--json` mode is especially useful when calling `just-scrape` from AI coding agents. It eliminates decorative output and saves tokens.
+</Tip>

@@ -1,0 +1,56 @@
+---
+title: 'AI Agent Skill'
+description: 'Give AI coding agents direct access to web scraping through just-scrape'
+---
+
+`just-scrape` can be installed as a **skill** for AI coding agents via [Vercel's skills.sh](https://skills.sh). This lets agents like Claude, Cursor, and others call ScrapeGraphAI commands directly during a coding session.
+
+## Install the skill
+
+```bash
+bunx skills add https://github.com/ScrapeGraphAI/just-scrape
+```
+
+Browse the skill: [skills.sh/scrapegraphai/just-scrape/just-scrape](https://skills.sh/scrapegraphai/just-scrape/just-scrape)
+
+## What this enables
+
+Once installed, your coding agent can:
+
+- Scrape a website to gather data needed for a task
+- Convert documentation pages to markdown for context
+- Search the web and extract structured results
+- Check your credit balance mid-session
+- Browse request history
+
+## How agents use it
+
+Agents call `just-scrape` in `--json` mode for clean, token-efficient output:
+
+```bash
+just-scrape smart-scraper https://api.example.com/docs \
+  -p "Extract all endpoint names, methods, and descriptions" \
+  --json
+```
+
+```bash
+just-scrape search-scraper "latest release notes for react-query" \
+  --num-results 3 --json
+```
+
+## Tips
+
+- Set `SGAI_API_KEY` in your shell profile so the skill picks it up automatically.
+- Always use `--json` — agents don't need spinners or banners.
+- Pass `--schema` with a JSON schema to get typed, predictable output:
+
+```bash
+just-scrape smart-scraper https://example.com \
+  -p "Extract company info" \
+  --schema '{"type":"object","properties":{"name":{"type":"string"},"founded":{"type":"number"}}}' \
+  --json
+```
+
+## MCP Server alternative
+
+For a deeper integration in Cursor or Claude Desktop, use the [MCP Server](/services/mcp-server/introduction) instead, which exposes ScrapeGraphAI as native tools available to the AI model.

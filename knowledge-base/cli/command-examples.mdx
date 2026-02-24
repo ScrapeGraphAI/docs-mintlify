@@ -1,0 +1,168 @@
+---
+title: CLI command examples
+description: 'Practical examples for every just-scrape command'
+---
+
+## Smart Scraper
+
+Extract structured data from any URL using AI.
+
+```bash
+# Basic extraction
+just-scrape smart-scraper https://news.ycombinator.com \
+  -p "Extract the top 10 story titles and their URLs"
+
+# Enforce a strict output schema
+just-scrape smart-scraper https://news.example.com \
+  -p "Get all article headlines and dates" \
+  --schema '{"type":"object","properties":{"articles":{"type":"array","items":{"type":"object","properties":{"title":{"type":"string"},"date":{"type":"string"}}}}}}'
+
+# Scroll to load more content, then extract
+just-scrape smart-scraper https://store.example.com/shoes \
+  -p "Extract all product names, prices, and ratings" \
+  --scrolls 5
+
+# Bypass anti-bot protection (costs +4 credits)
+just-scrape smart-scraper https://app.example.com/dashboard \
+  -p "Extract user stats" \
+  --stealth
+
+# Pass cookies and custom headers
+just-scrape smart-scraper https://example.com/protected \
+  -p "Extract the protected content" \
+  --cookies '{"session": "abc123"}' \
+  --headers '{"X-Custom-Header": "value"}'
+```
+
+## Search Scraper
+
+Search the web and extract structured data from results.
+
+```bash
+# Research across multiple sources
+just-scrape search-scraper "What are the best Python web frameworks in 2025?" \
+  --num-results 10
+
+# Get raw markdown only (2 credits instead of 10)
+just-scrape search-scraper "React vs Vue comparison" \
+  --no-extraction --num-results 5
+
+# Structured output with schema
+just-scrape search-scraper "Top 5 cloud providers pricing" \
+  --schema '{"type":"object","properties":{"providers":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"free_tier":{"type":"string"}}}}}}'
+```
+
+## Markdownify
+
+Convert any webpage to clean markdown.
+
+```bash
+# Convert a blog post
+just-scrape markdownify https://blog.example.com/my-article
+
+# Save to file
+just-scrape markdownify https://docs.example.com/api \
+  --json | jq -r '.result' > api-docs.md
+
+# Bypass Cloudflare or anti-bot protections
+just-scrape markdownify https://protected.example.com --stealth
+```
+
+## Crawl
+
+Crawl multiple pages and extract data from each.
+
+```bash
+# Crawl a docs site and collect code examples
+just-scrape crawl https://docs.example.com \
+  -p "Extract all code snippets with their language" \
+  --max-pages 20 --depth 3
+
+# Crawl only blog pages
+just-scrape crawl https://example.com \
+  -p "Extract article titles and summaries" \
+  --rules '{"include_paths":["/blog/*"],"same_domain":true}' \
+  --max-pages 50
+
+# Get raw markdown from all pages (no AI extraction, cheaper)
+just-scrape crawl https://example.com \
+  --no-extraction --max-pages 10
+```
+
+## Scrape
+
+Get raw HTML from a URL.
+
+```bash
+# Basic HTML fetch
+just-scrape scrape https://example.com
+
+# Geo-targeted request with anti-bot bypass
+just-scrape scrape https://store.example.com \
+  --stealth --country-code DE
+
+# Extract branding info (logos, colors, fonts)
+just-scrape scrape https://example.com --branding
+```
+
+## Sitemap
+
+Get all URLs from a website's sitemap.
+
+```bash
+# List all pages
+just-scrape sitemap https://example.com
+
+# Pipe URLs to another command
+just-scrape sitemap https://example.com --json | jq -r '.urls[]'
+```
+
+## Agentic Scraper
+
+Browser automation with AI — login, click, navigate, fill forms.
+
+```bash
+# Log in and extract dashboard data
+just-scrape agentic-scraper https://app.example.com/login \
+  -s "Fill email with user@test.com,Fill password with secret,Click Sign In" \
+  --ai-extraction -p "Extract all dashboard metrics"
+
+# Navigate a multi-step form
+just-scrape agentic-scraper https://example.com/wizard \
+  -s "Click Next,Select Premium plan,Fill name with John,Click Submit"
+
+# Persist browser session across runs
+just-scrape agentic-scraper https://app.example.com \
+  -s "Click Settings" --use-session
+```
+
+## Generate Schema
+
+Generate a JSON schema from a natural language description.
+
+```bash
+# Generate a schema
+just-scrape generate-schema "E-commerce product with name, price, ratings, and reviews array"
+
+# Refine an existing schema
+just-scrape generate-schema "Add an availability field" \
+  --existing-schema '{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"number"}}}'
+```
+
+## History
+
+Browse request history interactively or export it.
+
+```bash
+# Interactive history browser (arrow keys to navigate)
+just-scrape history smartscraper
+
+# Fetch a specific request by ID
+just-scrape history smartscraper abc123-def456-7890
+
+# Export last 100 crawl jobs as JSON
+just-scrape history crawl --json --page-size 100 \
+  | jq '.requests[] | {id: .request_id, status}'
+```
+
+Services: `markdownify`, `smartscraper`, `searchscraper`, `scrape`, `crawl`, `agentic-scraper`, `sitemap`

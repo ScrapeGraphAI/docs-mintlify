@@ -50,7 +50,17 @@
               "services/smartcrawler",
               "services/sitemap",
               "services/agenticscraper",
-              "services/cli",
+              {
+                "group": "CLI",
+                "icon": "terminal",
+                "pages": [
+                  "services/cli/introduction",
+                  "services/cli/commands",
+                  "services/cli/json-mode",
+                  "services/cli/ai-agent-skill",
+                  "services/cli/examples"
+                ]
+              },
               {
                 "group": "MCP Server",
                 "icon": "/logo/mcp.svg",
@@ -123,6 +133,15 @@
             "group": "Knowledge Base",
             "pages": [
               "knowledge-base/introduction"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "knowledge-base/cli/getting-started",
+              "knowledge-base/cli/json-mode",
+              "knowledge-base/cli/ai-agent-skill",
+              "knowledge-base/cli/command-examples"
             ]
           },
           {
