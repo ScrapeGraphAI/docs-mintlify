@@ -80,13 +80,6 @@
                   "services/additional-parameters/proxy",
                   "services/additional-parameters/wait-ms"
                 ]
-              },
-              {
-                "group": "Browser Extensions",
-                "pages": [
-                  "services/extensions/firefox",
-                  "services/extensions/chrome"
-                ]
               }
             ]
           },
