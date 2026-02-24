@@ -273,8 +273,8 @@
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "https://raw.githubusercontent.com/ScrapeGraphAI/docs-mintlify/main/logo/light.svg",
+    "dark": "https://raw.githubusercontent.com/ScrapeGraphAI/docs-mintlify/main/logo/dark.svg",
     "href": "https://docs.scrapegraphai.com"
   },
   "background": {
