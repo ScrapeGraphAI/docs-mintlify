@@ -1,0 +1,74 @@
+---
+title: Using ScrapeGraphAI with Lovable
+description: 'Build AI-powered apps that scrape the web using ScrapeGraphAI inside Lovable projects'
+---
+
+[Lovable](https://lovable.dev) is an AI-powered app builder that lets you create full-stack applications through natural language. You can use ScrapeGraphAI to add real-time web data extraction to any Lovable project.
+
+## How it works
+
+Because Lovable apps run in the browser, API calls to ScrapeGraphAI must be made from a backend function to avoid exposing your API key and to prevent CORS errors. Lovable supports Supabase Edge Functions for this purpose.
+
+## Setup
+
+### 1. Get your API key
+
+Log in to the [ScrapeGraphAI dashboard](https://dashboard.scrapegraphai.com) and copy your API key from the Settings page.
+
+### 2. Create a Supabase Edge Function
+
+In your Lovable project, open the Supabase integration and create a new Edge Function named `scrape`:
+
+```typescript
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+serve(async (req) => {
+  const { url, prompt } = await req.json();
+
+  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "SGAI-APIKEY": Deno.env.get("SGAI_API_KEY") ?? "",
+    },
+    body: JSON.stringify({
+      website_url: url,
+      user_prompt: prompt,
+    }),
+  });
+
+  const data = await response.json();
+  return new Response(JSON.stringify(data), {
+    headers: { "Content-Type": "application/json" },
+  });
+});
+```
+
+### 3. Store your API key as a secret
+
+In Supabase, add `SGAI_API_KEY` as an environment secret with your API key value.
+
+### 4. Call the function from your app
+
+```typescript
+import { supabase } from "@/integrations/supabase/client";
+
+const { data, error } = await supabase.functions.invoke("scrape", {
+  body: {
+    url: "https://example.com",
+    prompt: "Extract the main headline and summary",
+  },
+});
+```
+
+## Example prompt
+
+Tell Lovable:
+
+> Add a button that fetches the latest headlines from news.ycombinator.com using ScrapeGraphAI and displays them in a list.
+
+Lovable will generate the UI component. Wire it up to your Edge Function using the snippet above.
+
+<Note>
+  Never hardcode your API key in frontend code. Always use a backend function or environment variable.
+</Note>

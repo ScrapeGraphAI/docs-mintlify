@@ -1,0 +1,63 @@
+---
+title: Rate limits by plan
+description: 'Requests per minute and concurrent job limits for each plan'
+---
+
+ScrapeGraphAI enforces rate limits to ensure reliable performance for all users. Limits vary by plan.
+
+## Limits overview
+
+| Plan | Requests per minute | Concurrent jobs | Monthly credits |
+|---|---|---|---|
+| Free | 5 | 1 | 100 |
+| Starter | 30 | 5 | 5,000 |
+| Pro | 100 | 20 | 50,000 |
+| Enterprise | Custom | Custom | Custom |
+
+<Note>
+  Contact [support](mailto:contact@scrapegraphai.com) for custom limits or high-volume plans.
+</Note>
+
+## What counts as a request?
+
+Each API call to any endpoint (SmartScraper, SearchScraper, Markdownify, etc.) counts as one request toward your rate limit. Polling the status endpoint for async jobs does **not** count toward the limit.
+
+## Rate limit headers
+
+Every API response includes headers that show your current rate limit status:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 87
+X-RateLimit-Reset: 1709123456
+```
+
+- `X-RateLimit-Limit` — maximum requests allowed per minute
+- `X-RateLimit-Remaining` — requests remaining in the current window
+- `X-RateLimit-Reset` — Unix timestamp when the limit resets
+
+## Handling the 429 response
+
+When you exceed the rate limit, the API returns HTTP `429 Too Many Requests`. Implement exponential backoff in your code:
+
+```python
+import time
+
+def scrape_with_backoff(client, url, prompt, max_retries=5):
+    for i in range(max_retries):
+        try:
+            return client.smartscraper(website_url=url, user_prompt=prompt)
+        except Exception as e:
+            if "429" in str(e):
+                wait = 2 ** i
+                print(f"Rate limited — retrying in {wait}s")
+                time.sleep(wait)
+            else:
+                raise
+    raise Exception("Exceeded max retries")
+```
+
+## Increasing your limits
+
+- **Upgrade your plan** from the [dashboard](https://dashboard.scrapegraphai.com) to get higher limits immediately.
+- **Enterprise customers** can request custom rate limit configurations by contacting [support](mailto:contact@scrapegraphai.com).

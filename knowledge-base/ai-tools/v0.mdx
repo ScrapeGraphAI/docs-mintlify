@@ -1,0 +1,75 @@
+---
+title: Using ScrapeGraphAI with v0
+description: 'Integrate web scraping into UI components generated with Vercel v0'
+---
+
+[v0](https://v0.dev) by Vercel is an AI tool that generates React UI components from prompts. You can combine it with ScrapeGraphAI to build components that display live data extracted from any website.
+
+## How it works
+
+v0 generates frontend components. ScrapeGraphAI runs server-side (e.g. in a Next.js API route or Server Action) to avoid exposing your API key and to bypass CORS restrictions.
+
+## Setup
+
+### 1. Generate your component with v0
+
+Ask v0 to build a component, for example:
+
+> Create a card component that displays a company name, description, and founding year fetched from an external API.
+
+### 2. Add a Next.js API route
+
+Create `app/api/scrape/route.ts` in your Next.js project:
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
+  const { url, prompt } = await req.json();
+
+  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "SGAI-APIKEY": process.env.SGAI_API_KEY ?? "",
+    },
+    body: JSON.stringify({
+      website_url: url,
+      user_prompt: prompt,
+    }),
+  });
+
+  const data = await response.json();
+  return NextResponse.json(data);
+}
+```
+
+### 3. Store your API key
+
+Add `SGAI_API_KEY` to your `.env.local` file:
+
+```bash
+SGAI_API_KEY=your-api-key-here
+```
+
+### 4. Fetch data inside your component
+
+```typescript
+async function getScrapedData(url: string, prompt: string) {
+  const res = await fetch("/api/scrape", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url, prompt }),
+  });
+  return res.json();
+}
+```
+
+## Tips
+
+- Use Server Components (`async function Page()`) to call the ScrapeGraphAI API directly without an API route, keeping your key secure on the server.
+- Define a Zod schema and pass it via `output_schema` to get typed, structured data back.
+
+<Note>
+  Never pass `SGAI_API_KEY` to a client component. Keep it on the server side.
+</Note>

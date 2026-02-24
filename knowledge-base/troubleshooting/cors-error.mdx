@@ -1,0 +1,88 @@
+---
+title: How to fix CORS errors
+description: 'Resolve cross-origin issues when calling the ScrapeGraphAI API from the browser'
+---
+
+## What is a CORS error?
+
+CORS (Cross-Origin Resource Sharing) errors occur when a browser blocks a request made from your frontend JavaScript code to a different domain — in this case, `api.scrapegraphai.com`.
+
+You will see an error like:
+
+```
+Access to fetch at 'https://api.scrapegraphai.com/...' from origin 'http://localhost:3000'
+has been blocked by CORS policy.
+```
+
+## Root cause
+
+The ScrapeGraphAI API is designed to be called **server-side**, not directly from the browser. Calling it from browser JavaScript would expose your API key to anyone who inspects the network tab.
+
+## Fix: move the API call to the server
+
+Always call the ScrapeGraphAI API from a backend — a server function, API route, or serverless function — and have your frontend call that backend instead.
+
+### Next.js (App Router)
+
+```typescript
+// app/api/scrape/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
+  const { url, prompt } = await req.json();
+
+  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "SGAI-APIKEY": process.env.SGAI_API_KEY ?? "",
+    },
+    body: JSON.stringify({ website_url: url, user_prompt: prompt }),
+  });
+
+  return NextResponse.json(await response.json());
+}
+```
+
+### Express / Node.js
+
+```javascript
+app.post("/api/scrape", async (req, res) => {
+  const { url, prompt } = req.body;
+  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "SGAI-APIKEY": process.env.SGAI_API_KEY,
+    },
+    body: JSON.stringify({ website_url: url, user_prompt: prompt }),
+  });
+  res.json(await response.json());
+});
+```
+
+### Python (FastAPI)
+
+```python
+from fastapi import FastAPI
+from scrapegraph_py import Client
+
+app = FastAPI()
+client = Client(api_key="your-api-key")
+
+@app.post("/scrape")
+async def scrape(url: str, prompt: str):
+    return client.smartscraper(website_url=url, user_prompt=prompt)
+```
+
+## Summary
+
+| Scenario | Fix |
+|---|---|
+| Calling from React/Vue/browser JS | Move call to an API route or server function |
+| Calling from a Lovable project | Use a Supabase Edge Function |
+| Calling from a Bolt.new app | Use the Express backend |
+
+<Warning>
+  Never place your API key in frontend code. Even if the CORS error is resolved, the key would be visible to any user.
+</Warning>

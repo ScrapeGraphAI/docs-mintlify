@@ -1,0 +1,79 @@
+---
+title: Using ScrapeGraphAI with Bolt.new
+description: 'Add real-time web data extraction to apps built with Bolt.new'
+---
+
+[Bolt.new](https://bolt.new) by StackBlitz is an AI-powered full-stack development environment that runs entirely in the browser. You can use ScrapeGraphAI to add live web scraping capabilities to any Bolt.new application.
+
+## How it works
+
+Bolt.new can generate Node.js / Express backends alongside your frontend. Make ScrapeGraphAI API calls from the backend to keep your API key secret and avoid CORS errors.
+
+## Setup
+
+### 1. Tell Bolt to create an Express backend
+
+Start a new Bolt project and prompt it:
+
+> Create a full-stack app with an Express backend. Add a POST endpoint at `/api/scrape` that accepts `url` and `prompt` fields, calls the ScrapeGraphAI SmartScraper API, and returns the result.
+
+### 2. Backend endpoint
+
+Bolt will generate something like this — make sure the API key is loaded from an environment variable:
+
+```javascript
+import express from "express";
+import fetch from "node-fetch";
+
+const app = express();
+app.use(express.json());
+
+app.post("/api/scrape", async (req, res) => {
+  const { url, prompt } = req.body;
+
+  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "SGAI-APIKEY": process.env.SGAI_API_KEY,
+    },
+    body: JSON.stringify({
+      website_url: url,
+      user_prompt: prompt,
+    }),
+  });
+
+  const data = await response.json();
+  res.json(data);
+});
+
+app.listen(3001);
+```
+
+### 3. Add your API key
+
+In Bolt.new, open the environment variables panel and add:
+
+```
+SGAI_API_KEY=your-api-key-here
+```
+
+### 4. Call from the frontend
+
+```javascript
+const response = await fetch("/api/scrape", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    url: "https://example.com",
+    prompt: "Extract the product name and price",
+  }),
+});
+
+const data = await response.json();
+console.log(data.result);
+```
+
+## Example prompt for Bolt
+
+> Build a price tracker UI. It should have an input for a product URL and a button. When clicked, it calls the backend scrape endpoint and shows the extracted product name and price in a card.

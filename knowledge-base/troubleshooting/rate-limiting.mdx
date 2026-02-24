@@ -1,0 +1,83 @@
+---
+title: Understanding rate limiting
+description: 'What happens when you hit rate limits and how to handle them gracefully'
+---
+
+## What is rate limiting?
+
+Rate limiting restricts the number of API requests you can make within a given time window. ScrapeGraphAI enforces limits to ensure fair usage and stable performance for all users.
+
+## Rate limit response
+
+When you exceed the rate limit, the API returns an HTTP `429 Too Many Requests` response:
+
+```json
+{
+  "error": "rate_limit_exceeded",
+  "message": "Too many requests. Please slow down and retry after a few seconds."
+}
+```
+
+## Limits by plan
+
+| Plan | Requests per minute | Concurrent jobs |
+|---|---|---|
+| Free | 5 | 1 |
+| Starter | 30 | 5 |
+| Pro | 100 | 20 |
+| Enterprise | Custom | Custom |
+
+<Note>
+  Check the [dashboard](https://dashboard.scrapegraphai.com) for up-to-date limits for your current plan.
+</Note>
+
+## How to handle rate limits in code
+
+### Python — with exponential backoff
+
+```python
+import time
+from scrapegraph_py import Client
+from scrapegraph_py.exceptions import RateLimitError
+
+client = Client(api_key="your-api-key")
+
+def scrape_with_retry(url: str, prompt: str, max_retries: int = 3):
+    for attempt in range(max_retries):
+        try:
+            return client.smartscraper(website_url=url, user_prompt=prompt)
+        except RateLimitError:
+            wait = 2 ** attempt  # 1s, 2s, 4s
+            print(f"Rate limited. Retrying in {wait}s...")
+            time.sleep(wait)
+    raise Exception("Max retries exceeded")
+```
+
+### JavaScript — with retry
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+async function scrapeWithRetry(apiKey, url, prompt, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await smartScraper(apiKey, url, prompt);
+    } catch (err) {
+      if (err.status === 429) {
+        const wait = Math.pow(2, i) * 1000;
+        console.log(`Rate limited. Retrying in ${wait}ms...`);
+        await new Promise((r) => setTimeout(r, wait));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+```
+
+## Tips to avoid hitting rate limits
+
+- **Batch requests** — process URLs in batches with a small delay between each batch rather than sending them all at once.
+- **Cache results** — if you are scraping the same URLs repeatedly, store the results and only re-scrape when the data needs to be fresh.
+- **Upgrade your plan** — if your use case requires higher throughput, consider upgrading to a plan with higher limits.

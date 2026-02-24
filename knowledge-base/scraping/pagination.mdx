@@ -1,0 +1,80 @@
+---
+title: Handling pagination
+description: 'Scrape multi-page results using the pagination parameter'
+---
+
+Many websites spread their content across multiple pages — product listings, search results, articles. ScrapeGraphAI provides built-in support for paginated content.
+
+## Using SmartCrawler for multi-page extraction
+
+[SmartCrawler](/services/smartcrawler) is the recommended service for crawling multiple pages. It follows links and aggregates results across pages automatically.
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartcrawler(
+    website_url="https://example.com/products",
+    user_prompt="Extract all product names and prices from every page",
+    max_pages=10,
+)
+```
+
+## Using SmartScraper with explicit page URLs
+
+If you know the URL pattern for each page, scrape them individually and aggregate results:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+all_results = []
+for page in range(1, 6):  # pages 1-5
+    url = f"https://example.com/products?page={page}"
+    response = client.smartscraper(
+        website_url=url,
+        user_prompt="Extract all product names and prices on this page",
+    )
+    all_results.extend(response.get("result", {}).get("products", []))
+
+print(f"Total products extracted: {len(all_results)}")
+```
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+const apiKey = "your-api-key";
+const allResults = [];
+
+for (let page = 1; page <= 5; page++) {
+  const url = `https://example.com/products?page=${page}`;
+  const result = await smartScraper(
+    apiKey,
+    url,
+    "Extract all product names and prices on this page"
+  );
+  allResults.push(...(result?.products ?? []));
+}
+```
+
+## Using the `pagination` parameter
+
+For services that support it, you can pass the `pagination` parameter to iterate through pages automatically:
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com/products",
+    user_prompt="Extract all products",
+    pagination=True,
+)
+```
+
+See the [pagination parameter documentation](/services/additional-parameters/pagination) for full options.
+
+## Tips
+
+- **Add delays between pages** to avoid triggering rate limits on the target website.
+- **Check for a "next page" link** in your prompt — `"Extract all items and the URL of the next page"` — to discover pagination dynamically.
+- **Stop early** when the extracted list is empty or a "no more results" message appears.

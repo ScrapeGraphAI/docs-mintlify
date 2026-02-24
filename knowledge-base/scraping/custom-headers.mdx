@@ -1,0 +1,83 @@
+---
+title: Using custom headers
+description: 'Pass custom HTTP headers to bypass authentication or anti-bot protections'
+---
+
+Some websites require specific HTTP headers to return content — authentication tokens, cookies, custom user agents, or API keys embedded in headers.
+
+## How to pass headers
+
+Use the `headers` parameter available in SmartScraper, SearchScraper, and Markdownify:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://example.com/protected-page",
+    user_prompt="Extract the main content",
+    headers={
+        "Authorization": "Bearer your-token-here",
+        "Cookie": "session=abc123",
+        "User-Agent": "Mozilla/5.0 (compatible; MyBot/1.0)",
+    },
+)
+```
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+const result = await smartScraper(
+  "your-api-key",
+  "https://example.com/protected-page",
+  "Extract the main content",
+  {
+    headers: {
+      Authorization: "Bearer your-token-here",
+      Cookie: "session=abc123",
+    },
+  }
+);
+```
+
+See the [headers parameter documentation](/services/additional-parameters/headers) for the full reference.
+
+## Common use cases
+
+### Passing a session cookie
+
+Export cookies from your browser (e.g., using a browser extension like EditThisCookie) and pass them as the `Cookie` header:
+
+```python
+headers = {
+    "Cookie": "user_session=abc123; _ga=GA1.2.xyz"
+}
+```
+
+### Mimicking a real browser
+
+Some sites block requests without a browser-like User-Agent:
+
+```python
+headers = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+}
+```
+
+### Bearer token authentication
+
+For APIs or protected dashboards:
+
+```python
+headers = {
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+## Tips
+
+- Headers are sent with the HTTP request to the target website, not to the ScrapeGraphAI API.
+- Keep sensitive tokens out of your source code — load them from environment variables.
+- If you are unsure which headers to pass, open the target URL in your browser, go to DevTools → Network, and inspect the request headers of the first successful page load.

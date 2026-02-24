@@ -1,0 +1,63 @@
+---
+title: Understanding credits
+description: 'How credits are counted and how to monitor your usage'
+---
+
+ScrapeGraphAI uses a credit system to measure API usage. Each successful API call consumes a number of credits depending on the service and the complexity of the request.
+
+## Credit costs per service
+
+| Service | Credits per request |
+|---|---|
+| SmartScraper | 1 |
+| SearchScraper | 5 |
+| Markdownify | 1 |
+| SmartCrawler | 1 per page crawled |
+| Sitemap | 1 |
+| AgenticScraper | Variable |
+
+<Note>
+  Failed requests and requests that return an error are not charged.
+</Note>
+
+## Checking your credit balance
+
+Log in to the [dashboard](https://dashboard.scrapegraphai.com) to see:
+- **Remaining credits** for your current billing period
+- **Usage history** broken down by service and date
+
+You can also query your balance programmatically:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+credits = client.get_credits()
+print(f"Remaining credits: {credits['remaining']}")
+```
+
+```javascript
+import { getCredits } from "scrapegraph-js";
+
+const credits = await getCredits("your-api-key");
+console.log(`Remaining credits: ${credits.remaining}`);
+```
+
+## What happens when you run out of credits?
+
+When your credits are exhausted, the API returns an HTTP `402 Payment Required` response:
+
+```json
+{
+  "error": "insufficient_credits",
+  "message": "You have run out of credits. Please upgrade your plan or wait for the next billing cycle."
+}
+```
+
+Upgrade your plan or purchase additional credits from the [dashboard](https://dashboard.scrapegraphai.com).
+
+## Tips to reduce credit usage
+
+- **Cache results** for URLs that don't change frequently to avoid re-scraping.
+- **Use Markdownify** instead of SmartScraper when you only need the page content in a readable format and don't need structured extraction.
+- **Limit crawl depth** in SmartCrawler by setting `max_pages` to avoid accidentally crawling more pages than needed.

@@ -1,0 +1,72 @@
+---
+title: Managing your API keys
+description: 'How to create, rotate, and revoke your ScrapeGraphAI API keys'
+---
+
+Your API key authenticates every request you make to the ScrapeGraphAI API. Keep it secure and rotate it if you suspect it has been compromised.
+
+## Finding your API key
+
+1. Log in to the [ScrapeGraphAI dashboard](https://dashboard.scrapegraphai.com).
+2. Navigate to **Settings**.
+3. Your API key is displayed in the **API Key** section.
+
+## Using your API key
+
+Pass the key in the `SGAI-APIKEY` header for direct API calls, or provide it when initialising the SDK:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+```
+
+```javascript JavaScript
+import { smartScraper } from "scrapegraph-js";
+
+const result = await smartScraper("your-api-key", url, prompt);
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/v1/smartscraper \
+  -H "SGAI-APIKEY: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"website_url": "https://example.com", "user_prompt": "Extract the title"}'
+```
+
+</CodeGroup>
+
+## Keeping your key secure
+
+- **Never commit your API key** to a public repository. Use environment variables instead:
+
+```bash
+# .env
+SGAI_API_KEY=your-api-key-here
+```
+
+```python
+import os
+from scrapegraph_py import Client
+
+client = Client(api_key=os.getenv("SGAI_API_KEY"))
+```
+
+- **Never expose your key in frontend code**. Make API calls from a server or backend function.
+- **Add `.env` to your `.gitignore`** to avoid accidentally committing secrets.
+
+## Rotating your API key
+
+If your key has been exposed or you want to rotate it for security:
+
+1. Go to **Settings** in the [dashboard](https://dashboard.scrapegraphai.com).
+2. Click **Regenerate API Key**.
+3. Copy the new key immediately — it will only be shown once.
+4. Update all services and environment variables that use the old key.
+5. The old key will be invalidated immediately.
+
+<Warning>
+  Rotating your key will invalidate the old one. Any service still using the old key will start receiving `401 Unauthorized` errors.
+</Warning>

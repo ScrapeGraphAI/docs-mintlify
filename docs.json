@@ -117,6 +117,52 @@
         ]
       },
       {
+        "tab": "Knowledge Base",
+        "groups": [
+          {
+            "group": "Knowledge Base",
+            "pages": [
+              "knowledge-base/introduction"
+            ]
+          },
+          {
+            "group": "AI Tools",
+            "pages": [
+              "knowledge-base/ai-tools/lovable",
+              "knowledge-base/ai-tools/v0",
+              "knowledge-base/ai-tools/bolt",
+              "knowledge-base/ai-tools/cursor"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "knowledge-base/troubleshooting/cors-error",
+              "knowledge-base/troubleshooting/empty-results",
+              "knowledge-base/troubleshooting/rate-limiting",
+              "knowledge-base/troubleshooting/timeout-errors"
+            ]
+          },
+          {
+            "group": "Scraping Guides",
+            "pages": [
+              "knowledge-base/scraping/javascript-rendering",
+              "knowledge-base/scraping/pagination",
+              "knowledge-base/scraping/custom-headers",
+              "knowledge-base/scraping/proxy"
+            ]
+          },
+          {
+            "group": "Account & Credits",
+            "pages": [
+              "knowledge-base/account/api-keys",
+              "knowledge-base/account/credits",
+              "knowledge-base/account/rate-limits"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Cookbook",
         "groups": [
           {

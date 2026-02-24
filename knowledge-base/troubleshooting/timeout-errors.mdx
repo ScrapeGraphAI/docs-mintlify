@@ -1,0 +1,77 @@
+---
+title: Handling timeout errors
+description: 'Diagnose and resolve request timeouts for complex or slow websites'
+---
+
+## What is a timeout error?
+
+A timeout error occurs when the ScrapeGraphAI API takes longer than the allowed time to process your request. This can happen when the target website is slow, the page is complex, or you are crawling many pages at once.
+
+You may receive an HTTP `408 Request Timeout` or see a status of `"failed"` with a timeout message in the async job response.
+
+## Common causes
+
+### 1. The target website is slow
+
+Some websites have very slow response times, especially under load or in certain geographic regions.
+
+**Fix:** Retry the request. Use the [status endpoint](/api-reference/endpoint/smartscraper/get-status) to poll the job result instead of waiting for a synchronous response.
+
+### 2. The page has too much content
+
+Very large pages (e.g., pages with thousands of products or articles) take longer to process.
+
+**Fix:** Narrow your prompt to target a specific section of the page, or use [SmartCrawler](/services/smartcrawler) with a depth and page limit.
+
+### 3. JavaScript rendering takes too long
+
+Pages that rely heavily on JavaScript, lazy loading, or infinite scroll may time out while waiting for content to appear.
+
+**Fix:** Use the `wait_ms` parameter to give the page additional time to load before extraction begins.
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract all product listings",
+    wait_ms=3000,  # wait 3 seconds for JS to render
+)
+```
+
+See the [wait_ms documentation](/services/additional-parameters/wait-ms) for details.
+
+## Using async mode for long-running jobs
+
+For requests that may take longer than usual, use the async API:
+
+```python
+from scrapegraph_py import AsyncClient
+import asyncio
+
+async def scrape():
+    async with AsyncClient(api_key="your-api-key") as client:
+        job = await client.smartscraper(
+            website_url="https://slow-website.com",
+            user_prompt="Extract the main article content",
+        )
+        return job
+
+result = asyncio.run(scrape())
+```
+
+The async client handles polling automatically and waits for the job to complete.
+
+## Retry strategy
+
+```python
+import time
+
+def scrape_with_timeout_retry(url, prompt, max_attempts=3):
+    for attempt in range(max_attempts):
+        try:
+            return client.smartscraper(website_url=url, user_prompt=prompt)
+        except TimeoutError:
+            if attempt < max_attempts - 1:
+                time.sleep(5)
+            else:
+                raise
+```

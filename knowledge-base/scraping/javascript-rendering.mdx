@@ -1,0 +1,67 @@
+---
+title: Scraping JavaScript-heavy websites
+description: 'Extract data from dynamic pages that require JavaScript execution'
+---
+
+Many modern websites — single-page apps, React or Vue frontends, lazy-loaded content — do not include their data in the initial HTML. The content is only visible after JavaScript runs in the browser.
+
+## How ScrapeGraphAI handles JS pages
+
+ScrapeGraphAI uses a headless browser internally to render JavaScript before extracting content. For most sites this happens automatically.
+
+## Use `wait_ms` for delayed content
+
+If the content loads after a short delay (lazy loading, carousels, infinite scroll), add a wait time before extraction starts:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://example.com/products",
+    user_prompt="Extract all product names and prices",
+    wait_ms=2000,  # wait 2 seconds for JS to finish loading
+)
+```
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+const result = await smartScraper(
+  "your-api-key",
+  "https://example.com/products",
+  "Extract all product names and prices",
+  { wait_ms: 2000 }
+);
+```
+
+See the [wait_ms parameter documentation](/services/additional-parameters/wait-ms) for more details.
+
+## Tips for specific scenarios
+
+### Infinite scroll / paginated lists
+
+Infinite scroll pages only show a subset of items on initial load. Use the [pagination parameter](/services/additional-parameters/pagination) to iterate through pages, or use [SmartCrawler](/services/smartcrawler) to follow paginated links automatically.
+
+### Login-gated content
+
+If the data requires authentication:
+1. Pass the required cookies or session tokens via the [`headers`](/services/additional-parameters/headers) parameter.
+2. Alternatively, export a logged-in session cookie from your browser and include it in the `Cookie` header.
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com/dashboard",
+    user_prompt="Extract my account balance",
+    headers={"Cookie": "session=abc123; auth_token=xyz"},
+)
+```
+
+### Single Page Applications (SPAs)
+
+SPAs render content client-side after the initial load. Increasing `wait_ms` usually resolves extraction issues. If not, check whether the data is available through the site's own API (network tab in DevTools) — that may be easier to call directly.
+
+## Verifying the rendered HTML
+
+To debug, use a tool like [httpbin](https://httpbin.org) or your browser's DevTools to verify what HTML is actually delivered before JavaScript runs vs. after.

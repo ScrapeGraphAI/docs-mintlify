@@ -1,0 +1,56 @@
+---
+title: Why am I getting empty results?
+description: 'Common reasons why extractions return no data and how to fix them'
+---
+
+If ScrapeGraphAI returns an empty result or a response with `null` fields, there are several common causes.
+
+## 1. The page requires JavaScript rendering
+
+Many modern websites load their content dynamically via JavaScript after the initial HTML is delivered. If the content is not in the raw HTML, ScrapeGraphAI may not be able to extract it.
+
+**Fix:** Use the `headless_mode` or rendering options if available for your service tier, or try using [SmartCrawler](/services/smartcrawler) which handles JavaScript-rendered pages.
+
+## 2. Your prompt is too vague
+
+A prompt like `"get the data"` gives the LLM no guidance on what to look for.
+
+**Fix:** Be specific and descriptive.
+
+```python
+# Too vague
+user_prompt = "get the data"
+
+# Better
+user_prompt = "Extract the product name, current price, and stock availability from the product page"
+```
+
+## 3. The target element does not exist on that URL
+
+Double-check that the data you want to extract actually appears on the URL you are passing. Some pages require login, cookies, or a specific session to show content.
+
+**Fix:** Open the URL in an incognito browser window and verify the content is visible without authentication.
+
+## 4. The website blocks scrapers
+
+Some websites detect and block automated requests, returning a captcha page or empty HTML.
+
+**Fix:** Try using a proxy via the [`proxy`](/services/additional-parameters/proxy) parameter, or add custom headers that mimic a real browser with the [`headers`](/services/additional-parameters/headers) parameter.
+
+## 5. The output schema is too strict
+
+If you define an `output_schema` with required fields, the LLM will return `null` for fields it cannot find.
+
+**Fix:** Make fields optional in your schema, or broaden the prompt to include fallback descriptions.
+
+## 6. Rate limiting or quota exceeded
+
+If you have exhausted your credits or are being rate-limited, the API may return an empty or error response.
+
+**Fix:** Check your [dashboard](https://dashboard.scrapegraphai.com) for remaining credits and current usage.
+
+## Debugging tips
+
+- Log the full API response — the `result` key contains the extracted data; `status` and `error` keys may contain useful information.
+- Test the URL with a simple prompt like `"What is the main heading of this page?"` to verify that extraction works at all.
+- Use the [interactive playground](https://dashboard.scrapegraphai.com) to test your URL and prompt before integrating.

@@ -1,0 +1,88 @@
+---
+title: Scraping behind a proxy
+description: 'Route requests through your own proxy for geo-targeting or privacy'
+---
+
+Using a proxy lets you route ScrapeGraphAI requests through a specific IP address or geographic location. This is useful for accessing geo-restricted content, bypassing IP-based blocks, or testing region-specific pages.
+
+## How to pass a proxy
+
+Use the `proxy` parameter available in SmartScraper, SearchScraper, and Markdownify:
+
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the main content",
+    proxy="http://username:password@proxy-host:8080",
+)
+```
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+const result = await smartScraper(
+  "your-api-key",
+  "https://example.com",
+  "Extract the main content",
+  {
+    proxy: "http://username:password@proxy-host:8080",
+  }
+);
+```
+
+See the [proxy parameter documentation](/services/additional-parameters/proxy) for the full reference.
+
+## Proxy URL format
+
+```
+http://username:password@host:port
+socks5://username:password@host:port
+```
+
+If the proxy does not require authentication:
+
+```
+http://host:port
+```
+
+## Common use cases
+
+### Geo-targeted content
+
+Access content that is only available in a specific country:
+
+```python
+# Using a proxy located in Germany
+proxy = "http://user:pass@de-proxy.example.com:8080"
+```
+
+### Bypassing IP-based rate limits
+
+If the target website blocks your IP after too many requests, rotate through a pool of proxy IPs:
+
+```python
+import itertools
+
+proxies = itertools.cycle([
+    "http://user:pass@proxy1.example.com:8080",
+    "http://user:pass@proxy2.example.com:8080",
+    "http://user:pass@proxy3.example.com:8080",
+])
+
+for url in urls_to_scrape:
+    response = client.smartscraper(
+        website_url=url,
+        user_prompt="Extract the product details",
+        proxy=next(proxies),
+    )
+```
+
+## Tips
+
+- Use a reputable proxy provider for reliable uptime and performance.
+- Test your proxy connection independently before passing it to ScrapeGraphAI to rule out proxy-side issues.
+- Do not use public/free proxies for sensitive data — they may log or modify your traffic.

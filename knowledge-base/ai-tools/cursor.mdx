@@ -1,0 +1,75 @@
+---
+title: Using ScrapeGraphAI with Cursor
+description: 'Speed up development with AI-assisted scraping code in Cursor'
+---
+
+[Cursor](https://cursor.sh) is an AI-powered code editor built on VS Code. Combined with ScrapeGraphAI, you can write, debug, and iterate on scraping pipelines faster using Cursor's inline AI assistance.
+
+## MCP Server (Recommended)
+
+The fastest way to use ScrapeGraphAI in Cursor is via the [MCP Server](/services/mcp-server/cursor). This lets Cursor's AI agent call ScrapeGraphAI tools directly without writing any code.
+
+See the [MCP Server setup for Cursor](/services/mcp-server/cursor) guide for full instructions.
+
+## Manual integration
+
+If you prefer to write code directly, use the Python or JavaScript SDK.
+
+### Python
+
+Install the SDK:
+
+```bash
+pip install scrapegraph-py
+```
+
+Ask Cursor to write a scraping script using `Cmd+K` or open the chat with `Cmd+L`:
+
+> Write a Python function using scrapegraph_py that extracts the title, author, and date from any blog post URL.
+
+Cursor will generate:
+
+```python
+from scrapegraph_py import Client
+
+def extract_blog_post(url: str) -> dict:
+    client = Client(api_key="your-api-key")
+    return client.smartscraper(
+        website_url=url,
+        user_prompt="Extract the title, author name, and publication date",
+    )
+```
+
+### JavaScript
+
+Install the SDK:
+
+```bash
+npm install scrapegraph-js
+```
+
+Ask Cursor:
+
+> Write a JavaScript function using scrapegraph-js that extracts product details from an e-commerce page.
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+async function extractProduct(url) {
+  return await smartScraper(
+    "your-api-key",
+    url,
+    "Extract the product name, price, and availability"
+  );
+}
+```
+
+## Tips for using Cursor with ScrapeGraphAI
+
+- **Paste error messages** into the Cursor chat to get instant fix suggestions.
+- **Ask Cursor to add output schemas** (`output_schema` with Pydantic or Zod) to get strongly-typed results.
+- **Use `@docs`** in Cursor chat to reference the ScrapeGraphAI docs directly while coding.
+
+<Note>
+  Store your API key in a `.env` file and load it via `python-dotenv` or `process.env` — never hardcode it in your source files.
+</Note>
