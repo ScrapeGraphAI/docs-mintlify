@@ -129,21 +129,21 @@
             ]
           },
           {
+            "group": "Scraping Tools",
+            "pages": [
+              "knowledge-base/ai-tools/lovable",
+              "knowledge-base/ai-tools/v0",
+              "knowledge-base/ai-tools/bolt",
+              "knowledge-base/ai-tools/cursor"
+            ]
+          },
+           {
             "group": "CLI",
             "pages": [
               "knowledge-base/cli/getting-started",
               "knowledge-base/cli/json-mode",
               "knowledge-base/cli/ai-agent-skill",
               "knowledge-base/cli/command-examples"
-            ]
-          },
-          {
-            "group": "AI Tools",
-            "pages": [
-              "knowledge-base/ai-tools/lovable",
-              "knowledge-base/ai-tools/v0",
-              "knowledge-base/ai-tools/bolt",
-              "knowledge-base/ai-tools/cursor"
             ]
           },
           {
