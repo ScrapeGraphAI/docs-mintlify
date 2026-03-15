@@ -38,6 +38,55 @@ just-scrape search-scraper "latest release notes for react-query" \
   --num-results 3 --json
 ```
 
+## Using with Claude Code
+
+[Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) is Anthropic's agentic coding tool that runs in your terminal. Since it can execute shell commands, it works seamlessly with `just-scrape`.
+
+### Setup
+
+1. Install `just-scrape` globally: `npm install -g just-scrape`
+2. Set `SGAI_API_KEY` in your shell profile (`~/.zshrc`, `~/.bashrc`)
+3. Launch Claude Code and ask it to scrape anything
+
+### Add just-scrape to CLAUDE.md
+
+Add scraping instructions to your `CLAUDE.md` (project root or `~/.claude/CLAUDE.md` for global):
+
+```markdown CLAUDE.md
+## Web Scraping
+
+This project uses `just-scrape` (ScrapeGraph AI CLI) for web scraping.
+The API key is set via the SGAI_API_KEY environment variable.
+
+Available commands (always use --json flag):
+- `just-scrape smart-scraper <url> -p <prompt> --json` — AI extraction from a URL
+- `just-scrape search-scraper <prompt> --json` — search the web and extract data
+- `just-scrape markdownify <url> --json` — convert a page to markdown
+- `just-scrape crawl <url> -p <prompt> --json` — crawl multiple pages
+- `just-scrape scrape <url> --json` — get raw HTML
+- `just-scrape sitemap <url> --json` — get all URLs from a sitemap
+
+Use --schema to enforce a JSON schema on the output.
+Use --stealth for sites with anti-bot protection.
+```
+
+### Example prompts
+
+```
+> Scrape the pricing page at https://example.com/pricing and create a comparison table
+
+> Search for "best practices for REST API pagination" and summarize the top results
+
+> Convert https://docs.example.com/api/authentication to markdown and save it as docs/auth.md
+```
+
+### Non-interactive / CI usage
+
+```bash
+claude -p "Use just-scrape to scrape https://example.com/changelog \
+  and extract the latest 5 releases. Save as CHANGELOG_SUMMARY.md"
+```
+
 ## Manual setup with Cursor
 
 If you are using Cursor without the skills.sh integration, configure `just-scrape` via the [MCP Server](/services/mcp-server/cursor) for the best experience.

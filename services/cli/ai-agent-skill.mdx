@@ -3,7 +3,7 @@ title: 'AI Agent Skill'
 description: 'Give AI coding agents direct access to web scraping through just-scrape'
 ---
 
-`just-scrape` can be installed as a **skill** for AI coding agents via [Vercel's skills.sh](https://skills.sh). This lets agents like Claude, Cursor, and others call ScrapeGraphAI commands directly during a coding session.
+`just-scrape` can be installed as a **skill** for AI coding agents via [Vercel's skills.sh](https://skills.sh). This lets agents like Claude Code, Cursor, and others call ScrapeGraphAI commands directly during a coding session.
 
 ## Install the skill
 
@@ -36,6 +36,81 @@ just-scrape smart-scraper https://api.example.com/docs \
 ```bash
 just-scrape search-scraper "latest release notes for react-query" \
   --num-results 3 --json
+```
+
+## Using with Claude Code
+
+[Claude Code](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) is Anthropic's agentic coding tool that runs directly in your terminal. Since Claude Code can execute shell commands, it works seamlessly with `just-scrape`.
+
+### Setup
+
+<Steps>
+  <Step title="Install just-scrape globally">
+    ```bash
+    npm install -g just-scrape
+    ```
+  </Step>
+  <Step title="Set your API key">
+    Add the key to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.) so Claude Code inherits it automatically:
+    ```bash
+    export SGAI_API_KEY="sgai-..."
+    ```
+  </Step>
+  <Step title="Start Claude Code and scrape">
+    Launch Claude Code and ask it to scrape any website:
+    ```
+    claude
+    > Scrape https://news.ycombinator.com and extract the top 10 stories with titles and URLs using just-scrape
+    ```
+  </Step>
+</Steps>
+
+### Add just-scrape to CLAUDE.md
+
+To make Claude Code aware of `just-scrape` in every session, add instructions to the `CLAUDE.md` file in your project root (or `~/.claude/CLAUDE.md` for global access):
+
+```markdown CLAUDE.md
+## Web Scraping
+
+This project uses `just-scrape` (ScrapeGraph AI CLI) for web scraping.
+The API key is set via the SGAI_API_KEY environment variable.
+
+Available commands (always use --json flag):
+- `just-scrape smart-scraper <url> -p <prompt> --json` — AI extraction from a URL
+- `just-scrape search-scraper <prompt> --json` — search the web and extract data
+- `just-scrape markdownify <url> --json` — convert a page to markdown
+- `just-scrape crawl <url> -p <prompt> --json` — crawl multiple pages
+- `just-scrape scrape <url> --json` — get raw HTML
+- `just-scrape sitemap <url> --json` — get all URLs from a sitemap
+
+Use --schema to enforce a JSON schema on the output.
+Use --stealth for sites with anti-bot protection.
+```
+
+### Example prompts for Claude Code
+
+Once configured, you can ask Claude Code things like:
+
+```
+> Scrape the pricing page at https://example.com/pricing and create a comparison table in pricing.md
+
+> Search for "best practices for REST API pagination" and summarize the top 5 results
+
+> Convert https://docs.example.com/api/authentication to markdown and save it as docs/auth.md
+
+> Crawl https://competitor.com/blog and extract all article titles, dates, and summaries into a JSON file
+```
+
+Claude Code will run the appropriate `just-scrape` command, parse the JSON output, and use the data to complete your task.
+
+### Claude Code + just-scrape in CI
+
+You can also use Claude Code with `just-scrape` in non-interactive mode for automated workflows:
+
+```bash
+claude -p "Use just-scrape to scrape https://example.com/changelog \
+  and extract the latest 5 releases with version numbers, dates, and highlights. \
+  Save the result as CHANGELOG_SUMMARY.md"
 ```
 
 ## Tips
