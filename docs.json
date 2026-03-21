@@ -3,9 +3,9 @@
   "theme": "mint",
   "name": "ScrapeGraphAI",
   "colors": {
-    "primary": "#9333ea",
-    "light": "#9f52eb",
-    "dark": "#1f2937"
+    "primary": "#AC6DFF",
+    "light": "#AC6DFF",
+    "dark": "#AC6DFF"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -279,7 +279,18 @@
   },
   "background": {
     "color": {
-      "dark": "#101725"
+      "dark": "#242424",
+      "light": "#EFEFEF"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "IBM Plex Sans",
+      "weight": 500
+    },
+    "body": {
+      "family": "IBM Plex Sans",
+      "weight": 400
     }
   },
   "navbar": {
