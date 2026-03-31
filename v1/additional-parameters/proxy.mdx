@@ -1,0 +1,23 @@
+---
+title: 'Proxy'
+description: 'Route requests through specific countries (v1)'
+icon: 'shield'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. In v2, use `FetchConfig(country="us")`. See the [v2 documentation](/services/additional-parameters/proxy).
+</Warning>
+
+## Proxy Routing
+
+Route scraping requests through proxies in specific countries using the `country_code` parameter:
+
+```python
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract data",
+    country_code="us"
+)
+```
+
+For v2 usage with `FetchConfig`, see the [v2 documentation](/services/additional-parameters/proxy).

@@ -1,0 +1,88 @@
+---
+title: Introduction
+description: 'Welcome to ScrapeGraphAI v1 - AI-Powered Web Data Extraction'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. v1 is deprecated and will be removed in a future release. Please migrate to [v2](/introduction) for the latest features and improvements.
+</Warning>
+
+<img
+  style={{ borderRadius: '0.5rem' }}
+  src="/images/introduction/docs-banner.png"
+/>
+
+## Overview
+
+[ScrapeGraphAI](https://scrapegraphai.com) is a powerful suite of LLM-driven web scraping tools designed to extract structured data from any website and HTML content. Our API is designed to be easy to use and integrate with your existing workflows.
+
+### Perfect For
+
+<CardGroup cols={2}>
+  <Card title="AI Applications" icon="robot">
+    Feed your AI agents with structured web data for enhanced decision-making
+  </Card>
+  <Card title="Data Analysis" icon="chart-mixed">
+    Extract and structure web data for research and analysis
+  </Card>
+  <Card title="Dataset Creation" icon="database">
+    Build comprehensive datasets from web sources
+  </Card>
+  <Card title="Platform Building" icon="layer-group">
+    Create scraping-powered platforms and applications
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+<Steps>
+  <Step title="Get API Key">
+    Sign up and access your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+  </Step>
+  <Step title="Choose Your Service">
+    Select from our specialized extraction services based on your needs
+  </Step>
+  <Step title="Start Extracting">
+    Begin extracting data using our SDKs or direct API calls
+  </Step>
+</Steps>
+
+## Core Services
+
+- **SmartScraper**: AI-powered extraction for any webpage
+- **SearchScraper**: Find and extract any data using AI starting from a prompt
+- **SmartCrawler**: AI-powered extraction for any webpage with crawl
+- **Markdownify**: Convert web content to clean Markdown format
+- **Sitemap**: Extract sitemaps from websites
+- **AgenticScraper**: Agent-based multi-step scraping
+- **Toonify**: Convert images to cartoon style
+
+## v1 SDKs
+
+### Python
+```python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the main content"
+)
+```
+
+### JavaScript
+```javascript
+import { smartScraper } from "scrapegraph-js";
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "What does the company do?",
+});
+```
+
+## Migrate to v2
+
+v2 brings significant improvements including renamed methods, unified configuration objects, and new endpoints. See the migration guides:
+- [Python SDK Migration Guide](https://github.com/ScrapeGraphAI/scrapegraph-py/blob/main/MIGRATION_V2.md)
+- [JavaScript SDK Migration Guide](https://github.com/ScrapeGraphAI/scrapegraph-js/blob/main/MIGRATION.md)
