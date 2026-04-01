@@ -25,20 +25,20 @@ pip install langchain-scrapegraph
 
 ## Available Tools
 
-### SmartScraperTool
+### ExtractTool
 
 Extract structured data from any webpage using natural language prompts:
 
 ```python
-from langchain_scrapegraph.tools import SmartScraperTool
+from langchain_scrapegraph.tools import ExtractTool
 
 # Initialize the tool (uses SGAI_API_KEY from environment)
-tool = SmartscraperTool()
+tool = ExtractTool()
 
 # Extract information using natural language
 result = tool.invoke({
-    "website_url": "https://www.example.com",
-    "user_prompt": "Extract the main heading and first paragraph"
+    "url": "https://www.example.com",
+    "prompt": "Extract the main heading and first paragraph"
 })
 ```
 
@@ -46,60 +46,51 @@ result = tool.invoke({
 Define the structure of the output using Pydantic models:
 
 ```python
-from typing import List
 from pydantic import BaseModel, Field
-from langchain_scrapegraph.tools import SmartScraperTool
+from langchain_scrapegraph.tools import ExtractTool
 
 class WebsiteInfo(BaseModel):
-    title: str = Field(description="The main title of the webpage")
-    description: str = Field(description="The main description or first paragraph")
-    urls: List[str] = Field(description="The URLs inside the webpage")
+    title: str = Field(description="The main title of the page")
+    description: str = Field(description="The main description")
 
-# Initialize with schema
-tool = SmartScraperTool(llm_output_schema=WebsiteInfo)
+# Initialize with output schema
+tool = ExtractTool(llm_output_schema=WebsiteInfo)
 
 result = tool.invoke({
-    "website_url": "https://www.example.com",
-    "user_prompt": "Extract the website information"
+    "url": "https://example.com",
+    "prompt": "Extract the title and description"
 })
 ```
 </Accordion>
 
-### SearchScraperTool
+### SearchTool
 
-Process HTML content directly with AI extraction:
+Search the web and extract structured results using AI:
 
 ```python
-from langchain_scrapegraph.tools import SearchScraperTool
+from langchain_scrapegraph.tools import SearchTool
 
-
-tool = SearchScraperTool()
+tool = SearchTool()
 result = tool.invoke({
-    "user_prompt": "Find the best restaurants in San Francisco",
+    "query": "Find the best restaurants in San Francisco",
 })
-
 ```
 
-<Accordion title="Using Output Schemas" icon="code">
+### ScrapeTool
+
+Scrape a webpage and return it in the desired format:
+
 ```python
-from typing import Optional
-from pydantic import BaseModel, Field
-from langchain_scrapegraph.tools import SearchScraperTool
+from langchain_scrapegraph.tools import ScrapeTool
 
-class RestaurantInfo(BaseModel):
-    name: str = Field(description="The restaurant name")
-    address: str = Field(description="The restaurant address")
-    rating: float = Field(description="The restaurant rating")
+tool = ScrapeTool()
 
+# Scrape as markdown (default)
+result = tool.invoke({"url": "https://example.com"})
 
-tool = SearchScraperTool(llm_output_schema=RestaurantInfo)
-
-result = tool.invoke({
-    "user_prompt": "Find the best restaurants in San Francisco"
-})
-
+# Scrape as HTML
+result = tool.invoke({"url": "https://example.com", "format": "html"})
 ```
-</Accordion>
 
 ### MarkdownifyTool
 
@@ -112,33 +103,145 @@ tool = MarkdownifyTool()
 markdown = tool.invoke({"website_url": "https://example.com"})
 ```
 
+### Crawl Tools
+
+Start and manage crawl jobs with `CrawlStartTool`, `CrawlStatusTool`, `CrawlStopTool`, and `CrawlResumeTool`:
+
+```python
+import time
+from langchain_scrapegraph.tools import CrawlStartTool, CrawlStatusTool
+
+start_tool = CrawlStartTool()
+status_tool = CrawlStatusTool()
+
+# Start a crawl job
+result = start_tool.invoke({
+    "url": "https://example.com",
+    "depth": 2,
+    "max_pages": 5,
+    "format": "markdown",
+})
+print("Crawl started:", result)
+
+# Check status
+crawl_id = result.get("id")
+if crawl_id:
+    time.sleep(5)
+    status = status_tool.invoke({"crawl_id": crawl_id})
+    print("Crawl status:", status)
+```
+
+### Monitor Tools
+
+Create and manage monitors (replaces scheduled jobs) with `MonitorCreateTool`, `MonitorListTool`, `MonitorGetTool`, `MonitorPauseTool`, `MonitorResumeTool`, and `MonitorDeleteTool`:
+
+```python
+from langchain_scrapegraph.tools import MonitorCreateTool, MonitorListTool
+
+create_tool = MonitorCreateTool()
+list_tool = MonitorListTool()
+
+# Create a monitor
+result = create_tool.invoke({
+    "name": "Price Monitor",
+    "url": "https://example.com/products",
+    "prompt": "Extract current product prices",
+    "cron": "0 9 * * *",  # Daily at 9 AM
+})
+print("Monitor created:", result)
+
+# List all monitors
+monitors = list_tool.invoke({})
+print("All monitors:", monitors)
+```
+
+### HistoryTool
+
+Retrieve request history:
+
+```python
+from langchain_scrapegraph.tools import HistoryTool
+
+tool = HistoryTool()
+history = tool.invoke({})
+```
+
+### GetCreditsTool
+
+Check your remaining API credits:
+
+```python
+from langchain_scrapegraph.tools import GetCreditsTool
+
+tool = GetCreditsTool()
+credits = tool.invoke({})
+```
+
 ## Example Agent
 
 Create a research agent that can gather and analyze web data:
 
 ```python
-from langchain.agents import initialize_agent, AgentType
-from langchain_scrapegraph.tools import SmartScraperTool
+from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
+from langchain_scrapegraph.tools import ExtractTool, GetCreditsTool, SearchTool
 
-# Initialize tools
+# Initialize the tools
 tools = [
-    SmartScraperTool(),
+    ExtractTool(),
+    GetCreditsTool(),
+    SearchTool(),
 ]
 
-# Create an agent
-agent = initialize_agent(
-    tools=tools,
-    llm=ChatOpenAI(temperature=0),
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-    verbose=True
-)
+# Create the prompt template
+prompt = ChatPromptTemplate.from_messages([
+    SystemMessage(
+        content=(
+            "You are a helpful AI assistant that can analyze websites and extract information. "
+            "You have access to tools that can help you scrape and process web content. "
+            "Always explain what you're doing before using a tool."
+        )
+    ),
+    MessagesPlaceholder(variable_name="chat_history", optional=True),
+    ("user", "{input}"),
+    MessagesPlaceholder(variable_name="agent_scratchpad"),
+])
 
-# Use the agent
-response = agent.run("""
-    Visit example.com, make a summary of the content and extract the main heading and first paragraph
-""")
+# Initialize the LLM
+llm = ChatOpenAI(temperature=0)
+
+# Create the agent
+agent = create_openai_functions_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+
+# Example usage
+response = agent_executor.invoke({
+    "input": "Extract the main products from https://www.scrapegraphai.com/"
+})
+print(response["output"])
 ```
+
+## Migration from v1
+
+If you're upgrading from v1, here are the key changes:
+
+| v1 Tool | v2 Tool |
+|---------|---------|
+| `SmartScraperTool` | `ExtractTool` |
+| `SearchScraperTool` | `SearchTool` |
+| `SmartCrawlerTool` | `CrawlStartTool` / `CrawlStatusTool` / `CrawlStopTool` / `CrawlResumeTool` |
+| `CreateScheduledJobTool` | `MonitorCreateTool` |
+| `GetScheduledJobsTool` | `MonitorListTool` |
+| `GetScheduledJobTool` | `MonitorGetTool` |
+| `PauseScheduledJobTool` | `MonitorPauseTool` |
+| `ResumeScheduledJobTool` | `MonitorResumeTool` |
+| `DeleteScheduledJobTool` | `MonitorDeleteTool` |
+| `MarkdownifyTool` | `MarkdownifyTool` (unchanged) |
+| `GetCreditsTool` | `GetCreditsTool` (unchanged) |
+| `AgenticScraperTool` | Removed |
+| -- | `HistoryTool` (new) |
 
 ## Configuration
 

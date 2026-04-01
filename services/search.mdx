@@ -1,0 +1,167 @@
+---
+title: 'Search'
+description: 'AI-powered web search with structured data extraction'
+icon: 'magnifying-glass'
+---
+
+## Overview
+
+Search enables you to search the web and extract structured results using AI. It combines web search capabilities with intelligent data extraction, returning clean, structured data from search results.
+
+<Note>
+Try Search instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) 
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.search(
+    query="What are the key features of ChatGPT Plus?"
+)
+```
+
+```javascript JavaScript
+import { search } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await search(apiKey, {
+  query: 'What are the key features of ChatGPT Plus?',
+});
+
+console.log(response);
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/api/v2/search \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "query": "What are the key features of ChatGPT Plus?"
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| query | string | Yes | The search query to execute. |
+| num_results | int | No | Number of search results to return. |
+| output_schema | object | No | Pydantic or Zod schema for structured response format. |
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Custom Schema Example
+
+Define the structure of the output using Pydantic or Zod:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+from scrapegraph_py import Client
+
+class SearchResult(BaseModel):
+    title: str = Field(description="The result title")
+    summary: str = Field(description="Brief summary of the result")
+    url: str = Field(description="Source URL")
+
+client = Client(api_key="your-api-key")
+
+response = client.search(
+    query="Latest AI developments 2024",
+    num_results=10,
+    output_schema=SearchResult,
+)
+```
+
+```javascript JavaScript
+import { search } from 'scrapegraph-js';
+import { z } from 'zod';
+
+const schema = z.object({
+  title: z.string().describe('The result title'),
+  summary: z.string().describe('Brief summary'),
+  url: z.string().describe('Source URL'),
+});
+
+const response = await search('your-api-key', {
+  query: 'Latest AI developments 2024',
+  num_results: 10,
+  output_schema: schema,
+});
+```
+
+</CodeGroup>
+
+## Async Support
+
+```python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        response = await client.search(
+            query="Best practices for web scraping"
+        )
+        print(response)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="AI-Powered Search" icon="brain">
+    Intelligent extraction from search results
+  </Card>
+  <Card title="Structured Output" icon="table">
+    Returns clean, structured data in your preferred format
+  </Card>
+  <Card title="Schema Support" icon="code">
+    Define custom output schemas using Pydantic or Zod
+  </Card>
+  <Card title="Flexible Results" icon="sliders">
+    Control the number of search results returned
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use Search in your LLM workflows
+- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

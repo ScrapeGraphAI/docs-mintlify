@@ -47,13 +47,11 @@
               {
                 "group": "Services",
                 "pages": [
-                  "services/smartscraper",
-                  "services/searchscraper",
-                  "services/markdownify",
+                  "services/extract",
+                  "services/search",
                   "services/scrape",
-                  "services/smartcrawler",
-                  "services/sitemap",
-                  "services/agenticscraper",
+                  "services/crawl",
+                  "services/monitor",
                   {
                     "group": "CLI",
                     "icon": "terminal",
@@ -102,7 +100,6 @@
                   "integrations/llamaindex",
                   "integrations/crewai",
                   "integrations/agno",
-                  "integrations/langflow",
                   "integrations/vercel_ai",
                   "integrations/google-adk",
                   "integrations/x402"

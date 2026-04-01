@@ -1,0 +1,189 @@
+---
+title: 'Crawl'
+description: 'Multi-page website crawling with flexible output formats'
+icon: 'spider'
+---
+
+## Overview
+
+Crawl is an advanced web crawling service that traverses multiple pages, follows links, and returns content in your preferred format (markdown or HTML). It provides namespaced operations for starting, monitoring, stopping, and resuming crawl jobs.
+
+<Note>
+Try Crawl instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) 
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Start a crawl
+response = client.crawl.start(
+    "https://example.com",
+    depth=2,
+    max_pages=10,
+    format="markdown",
+)
+print("Crawl started:", response)
+```
+
+```javascript JavaScript
+import { crawlStart, crawlStatus } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await crawlStart(apiKey, {
+  url: 'https://example.com',
+  depth: 2,
+  max_pages: 10,
+  format: 'markdown',
+});
+
+console.log('Crawl started:', response);
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/api/v2/crawl \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "url": "https://example.com",
+    "depth": 2,
+    "max_pages": 10,
+    "format": "markdown"
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| url | string | Yes | The starting URL to crawl. |
+| depth | int | No | How many levels deep to follow links. |
+| max_pages | int | No | Maximum number of pages to crawl. |
+| format | string | No | Output format: `"markdown"` or `"html"`. Default: `"markdown"`. |
+| include_patterns | list | No | URL patterns to include (e.g., `["/blog/*"]`). |
+| exclude_patterns | list | No | URL patterns to exclude (e.g., `["/admin/*"]`). |
+| fetch_config | FetchConfig | No | Configuration for page fetching (headers, stealth, etc.). |
+
+<Note>
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+</Note>
+
+## Managing Crawl Jobs
+
+### Check Status
+
+```python
+status = client.crawl.status(crawl_id)
+print("Status:", status)
+```
+
+### Stop a Running Crawl
+
+```python
+client.crawl.stop(crawl_id)
+```
+
+### Resume a Stopped Crawl
+
+```python
+client.crawl.resume(crawl_id)
+```
+
+## Advanced Usage
+
+### With FetchConfig
+
+```python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+response = client.crawl.start(
+    "https://example.com",
+    depth=2,
+    max_pages=10,
+    format="markdown",
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/admin/*"],
+    fetch_config=FetchConfig(
+        render_js=True,
+        stealth=True,
+        wait_ms=1000,
+        headers={"User-Agent": "MyBot"},
+    ),
+)
+```
+
+### Async Support
+
+```python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        job = await client.crawl.start(
+            "https://example.com",
+            depth=2,
+            max_pages=5,
+        )
+        
+        status = await client.crawl.status(job["id"])
+        print("Crawl status:", status)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Page Crawling" icon="sitemap">
+    Traverse entire websites following links automatically
+  </Card>
+  <Card title="Flexible Formats" icon="file-lines">
+    Get results in markdown or HTML format
+  </Card>
+  <Card title="Job Control" icon="sliders">
+    Start, stop, resume, and monitor crawl jobs
+  </Card>
+  <Card title="URL Filtering" icon="filter">
+    Include or exclude pages by URL patterns
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use Crawl in your LLM workflows
+- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
