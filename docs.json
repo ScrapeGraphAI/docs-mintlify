@@ -38,7 +38,6 @@
                     "group": "Dashboard",
                     "pages": [
                       "dashboard/overview",
-                      "dashboard/playground",
                       "dashboard/settings"
                     ]
                   }
@@ -47,9 +46,9 @@
               {
                 "group": "Services",
                 "pages": [
+                  "services/scrape",
                   "services/extract",
                   "services/search",
-                  "services/scrape",
                   "services/crawl",
                   "services/monitor",
                   {
@@ -101,8 +100,7 @@
                   "integrations/crewai",
                   "integrations/agno",
                   "integrations/vercel_ai",
-                  "integrations/google-adk",
-                  "integrations/x402"
+                  "integrations/google-adk"
                 ]
               },
               {
@@ -333,12 +331,7 @@
           "href": "https://scrapegraphai.com/",
           "icon": "globe"
         },
-        {
-          "anchor": "Community",
-          "href": "https://discord.gg/uJN7TYcpNa",
-          "icon": "discord"
-        },
-        {
+{
           "anchor": "Blog",
           "href": "https://scrapegraphai.com/blog",
           "icon": "newspaper"

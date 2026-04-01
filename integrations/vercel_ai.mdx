@@ -5,19 +5,19 @@ description: "Integrate ScrapeGraphAI into Vercel AI"
 
 ## Overview
 
-[Vercel AI sdk](https://ai-sdk.dev/) is a very populate javascript/typescript framework to interact with various LLMs providers. This page shows how to integrate it with ScrapeGraph
+[Vercel AI SDK](https://ai-sdk.dev/) is a popular JavaScript/TypeScript framework to interact with various LLM providers. This page shows how to integrate it with ScrapeGraph.
 
 <Card
   title="Official Vercel AI documentation"
   icon="book"
   href="https://ai-sdk.dev/"
 >
-  View the integration on LlamaHub
+  View the Vercel AI SDK documentation
 </Card>
 
 ## Installation
 
-Follow out [javascript sdk installation steps](/sdks/javascript) using your favourite package manager:
+Follow our [JavaScript SDK installation steps](/sdks/javascript) using your favourite package manager:
 
 ```bash
 # Using npm
@@ -33,7 +33,7 @@ yarn add scrapegraph-js
 bun add scrapegraph-js
 ```
 
-Then, install [vercel ai](https://ai-sdk.dev/docs/getting-started) with their [openai provider](https://ai-sdk.dev/providers/ai-sdk-providers/openai)
+Then, install [Vercel AI](https://ai-sdk.dev/docs/getting-started) with their [OpenAI provider](https://ai-sdk.dev/providers/ai-sdk-providers/openai):
 
 ```bash
 # Using npm
@@ -51,15 +51,15 @@ bun add ai @ai-sdk/openai
 
 ## Usage
 
-ScrapeGraph sdk can be used like any other tools, see [vercel ai tool calling doc](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling)
+The ScrapeGraph SDK can be used like any other tool. See [Vercel AI tool calling docs](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling).
 
 ```ts
 import { z } from "zod";
 import { generateText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { smartScraper } from "scrapegraph-js";
+import { scrapegraphai } from "scrapegraph-js";
 
-const apiKey = process.env.SGAI_APIKEY;
+const sgai = scrapegraphai({ apiKey: process.env.SGAI_API_KEY });
 
 const ArticleSchema = z.object({
   title: z.string().describe("The article title"),
@@ -77,15 +77,14 @@ const result = await generateText({
   model: openai("gpt-4.1-mini"),
   tools: {
     scrape: tool({
-      description: "Get articles information for a given url.",
+      description: "Extract articles information from a given URL.",
       parameters: z.object({
-        url: z.string().describe("The exact url."),
+        url: z.string().describe("The exact URL."),
       }),
       execute: async ({ url }) => {
-        const response = await smartScraper(apiKey, {
-          website_url: url,
-          user_prompt: "Extract the article information",
-          output_schema: ArticlesArraySchema,
+        const response = await sgai.extract(url, {
+          prompt: "Extract the article information",
+          schema: ArticlesArraySchema,
         });
         return response.data;
       },
@@ -97,8 +96,6 @@ const result = await generateText({
 console.log(result);
 ```
 
-**TODO ADD THE LOGS**
-
 ## Support
 
 Need help with the integration?
@@ -107,7 +104,7 @@ Need help with the integration?
   <Card
     title="GitHub Issues"
     icon="github"
-    href="https://github.com/ScrapeGraphAI/llama-index-tools-scrapegraph/issues"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-js/issues"
   >
     Report bugs and request features
   </Card>
