@@ -56,21 +56,20 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v1` |
+| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
 | `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
 | `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
 
 ## Verify your setup
 
 ```bash
-just-scrape validate   # check your API key
 just-scrape credits    # check your credit balance
 ```
 
 ## Quick start
 
 ```bash
-just-scrape smart-scraper https://news.ycombinator.com \
+just-scrape extract https://news.ycombinator.com \
   -p "Extract the top 5 story titles and their URLs"
 ```
 
