@@ -34,18 +34,24 @@ print("Monitor created:", monitor)
 ```
 
 ```javascript JavaScript
-import { monitorCreate } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
-const monitor = await monitorCreate(apiKey, {
+const monitor = await sgai.monitor.create({
   name: 'Price Tracker',
   url: 'https://example.com/products',
   prompt: 'Extract current product prices',
   cron: '0 9 * * *',
 });
 
-console.log('Monitor created:', monitor);
+console.log('Monitor created:', monitor.data.id);
+
+// List / Get / Pause / Resume / Delete
+const monitors = await sgai.monitor.list();
+await sgai.monitor.pause(monitor.data.id);
+await sgai.monitor.resume(monitor.data.id);
+await sgai.monitor.delete(monitor.data.id);
 ```
 
 ```bash cURL

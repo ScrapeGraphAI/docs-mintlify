@@ -38,22 +38,19 @@ response = client.scrape("https://example.com", format="screenshot")
 ```
 
 ```javascript JavaScript
-import { scrape } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
 // Get markdown (default)
-const response = await scrape(apiKey, {
-  url: 'https://example.com',
-});
+const { data } = await sgai.scrape('https://example.com');
 
 // Get HTML
-const htmlResponse = await scrape(apiKey, {
-  url: 'https://example.com',
+const { data: htmlData } = await sgai.scrape('https://example.com', {
   format: 'html',
 });
 
-console.log(response);
+console.log(data);
 ```
 
 ```bash cURL

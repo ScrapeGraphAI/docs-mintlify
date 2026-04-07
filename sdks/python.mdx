@@ -60,6 +60,19 @@ You can also set the `SGAI_API_KEY` environment variable and initialize the clie
 | max_retries   | int    | `3`                              | Maximum number of retries       |
 | retry_delay   | float  | `1.0`                            | Delay between retries (seconds) |
 
+You can also use the `Client.from_env()` class method to create a client from the `SGAI_API_KEY` environment variable:
+
+```python
+client = Client.from_env()
+```
+
+Both `Client` and `AsyncClient` support context managers for automatic session cleanup:
+
+```python
+with Client(api_key="your-api-key") as client:
+    response = client.extract(url="https://example.com", prompt="Extract data")
+```
+
 ## Services
 
 ### Extract
@@ -141,7 +154,7 @@ response = client.search(
 | Parameter     | Type        | Required | Description                                              |
 | ------------- | ----------- | -------- | -------------------------------------------------------- |
 | query         | string      | Yes      | The search query                                         |
-| num_results   | number      | No       | Number of results (3-20). Default: 3                     |
+| num_results   | number      | No       | Number of results (3-20). Default: 5                     |
 | output_schema | object      | No       | Pydantic model for structured response                   |
 | fetch_config  | FetchConfig | No       | Fetch configuration                                      |
 | llm_config    | LlmConfig   | No       | LLM configuration                                        |
@@ -183,7 +196,7 @@ response = client.scrape(
 | Parameter     | Type        | Required | Description                                              |
 | ------------- | ----------- | -------- | -------------------------------------------------------- |
 | url           | string      | Yes      | The URL of the webpage to scrape                         |
-| output_format | string      | No       | Output format: `"markdown"`, `"html"`, `"screenshot"`, `"branding"` |
+| format        | string      | No       | Output format: `"markdown"`, `"html"`, `"screenshot"`, `"branding"` |
 | fetch_config  | FetchConfig | No       | Fetch configuration                                      |
 
 ### Crawl
@@ -260,9 +273,9 @@ print(f"Used: {credits['total_credits_used']}")
 Retrieve paginated request history with optional service filtering.
 
 ```python
-history = client.history(page=1, per_page=20, service="extract")
+history = client.history(endpoint="extract", status="completed", limit=20, offset=0)
 for entry in history["items"]:
-    print(f"{entry['created_at']} - {entry['service']} - {entry['status']}")
+    print(f"{entry['created_at']} - {entry['endpoint']} - {entry['status']}")
 ```
 
 ## Configuration Objects
@@ -275,13 +288,14 @@ Controls how pages are fetched.
 from scrapegraph_py import FetchConfig
 
 config = FetchConfig(
+    mock=False,          # Enable mock mode for testing
     stealth=True,        # Anti-detection mode
-    render_js=True,      # Render JavaScript
-    wait_ms=2000,        # Wait time after page load (ms)
-    scrolls=3,           # Number of scrolls
+    scrolls=3,           # Number of scrolls (0-100)
     country="us",        # Proxy country code
     cookies={"key": "value"},
     headers={"X-Custom": "header"},
+    wait_ms=2000,        # Wait time after page load (ms)
+    render_js=True,      # Render JavaScript
 )
 ```
 
@@ -293,10 +307,10 @@ Controls LLM behavior for AI-powered methods.
 from scrapegraph_py import LlmConfig
 
 config = LlmConfig(
-    model="default",       # LLM model to use
-    temperature=0.3,       # Response creativity (0-1)
-    max_tokens=1000,       # Maximum response tokens
-    chunker="auto",        # Content chunking strategy
+    model="gpt-4o-mini",      # LLM model to use
+    temperature=0.3,           # Response creativity (0.0-2.0)
+    max_tokens=1000,           # Maximum response tokens
+    chunker="auto",            # Content chunking strategy ("auto" or custom config)
 )
 ```
 

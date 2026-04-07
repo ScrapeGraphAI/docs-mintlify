@@ -154,11 +154,11 @@ async def test_async_extract():
 
 ```javascript
 import { describe, it, expect, vi } from "vitest";
-import scrapegraphai from "scrapegraph-js";
+import { scrapegraphai } from "scrapegraph-js";
 
 // Mock the module
 vi.mock("scrapegraph-js", () => ({
-  default: vi.fn(() => ({
+  scrapegraphai: vi.fn(() => ({
     extract: vi.fn().mockResolvedValue({
       data: { title: "Mock Title" },
       requestId: "mock-123",
@@ -197,7 +197,7 @@ Mock at the network level for more realistic testing:
 ```javascript
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import scrapegraphai from "scrapegraph-js";
+import { scrapegraphai } from "scrapegraph-js";
 
 const server = setupServer(
   http.post("https://api.scrapegraphai.com/api/v2/extract", () => {

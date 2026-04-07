@@ -24,9 +24,10 @@ client = Client(api_key="your-api-key")
 ```
 
 ```javascript JavaScript
-import { smartScraper } from "scrapegraph-js";
+import { scrapegraphai } from "scrapegraph-js";
 
-const result = await smartScraper("your-api-key", url, prompt);
+const sgai = scrapegraphai({ apiKey: "your-api-key" });
+const { data } = await sgai.extract(url, { prompt });
 ```
 
 ```bash cURL

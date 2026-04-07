@@ -29,15 +29,15 @@ response = client.search(
 ```
 
 ```javascript JavaScript
-import { search } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
-const response = await search(apiKey, {
-  query: 'What are the key features of ChatGPT Plus?',
-});
+const { data } = await sgai.search(
+  'What are the key features of ChatGPT Plus?'
+);
 
-console.log(response);
+console.log(data);
 ```
 
 ```bash cURL
@@ -56,8 +56,9 @@ curl -X POST https://api.scrapegraphai.com/api/v2/search \
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | query | string | Yes | The search query to execute. |
-| num_results | int | No | Number of search results to return. |
+| num_results | int | No | Number of search results to return (3-20). Default: 5. |
 | output_schema | object | No | Pydantic or Zod schema for structured response format. |
+| llm_config | LlmConfig | No | Configuration for the AI model (model, temperature, max_tokens, etc.). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -88,8 +89,10 @@ response = client.search(
 ```
 
 ```javascript JavaScript
-import { search } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 import { z } from 'zod';
+
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
 const schema = z.object({
   title: z.string().describe('The result title'),
@@ -97,11 +100,13 @@ const schema = z.object({
   url: z.string().describe('Source URL'),
 });
 
-const response = await search('your-api-key', {
-  query: 'Latest AI developments 2024',
-  num_results: 10,
-  output_schema: schema,
-});
+const { data } = await sgai.search(
+  'Latest AI developments 2024',
+  {
+    schema: schema,
+    numResults: 10,
+  }
+);
 ```
 
 </CodeGroup>

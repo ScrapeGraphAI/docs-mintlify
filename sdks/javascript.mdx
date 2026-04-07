@@ -57,7 +57,7 @@ v2 is a breaking release. If you're upgrading from v1, see the [Migration Guide]
 ## Quick Start
 
 ```javascript
-import scrapegraphai from "scrapegraph-js";
+import { scrapegraphai } from "scrapegraph-js";
 
 const sgai = scrapegraphai({ apiKey: "your-api-key" });
 
@@ -81,7 +81,7 @@ libraries like `dotenv` to load them into your app.
 | apiKey     | string | Required                         | Your ScrapeGraphAI API key      |
 | baseUrl    | string | `https://api.scrapegraphai.com`  | API base URL                    |
 | timeout    | number | `30000`                          | Request timeout in ms           |
-| maxRetries | number | `3`                              | Maximum number of retries       |
+| maxRetries | number | `2`                              | Maximum number of retries       |
 
 ## Services
 
@@ -138,8 +138,8 @@ const { data } = await sgai.extract(
     prompt: "Extract the main heading",
     fetchConfig: {
       stealth: true,
-      renderJs: true,
-      waitMs: 2000,
+      render: true,
+      wait: 2000,
       scrolls: 3,
     },
     llmConfig: {
@@ -167,7 +167,7 @@ const { data } = await sgai.search(
 | Parameter            | Type        | Required | Description                                              |
 | -------------------- | ----------- | -------- | -------------------------------------------------------- |
 | query                | string      | Yes      | The search query                                         |
-| options.numResults   | number      | No       | Number of results (3-20). Default: 3                     |
+| options.numResults   | number      | No       | Number of results (3-20). Default: 5                     |
 | options.schema       | ZodSchema / object | No | Schema for structured response                          |
 | options.fetchConfig  | FetchConfig | No       | Fetch configuration                                      |
 | options.llmConfig    | LlmConfig   | No       | LLM configuration                                        |
@@ -219,7 +219,8 @@ Manage multi-page crawl operations asynchronously.
 ```javascript
 // Start a crawl
 const job = await sgai.crawl.start("https://example.com", {
-  depth: 2,
+  maxDepth: 2,
+  maxPages: 10,
   includePatterns: ["/blog/*", "/docs/**"],
   excludePatterns: ["/admin/*", "/api/*"],
 });
@@ -272,13 +273,14 @@ Retrieve paginated request history.
 
 ```javascript
 const { data } = await sgai.history({
-  page: 1,
-  perPage: 20,
-  service: "extract",
+  endpoint: "extract",
+  status: "completed",
+  limit: 20,
+  offset: 0,
 });
 
 data.items.forEach((entry) => {
-  console.log(`${entry.createdAt} - ${entry.service} - ${entry.status}`);
+  console.log(`${entry.createdAt} - ${entry.endpoint} - ${entry.status}`);
 });
 ```
 
@@ -291,12 +293,14 @@ Controls how pages are fetched.
 ```javascript
 {
   stealth: true,           // Anti-detection mode
-  renderJs: true,          // Render JavaScript
-  waitMs: 2000,            // Wait time after page load (ms)
-  scrolls: 3,              // Number of scrolls
+  render: true,            // Render JavaScript
+  wait: 2000,              // Wait time after page load (ms)
+  scrolls: 3,              // Number of scrolls (0-100)
   country: "us",           // Proxy country code
   cookies: { key: "value" },
   headers: { "X-Custom": "header" },
+  timeout: 15000,          // Fetch timeout in ms (1000-30000)
+  mock: false,             // Enable mock mode for testing
 }
 ```
 
@@ -306,9 +310,13 @@ Controls LLM behavior for AI-powered methods.
 
 ```javascript
 {
-  model: "default",       // LLM model to use
+  model: "gpt-4o-mini",   // LLM model to use
   temperature: 0.3,       // Response creativity (0-1)
   maxTokens: 1000,        // Maximum response tokens
+  chunker: {              // Content chunking strategy
+    size: "dynamic",      // Chunk size (number or "dynamic")
+    overlap: 100,         // Overlap between chunks
+  },
 }
 ```
 

@@ -34,16 +34,16 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
-const response = await extract(apiKey, {
-  url: 'https://scrapegraphai.com',
-  prompt: 'What does the company do?',
-});
+const { data, requestId } = await sgai.extract(
+  'https://scrapegraphai.com',
+  { prompt: 'What does the company do?' }
+);
 
-console.log(response);
+console.log(data);
 ```
 
 ```bash cURL
@@ -66,6 +66,7 @@ curl -X POST https://api.scrapegraphai.com/api/v2/extract \
 | prompt | string | Yes | A textual description of what you want to extract. |
 | output_schema | object | No | Pydantic or Zod schema for structured response format. |
 | fetch_config | FetchConfig | No | Configuration for page fetching (headers, cookies, stealth, etc.). |
+| llm_config | LlmConfig | No | Configuration for the AI model (model, temperature, max_tokens, etc.). |
 
 <Note>
 Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
@@ -148,10 +149,10 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 import { z } from 'zod';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
 const schema = z.object({
   title: z.string().describe('The title of the webpage'),
@@ -159,13 +160,15 @@ const schema = z.object({
   summary: z.string().describe('A brief summary of the webpage'),
 });
 
-const response = await extract(apiKey, {
-  url: 'https://scrapegraphai.com/',
-  prompt: 'What does the company do?',
-  output_schema: schema,
-});
+const { data } = await sgai.extract(
+  'https://scrapegraphai.com/',
+  {
+    prompt: 'What does the company do?',
+    schema: schema,
+  }
+);
 
-console.log(response);
+console.log(data);
 ```
 
 </CodeGroup>

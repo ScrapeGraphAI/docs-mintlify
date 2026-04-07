@@ -34,18 +34,24 @@ print("Crawl started:", response)
 ```
 
 ```javascript JavaScript
-import { crawlStart, crawlStatus } from 'scrapegraph-js';
+import { scrapegraphai } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
 
-const response = await crawlStart(apiKey, {
-  url: 'https://example.com',
-  depth: 2,
-  max_pages: 10,
+const job = await sgai.crawl.start('https://example.com', {
+  maxDepth: 2,
+  maxPages: 10,
   format: 'markdown',
 });
 
-console.log('Crawl started:', response);
+console.log('Crawl started:', job.data.id);
+
+// Check status
+const status = await sgai.crawl.status(job.data.id);
+
+// Stop / Resume
+await sgai.crawl.stop(job.data.id);
+await sgai.crawl.resume(job.data.id);
 ```
 
 ```bash cURL
