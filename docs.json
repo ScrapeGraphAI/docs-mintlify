@@ -22,6 +22,7 @@
                 "pages": [
                   "introduction",
                   "install",
+                  "transition",
                   {
                     "group": "Use Cases",
                     "pages": [
@@ -90,17 +91,6 @@
                   "sdks/python",
                   "sdks/javascript",
                   "sdks/mocking"
-                ]
-              },
-              {
-                "group": "Integrations",
-                "pages": [
-                  "integrations/langchain",
-                  "integrations/llamaindex",
-                  "integrations/crewai",
-                  "integrations/agno",
-                  "integrations/vercel_ai",
-                  "integrations/google-adk"
                 ]
               },
               {
@@ -340,8 +330,8 @@
     }
   },
   "logo": {
-    "light": "https://raw.githubusercontent.com/ScrapeGraphAI/docs-mintlify/main/logo/light.svg",
-    "dark": "https://raw.githubusercontent.com/ScrapeGraphAI/docs-mintlify/main/logo/dark.svg",
+    "light": "/logos/logo-light.svg",
+    "dark": "/logos/logo-dark.svg",
     "href": "https://docs.scrapegraphai.com"
   },
   "background": {
@@ -378,7 +368,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://scrapegrphai.com/dashboard"
+      "href": "https://scrapegraphai.com/dashboard"
     }
   },
   "footer": {
