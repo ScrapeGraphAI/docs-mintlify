@@ -22,7 +22,7 @@
                 "pages": [
                   "introduction",
                   "install",
-                  "transition",
+                  "transition-from-v1-to-v2",
                   {
                     "group": "Use Cases",
                     "pages": [
