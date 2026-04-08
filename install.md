@@ -83,17 +83,20 @@ For more advanced usage, see the [JavaScript SDK documentation](/sdks/javascript
 
 ## Key Concepts
 
+### Scrape (formerly Markdownify)
+Convert any webpage into markdown, HTML, screenshot, or branding format. [Learn more](/services/scrape)
+
 ### Extract (formerly SmartScraper)
-Extract specific information from any webpage using AI. Provide a URL and a prompt describing what you want to extract. [Learn more](/services/smartscraper)
+Extract specific information from any webpage using AI. Provide a URL and a prompt describing what you want to extract. [Learn more](/services/extract)
 
 ### Search (formerly SearchScraper)
-Search and extract information from multiple web sources using AI. Start with just a query - Search will find relevant websites and extract the information you need. [Learn more](/services/searchscraper)
+Search and extract information from multiple web sources using AI. Start with just a query - Search will find relevant websites and extract the information you need. [Learn more](/services/search)
 
-### Scrape
-Convert any webpage into markdown, HTML, screenshot, or branding format. Replaces the previous Markdownify endpoint with additional output formats. [Learn more](/services/scrape)
+### Crawl (formerly SmartCrawler)
+Multi-page website crawling with flexible output formats. Traverse multiple pages, follow links, and return content in your preferred format. [Learn more](/services/crawl)
 
-### SmartCrawler
-AI-powered extraction for any webpage with crawl capabilities. Automatically navigate and extract data from multiple pages. [Learn more](/services/smartcrawler)
+### Monitor
+Scheduled web monitoring with AI-powered extraction. Set up recurring scraping jobs that automatically extract data on a cron schedule. [Learn more](/services/monitor)
 
 ### Structured Output with Schemas
 Both SDKs support structured output using schemas:
