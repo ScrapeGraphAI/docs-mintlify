@@ -5,7 +5,7 @@ description: 'Install and get started with ScrapeGraphAI v2 SDKs'
 
 ## Prerequisites
 
-- Obtain your **API key** by signing up on the [ScrapeGraphAI Dashboard](https://dashboard.scrapegraphai.com)
+- Obtain your **API key** by signing up on the [ScrapeGraphAI Dashboard](https://scrapegrphai.com/dashboard)
 
 ---
 

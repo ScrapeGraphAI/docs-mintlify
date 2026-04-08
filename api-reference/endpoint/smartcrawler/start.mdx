@@ -229,7 +229,7 @@ sha256={your_webhook_secret}
 
 To verify that a webhook request is authentic:
 
-1. Retrieve your webhook secret from the [dashboard](https://dashboard.scrapegraphai.com)
+1. Retrieve your webhook secret from the [dashboard](https://scrapegrphai.com/dashboard)
 2. Compare the `X-Webhook-Signature` header value with `sha256={your_secret}`
 
 <CodeGroup>
@@ -305,5 +305,5 @@ The webhook POST request contains the following JSON payload:
 | result | string | The crawl result data (null if failed) |
 
 <Note>
-Make sure to configure your webhook secret in the [dashboard](https://dashboard.scrapegraphai.com) before using webhooks. Each user has a unique webhook secret for secure verification.
+Make sure to configure your webhook secret in the [dashboard](https://scrapegrphai.com/dashboard) before using webhooks. Each user has a unique webhook secret for secure verification.
 </Note>
