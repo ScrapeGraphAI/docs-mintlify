@@ -9,17 +9,6 @@ If you are coming from the legacy v1 docs, use this page as your migration check
 
 Before anything else, log in to the dashboard at [scrapegraphai.com/login](https://scrapegraphai.com/login).
 
-## What changed at a glance
-
-| Area | v1 (before) | v2 (now) |
-|------|-------------|----------|
-| **REST paths** | `/v1/smartscraper`, `/v1/searchscraper`, `/v1/markdownify`, `/v1/crawl`, … | `/api/v2/extract`, `/api/v2/search`, `/api/v2/scrape`, `/api/v2/crawl`, `/api/v2/monitor`, … (see [Extract](/services/extract), [Search](/services/search), [Scrape](/services/scrape), [Crawl](/services/crawl)) |
-| **Python client** | `Client` with flat methods like `smartscraper()`, `searchscraper()` | Same `Client`, but **`extract()`**, **`search()`**, **`scrape()`**, and **namespaced** APIs: `crawl.start()`, `monitor.create()`, … |
-| **JavaScript** | Standalone functions: `smartScraper(apiKey, { ... })` | **Factory client**: `scrapegraphai({ apiKey })` then `sgai.extract()`, `sgai.search()`, … |
-| **Parameters** | Many top-level flags (`stealth`, `headers`, `mock`, …) on each call | Shared **`FetchConfig`** and **`LlmConfig`** objects (Python: `fetch_config` / `llm_config`; JS: `fetchConfig` / `llmConfig`) |
-| **Naming** | `website_url`, `user_prompt`, snake_case in Python | **`url`** and **`prompt`** for extract/search; JS uses **camelCase** everywhere |
-| **Errors (JS)** | Often returned as `{ status: 'error', error }` | Methods **throw** on failure; success is `{ data, requestId }` |
-
 ## Method-by-method migration
 
 Use this table to map old entry points to new ones. Details and examples follow below.
