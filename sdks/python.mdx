@@ -118,26 +118,6 @@ print(f"Author: {response['data']['author']}")
 ```
 </Accordion>
 
-<Accordion title="With FetchConfig and LlmConfig" icon="code">
-```python
-from scrapegraph_py import FetchConfig, LlmConfig
-
-response = client.extract(
-    url="https://example.com",
-    prompt="Extract the main heading",
-    fetch_config=FetchConfig(
-        mode="js+stealth",
-        wait=2000,
-        scrolls=3,
-    ),
-    llm_config=LlmConfig(
-        temperature=0.3,
-        max_tokens=1000,
-    ),
-)
-```
-</Accordion>
-
 ### Search
 
 Search the web and extract information from multiple sources. Replaces the v1 `searchscraper()` method.
