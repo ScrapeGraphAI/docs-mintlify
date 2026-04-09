@@ -156,6 +156,7 @@
               {
                 "group": "Account & Credits",
                 "pages": [
+                  "knowledge-base/account/pricing",
                   "knowledge-base/account/api-keys",
                   "knowledge-base/account/credits",
                   "knowledge-base/account/rate-limits"
