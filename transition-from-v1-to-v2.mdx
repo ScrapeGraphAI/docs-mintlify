@@ -32,6 +32,33 @@ Use this table to map old entry points to new ones. Details and examples follow 
 
 **After:** `scrape(url, format="markdown")` (Python) or `scrape(url, { format: "markdown" })` (JS).
 
+<CodeGroup>
+
+```python Python (v2)
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+response = client.scrape(
+    "https://example.com",
+    format="markdown",
+)
+
+print(response)
+```
+
+```javascript JavaScript (v2)
+import { scrapegraphai } from "scrapegraph-js";
+
+const sgai = scrapegraphai({ apiKey });
+const { data, requestId } = await sgai.scrape("https://example.com", {
+  format: "markdown",
+});
+
+console.log(data);
+```
+
+</CodeGroup>
+
 ### 2. SmartScraper → `extract`
 
 **Before (v1):** `website_url` + `user_prompt`, optional flags on the same object.
