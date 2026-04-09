@@ -9,24 +9,178 @@ If you are coming from the legacy v1 docs, use this page as your migration check
 
 Before anything else, log in to the dashboard at [scrapegraphai.com/login](https://scrapegraphai.com/login).
 
-## What Changed in v2
+## What changed at a glance
+
+| Area | v1 (before) | v2 (now) |
+|------|-------------|----------|
+| **REST paths** | `/v1/smartscraper`, `/v1/searchscraper`, `/v1/markdownify`, `/v1/crawl`, … | `/api/v2/extract`, `/api/v2/search`, `/api/v2/scrape`, `/api/v2/crawl`, `/api/v2/monitor`, … (see [Extract](/services/extract), [Search](/services/search), [Scrape](/services/scrape), [Crawl](/services/crawl)) |
+| **Python client** | `Client` with flat methods like `smartscraper()`, `searchscraper()` | Same `Client`, but **`extract()`**, **`search()`**, **`scrape()`**, and **namespaced** APIs: `crawl.start()`, `monitor.create()`, … |
+| **JavaScript** | Standalone functions: `smartScraper(apiKey, { ... })` | **Factory client**: `scrapegraphai({ apiKey })` then `sgai.extract()`, `sgai.search()`, … |
+| **Parameters** | Many top-level flags (`stealth`, `headers`, `mock`, …) on each call | Shared **`FetchConfig`** and **`LlmConfig`** objects (Python: `fetch_config` / `llm_config`; JS: `fetchConfig` / `llmConfig`) |
+| **Naming** | `website_url`, `user_prompt`, snake_case in Python | **`url`** and **`prompt`** for extract/search; JS uses **camelCase** everywhere |
+| **Errors (JS)** | Often returned as `{ status: 'error', error }` | Methods **throw** on failure; success is `{ data, requestId }` |
+
+## Method-by-method migration
+
+Use this table to map old entry points to new ones. Details and examples follow below.
+
+| v1 | v2 | Notes |
+|----|-----|------|
+| `smartscraper` / `smartScraper` | **`extract`** | Same job: structured extraction from a URL. Rename params and pass extra fetch/LLM options via config objects. |
+| `searchscraper` / `searchScraper` | **`search`** | Web search + extraction; use `query` (or positional string in JS). |
+| `markdownify` | **`scrape`** with `format="markdown"` (Python) or `format: "markdown"` (JS) | HTML → markdown and related “raw page” outputs live under **`scrape`**. |
+| `crawl` (single start call) | **`crawl.start`**, then **`crawl.status`**, **`crawl.stop`**, **`crawl.resume`** | Crawl is explicitly async: you poll or track job id. |
+| Monitors (if you used them) | **`monitor.create`**, **`monitor.list`**, **`monitor.get`**, pause/resume/delete | Same product, namespaced API. |
+| `sitemap` | **Removed from v2 SDKs** | Discover URLs with **`crawl.start`** and URL patterns, or call the REST sitemap endpoint if your integration still requires it—see [Sitemap](/services/sitemap) and SDK release notes. |
+| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `render_js`, `wait_ms`, `stealth`) for hard pages, or **`crawl.start`** for multi-page flows. |
+| `healthz` / `checkHealth`, `feedback`, built-in mock helpers | **Removed or changed** | Use **`credits`**, **`history`**, and dashboard features; check the SDK migration guides for replacements. |
+
+## Code-level transition
+
+### 1. SmartScraper → `extract`
+
+**Before (v1):** `website_url` + `user_prompt`, optional flags on the same object.
+
+**After (v2):** `url` + `prompt`; move fetch-related flags into `FetchConfig` / `fetchConfig`.
+
+<CodeGroup>
+
+```python Python (v1)
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the title and price",
+    stealth=True,
+)
+```
+
+```python Python (v2)
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract the title and price",
+    fetch_config=FetchConfig(stealth=True),
+)
+```
+
+```javascript JavaScript (v1)
+import { smartScraper } from "scrapegraph-js";
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "Extract the title and price",
+  stealth: true,
+});
+```
+
+```javascript JavaScript (v2)
+import { scrapegraphai } from "scrapegraph-js";
+
+const sgai = scrapegraphai({ apiKey });
+const { data, requestId } = await sgai.extract("https://example.com", {
+  prompt: "Extract the title and price",
+  fetchConfig: { stealth: true },
+});
+```
+
+</CodeGroup>
+
+### 2. SearchScraper → `search`
+
+**Before:** `searchscraper` / `searchScraper` with a prompt-style query.
+
+**After:** `search` with `query` (Python keyword argument; JS first argument is the query string).
+
+<CodeGroup>
+
+```python Python (v2)
+response = client.search(
+    query="Latest pricing for product X",
+    num_results=5,
+)
+```
+
+```javascript JavaScript (v2)
+const { data } = await sgai.search("Latest pricing for product X", {
+  numResults: 5,
+});
+```
+
+</CodeGroup>
+
+### 3. Markdownify → `scrape`
+
+**Before:** `markdownify(url)`.
+
+**After:** `scrape(url, format="markdown")` (Python) or `scrape(url, { format: "markdown" })` (JS).
+
+### 4. Crawl jobs
+
+**Before:** One-shot `crawl(...)` style usage depending on SDK version.
+
+**After:** Start a job, then poll or webhook as documented:
+
+<CodeGroup>
+
+```python Python (v2)
+job = client.crawl.start(
+    url="https://example.com",
+    depth=2,
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/admin/*"],
+)
+status = client.crawl.status(job["id"])
+```
+
+```javascript JavaScript (v2)
+const job = await sgai.crawl.start("https://example.com", {
+  maxDepth: 2,
+  includePatterns: ["/blog/*"],
+  excludePatterns: ["/admin/*"],
+});
+const status = await sgai.crawl.status(job.data.id);
+```
+
+</CodeGroup>
+
+### 5. REST calls
+
+If you call the API with `curl` or a generic HTTP client:
+
+- Use the v2 host and path pattern: **`https://api.scrapegraphai.com/api/v2/<endpoint>`** (e.g. `/api/v2/extract`, `/api/v2/monitor`).
+- Replace JSON fields to match v2 bodies (e.g. `url` and `prompt` instead of `website_url` and `user_prompt` on extract).
+- Keep using the **`SGAI-APIKEY`** header unless the endpoint docs specify otherwise.
+
+Exact paths and payloads are listed under each service (for example [Extract](/services/extract)) and in the [API reference](/api-reference/introduction).
+
+## What else changed in v2 (docs & product)
 
 - Unified and clearer API documentation
 - Updated service pages and endpoint organization
 - New guides for MCP server and SDK usage
 
-## Recommended Path
+## Recommended path
 
 1. Log in at [scrapegraphai.com/login](https://scrapegraphai.com/login)
 2. Start from [Introduction](/introduction)
 3. Follow [Installation](/install)
+4. Upgrade packages: `pip install -U scrapegraph-py` / `npm i scrapegraph-js@latest` (Node **≥ 22** for JS v2)
 
-## SDK Migration Guides
+## SDK migration guides (detailed changelogs)
 
 - [Python SDK Migration Guide](https://github.com/ScrapeGraphAI/scrapegraph-py/blob/main/MIGRATION_V2.md)
 - [JavaScript SDK Migration Guide](https://github.com/ScrapeGraphAI/scrapegraph-js/blob/main/MIGRATION.md)
 
-## Legacy v1 Docs
+Full method documentation:
+
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript)
+
+## Legacy v1 docs
 
 You can still access v1 documentation here:
 
