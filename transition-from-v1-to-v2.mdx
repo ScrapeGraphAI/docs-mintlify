@@ -15,9 +15,9 @@ Use this table to map old entry points to new ones. Details and examples follow 
 
 | v1 | v2 | Notes |
 |----|-----|------|
+| `markdownify` | **`scrape`** with `format="markdown"` (Python) or `format: "markdown"` (JS) | HTML → markdown and related “raw page” outputs live under **`scrape`**. |
 | `smartscraper` / `smartScraper` | **`extract`** | Same job: structured extraction from a URL. Rename params and pass extra fetch/LLM options via config objects. |
 | `searchscraper` / `searchScraper` | **`search`** | Web search + extraction; use `query` (or positional string in JS). |
-| `markdownify` | **`scrape`** with `format="markdown"` (Python) or `format: "markdown"` (JS) | HTML → markdown and related “raw page” outputs live under **`scrape`**. |
 | `crawl` (single start call) | **`crawl.start`**, then **`crawl.status`**, **`crawl.stop`**, **`crawl.resume`** | Crawl is explicitly async: you poll or track job id. |
 | Monitors (if you used them) | **`monitor.create`**, **`monitor.list`**, **`monitor.get`**, pause/resume/delete | Same product, namespaced API. |
 | `sitemap` | **Removed from v2 SDKs** | Discover URLs with **`crawl.start`** and URL patterns, or call the REST sitemap endpoint if your integration still requires it—see [Sitemap](/services/sitemap) and SDK release notes. |
@@ -26,7 +26,13 @@ Use this table to map old entry points to new ones. Details and examples follow 
 
 ## Code-level transition
 
-### 1. SmartScraper → `extract`
+### 1. Markdownify → `scrape`
+
+**Before:** `markdownify(url)`.
+
+**After:** `scrape(url, format="markdown")` (Python) or `scrape(url, { format: "markdown" })` (JS).
+
+### 2. SmartScraper → `extract`
 
 **Before (v1):** `website_url` + `user_prompt`, optional flags on the same object.
 
@@ -78,7 +84,7 @@ const { data, requestId } = await sgai.extract("https://example.com", {
 
 </CodeGroup>
 
-### 2. SearchScraper → `search`
+### 3. SearchScraper → `search`
 
 **Before:** `searchscraper` / `searchScraper` with a prompt-style query.
 
@@ -100,12 +106,6 @@ const { data } = await sgai.search("Latest pricing for product X", {
 ```
 
 </CodeGroup>
-
-### 3. Markdownify → `scrape`
-
-**Before:** `markdownify(url)`.
-
-**After:** `scrape(url, format="markdown")` (Python) or `scrape(url, { format: "markdown" })` (JS).
 
 ### 4. Crawl jobs
 
@@ -140,11 +140,11 @@ const status = await sgai.crawl.status(job.data.id);
 
 If you call the API with `curl` or a generic HTTP client:
 
-- Use the v2 host and path pattern: **`https://api.scrapegraphai.com/api/v2/<endpoint>`** (e.g. `/api/v2/extract`, `/api/v2/monitor`).
+- Use the v2 host and path pattern: **`https://api.scrapegraphai.com/api/v2/<endpoint>`** (e.g. `/api/v2/scrape`, `/api/v2/extract`, `/api/v2/search`, `/api/v2/crawl`, `/api/v2/monitor`).
 - Replace JSON fields to match v2 bodies (e.g. `url` and `prompt` instead of `website_url` and `user_prompt` on extract).
 - Keep using the **`SGAI-APIKEY`** header unless the endpoint docs specify otherwise.
 
-Exact paths and payloads are listed under each service (for example [Extract](/services/extract)) and in the [API reference](/api-reference/introduction).
+Exact paths and payloads are listed under each service (for example [Scrape](/services/scrape)) and in the [API reference](/api-reference/introduction).
 
 ## What else changed in v2 (docs & product)
 
