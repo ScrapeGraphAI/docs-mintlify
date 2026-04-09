@@ -43,7 +43,7 @@ class NewsAggregationResult(BaseModel):
     sources: List[str] = Field(description="List of source URLs")
     timestamp: str = Field(description="Aggregation timestamp")
 
-client = Client()
+client = Client(api_key="your-api-key")
 
 # Define news sources to aggregate
 news_sources = [
@@ -56,9 +56,9 @@ news_sources = [
 aggregated_results = []
 
 for source in news_sources:
-    response = client.smartscraper(
-        website_url=source,
-        user_prompt="Extract all news articles from the homepage, including title, content, author, publication date, category, and tags. Also extract featured images if available.",
+    response = client.extract(
+        url=source,
+        prompt="Extract all news articles from the homepage, including title, content, author, publication date, category, and tags. Also extract featured images if available.",
         output_schema=NewsAggregationResult
     )
     aggregated_results.append(response)
@@ -110,50 +110,47 @@ class BlogMonitorResult(BaseModel):
     blog_url: str = Field(description="Blog homepage URL")
     last_updated: str = Field(description="Last monitoring timestamp")
 
-client = Client()
+client = Client(api_key="your-api-key")
 
 # Start the crawler job
-job = client.smartcrawler_initiate(
+job = client.crawl.start(
     url="https://example-blog.com",
-    user_prompt="Extract all blog posts from the last 7 days, including title, content, author, publication date, categories, and metadata. Calculate estimated reading time based on content length.",
-    extraction_mode="ai",
     depth=2,  # Crawl up to 2 levels deep
-    same_domain_only=True
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/tag/*", "/author/*"]
 )
 
 # Wait for job completion and get results
-job_id = job.job_id
+job_id = job["id"]
 while True:
-    status = client.smartcrawler_get_status(job_id)
-    if status.state == "completed":
-        response = status.result
+    status = client.crawl.status(job_id)
+    if status.get("status") == "completed":
+        response = status.get("data", {})
         break
-    elif status.state in ["failed", "cancelled"]:
-        print(f"Job failed: {status.error}")
+    elif status.get("status") in ["failed", "cancelled", "error"]:
+        print(f"Job failed: {status.get('error')}")
         break
     time.sleep(5)  # Wait 5 seconds before checking again
 
 # Process the crawled content if successful
-if response:
-    print(f"Blog: {response.blog_url}")
-    print(f"Total Posts Found: {response.total_posts}")
-    print(f"Last Updated: {response.last_updated}\n")
+if response and response.get("pages"):
+    print(f"Total Pages Found: {len(response['pages'])}")
 
-    for post in response.posts:
+    for post in response["pages"]:
         # Check if post is recent
-        post_date = datetime.strptime(post.publication_date, "%Y-%m-%d")
+        post_date = datetime.strptime(post["publication_date"], "%Y-%m-%d")
         if post_date > datetime.now() - timedelta(days=7):
-            print(f"Title: {post.title}")
-            print(f"Author: {post.author}")
-            print(f"Published: {post.publication_date}")
-            print(f"Reading Time: {post.reading_time} minutes")
-            if post.categories:
-                print(f"Categories: {', '.join(post.categories)}")
-            if post.tags:
-                print(f"Tags: {', '.join(post.tags)}")
-            if post.excerpt:
-                print(f"\nExcerpt: {post.excerpt}")
-            print(f"URL: {post.url}\n")
+            print(f"Title: {post['title']}")
+            print(f"Author: {post.get('author', 'Unknown')}")
+            print(f"Published: {post['publication_date']}")
+            print(f"Reading Time: {post.get('reading_time', 'N/A')} minutes")
+            if post.get("categories"):
+                print(f"Categories: {', '.join(post['categories'])}")
+            if post.get("tags"):
+                print(f"Tags: {', '.join(post['tags'])}")
+            if post.get("excerpt"):
+                print(f"\nExcerpt: {post['excerpt']}")
+            print(f"URL: {post['url']}\n")
 ```
 
 ## Best Practices
