@@ -4,12 +4,6 @@ description: 'Official Python SDK for ScrapeGraphAI v2'
 icon: 'python'
 ---
 
-<img
-  style={{ borderRadius: '0.5rem' }}
-  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
-  alt="ScrapeGraph API Banner"
-/>
-
 <CardGroup cols={2}>
   <Card title="PyPI Package" icon="box">
     [![PyPI version](https://badge.fury.io/py/scrapegraph-py.svg)](https://badge.fury.io/py/scrapegraph-py)
@@ -95,7 +89,6 @@ print(response)
 | prompt       | string      | Yes      | A description of what you want to extract                |
 | output_schema| object      | No       | Pydantic model for structured response                   |
 | fetch_config | FetchConfig | No       | Fetch configuration (stealth, rendering, etc.)           |
-| llm_config   | LlmConfig   | No       | LLM configuration (model, temperature, etc.)             |
 
 <Accordion title="Schema Example" icon="code">
 ```python
@@ -136,7 +129,6 @@ response = client.search(
 | num_results   | number      | No       | Number of results (3-20). Default: 5                     |
 | output_schema | object      | No       | Pydantic model for structured response                   |
 | fetch_config  | FetchConfig | No       | Fetch configuration                                      |
-| llm_config    | LlmConfig   | No       | LLM configuration                                        |
 
 <Accordion title="Schema Example" icon="code">
 ```python
