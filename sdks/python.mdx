@@ -126,9 +126,8 @@ response = client.extract(
     url="https://example.com",
     prompt="Extract the main heading",
     fetch_config=FetchConfig(
-        stealth=True,
-        render_js=True,
-        wait_ms=2000,
+        mode="js+stealth",
+        wait=2000,
         scrolls=3,
     ),
     llm_config=LlmConfig(
@@ -282,20 +281,20 @@ for entry in history["items"]:
 
 ### FetchConfig
 
-Controls how pages are fetched.
+Controls how pages are fetched. See the [proxy configuration guide](/services/additional-parameters/proxy) for details on modes and geotargeting.
 
 ```python
 from scrapegraph_py import FetchConfig
 
 config = FetchConfig(
-    mock=False,          # Enable mock mode for testing
-    stealth=True,        # Anti-detection mode
+    mode="js+stealth",   # Proxy strategy: auto, fast, js, direct+stealth, js+stealth
+    timeout=15000,       # Request timeout in ms (1000-60000)
+    wait=2000,           # Wait after page load in ms (0-30000)
     scrolls=3,           # Number of scrolls (0-100)
-    country="us",        # Proxy country code
-    cookies={"key": "value"},
+    country="us",        # Proxy country code (ISO 3166-1 alpha-2)
     headers={"X-Custom": "header"},
-    wait_ms=2000,        # Wait time after page load (ms)
-    render_js=True,      # Render JavaScript
+    cookies={"key": "value"},
+    mock=False,          # Enable mock mode for testing
 )
 ```
 

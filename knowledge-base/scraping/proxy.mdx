@@ -1,87 +1,131 @@
 ---
-title: Scraping behind a proxy
-description: 'Route requests through your own proxy for geo-targeting or privacy'
+title: Proxy & Fetch Configuration
+description: 'Control proxy routing, stealth mode, and geo-targeting with FetchConfig'
 ---
 
-Using a proxy lets you route ScrapeGraphAI requests through a specific IP address or geographic location. This is useful for accessing geo-restricted content, bypassing IP-based blocks, or testing region-specific pages.
+In v2, all proxy and fetch behaviour is controlled through the `FetchConfig` object. You can set the proxy strategy (`mode`), country-based geotargeting (`country`), wait times, scrolling, custom headers, and more.
 
-## How to pass a proxy
+See the [full proxy reference](/services/additional-parameters/proxy) for all available options.
 
-Use the `proxy` parameter available in SmartScraper, SearchScraper, and Markdownify:
+## Choosing a fetch mode
 
-```python
-from scrapegraph_py import Client
+The `mode` parameter controls how pages are retrieved:
+
+| Mode | Description |
+|------|-------------|
+| `auto` | Automatically selects the best strategy (default) |
+| `fast` | Direct HTTP fetch, no JS rendering — fastest option |
+| `js` | Headless browser for JavaScript-heavy pages |
+| `direct+stealth` | Residential proxy with stealth headers (no JS) |
+| `js+stealth` | JS rendering + residential/stealth proxy |
+
+## Examples
+
+### Geo-targeted content
+
+Access content from a specific country using the `country` parameter:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
 
 client = Client(api_key="your-api-key")
 
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract the main content",
-    proxy="http://username:password@proxy-host:8080",
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract the main content",
+    fetch_config=FetchConfig(country="de"),  # Route through Germany
 )
 ```
 
-```javascript
-import { scrapegraphai } from "scrapegraph-js";
+```javascript JavaScript
+import { scrapegraphai } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: "your-api-key" });
-const { data } = await sgai.extract("https://example.com", {
-  prompt: "Extract the main content",
+const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+
+const { data } = await sgai.extract('https://example.com', {
+  prompt: 'Extract the main content',
+  fetchConfig: { country: 'de' },
+});
+```
+
+</CodeGroup>
+
+### Stealth mode for protected sites
+
+Use stealth modes to bypass anti-bot protections:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+response = client.scrape(
+    url="https://protected-site.com",
+    format="markdown",
+    fetch_config=FetchConfig(
+        mode="js+stealth",
+        wait=3000,
+        scrolls=3,
+        country="us",
+    ),
+)
+```
+
+```javascript JavaScript
+const { data } = await sgai.scrape('https://protected-site.com', {
+  format: 'markdown',
   fetchConfig: {
-    proxy: "http://username:password@proxy-host:8080",
+    mode: 'js+stealth',
+    wait: 3000,
+    scrolls: 3,
+    country: 'us',
   },
 });
 ```
 
-See the [proxy parameter documentation](/services/additional-parameters/proxy) for the full reference.
+</CodeGroup>
 
-## Proxy URL format
+### Custom headers and cookies
 
-```
-http://username:password@host:port
-socks5://username:password@host:port
-```
+Pass custom HTTP headers or cookies with your requests:
 
-If the proxy does not require authentication:
+<CodeGroup>
 
-```
-http://host:port
-```
+```python Python
+from scrapegraph_py import Client, FetchConfig
 
-## Common use cases
+client = Client(api_key="your-api-key")
 
-### Geo-targeted content
-
-Access content that is only available in a specific country:
-
-```python
-# Using a proxy located in Germany
-proxy = "http://user:pass@de-proxy.example.com:8080"
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product details",
+    fetch_config=FetchConfig(
+        headers={"Accept-Language": "en-US"},
+        cookies={"session": "abc123"},
+    ),
+)
 ```
 
-### Bypassing IP-based rate limits
-
-If the target website blocks your IP after too many requests, rotate through a pool of proxy IPs:
-
-```python
-import itertools
-
-proxies = itertools.cycle([
-    "http://user:pass@proxy1.example.com:8080",
-    "http://user:pass@proxy2.example.com:8080",
-    "http://user:pass@proxy3.example.com:8080",
-])
-
-for url in urls_to_scrape:
-    response = client.smartscraper(
-        website_url=url,
-        user_prompt="Extract the product details",
-        proxy=next(proxies),
-    )
+```javascript JavaScript
+const { data } = await sgai.extract('https://example.com', {
+  prompt: 'Extract product details',
+  fetchConfig: {
+    headers: { 'Accept-Language': 'en-US' },
+    cookies: { session: 'abc123' },
+  },
+});
 ```
+
+</CodeGroup>
 
 ## Tips
 
-- Use a reputable proxy provider for reliable uptime and performance.
-- Test your proxy connection independently before passing it to ScrapeGraphAI to rule out proxy-side issues.
-- Do not use public/free proxies for sensitive data — they may log or modify your traffic.
+- Start with `mode: "auto"` and only switch to a specific mode if you need to.
+- Use `js+stealth` for sites with strong anti-bot protections.
+- Add `wait` time for pages that load content dynamically after the initial render.
+- Use `scrolls` to trigger lazy-loaded content on infinite-scroll pages.
+- The `country` parameter doesn't affect pricing — credits are charged the same regardless of proxy location.

@@ -137,8 +137,7 @@ const { data } = await sgai.extract(
   {
     prompt: "Extract the main heading",
     fetchConfig: {
-      stealth: true,
-      render: true,
+      mode: 'js+stealth',
       wait: 2000,
       scrolls: 3,
     },
@@ -288,19 +287,18 @@ data.items.forEach((entry) => {
 
 ### FetchConfig
 
-Controls how pages are fetched.
+Controls how pages are fetched. See the [proxy configuration guide](/services/additional-parameters/proxy) for details on modes and geotargeting.
 
 ```javascript
 {
-  stealth: true,           // Anti-detection mode
-  render: true,            // Render JavaScript
-  wait: 2000,              // Wait time after page load (ms)
-  scrolls: 3,              // Number of scrolls (0-100)
-  country: "us",           // Proxy country code
-  cookies: { key: "value" },
-  headers: { "X-Custom": "header" },
-  timeout: 15000,          // Fetch timeout in ms (1000-30000)
-  mock: false,             // Enable mock mode for testing
+  mode: 'js+stealth',        // Proxy strategy: auto, fast, js, direct+stealth, js+stealth
+  timeout: 15000,             // Request timeout in ms (1000-60000)
+  wait: 2000,                 // Wait after page load in ms (0-30000)
+  scrolls: 3,                 // Number of scrolls (0-100)
+  country: 'us',              // Proxy country code (ISO 3166-1 alpha-2)
+  headers: { 'X-Custom': 'header' },
+  cookies: { key: 'value' },
+  mock: false,                // Enable mock mode for testing
 }
 ```
 
