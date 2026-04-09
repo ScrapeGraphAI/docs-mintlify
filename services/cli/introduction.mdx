@@ -56,9 +56,10 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
-| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
-| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
+| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com` |
+| `SGAI_TIMEOUT_S` | Request timeout in seconds | `30` |
+
+Legacy variables (`JUST_SCRAPE_API_URL`, `JUST_SCRAPE_TIMEOUT_S`, `JUST_SCRAPE_DEBUG`) are still bridged.
 
 ## Verify your setup
 

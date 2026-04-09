@@ -19,7 +19,7 @@ just-scrape extract https://news.example.com \
 # Anti-bot bypass for JS-heavy SPAs
 just-scrape extract https://app.example.com/dashboard \
   -p "Extract user stats" \
-  --stealth
+  --mode js+stealth
 ```
 
 ## search
@@ -46,10 +46,10 @@ just-scrape markdownify https://blog.example.com/my-article
 
 # Save to a file
 just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.result' > api-docs.md
+  --json | jq -r '.markdown' > api-docs.md
 
 # Bypass Cloudflare
-just-scrape markdownify https://protected.example.com --stealth
+just-scrape markdownify https://protected.example.com -m js+stealth
 ```
 
 ## scrape
@@ -69,7 +69,7 @@ just-scrape scrape https://example.com -f branding
 
 # Geo-targeted + anti-bot bypass
 just-scrape scrape https://store.example.com \
-  --stealth --country DE
+  -m direct+stealth --country DE
 ```
 
 ## crawl
@@ -83,8 +83,8 @@ just-scrape crawl https://docs.example.com \
 just-scrape crawl https://example.com \
   --max-pages 50 --allow-external
 
-# Stealth mode for protected sites
-just-scrape crawl https://example.com --stealth
+# Anti-bot bypass for protected sites
+just-scrape crawl https://example.com -m direct+stealth
 ```
 
 ## history

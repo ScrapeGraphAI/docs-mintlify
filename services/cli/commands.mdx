@@ -5,20 +5,20 @@ description: 'Full reference for every just-scrape command and its flags'
 
 ## extract
 
-Extract structured data from any URL using AI. [Full docs →](/services/extract)
+Extract structured data from any URL using AI (replaces `smart-scraper`). [Full docs →](/api-reference/extract)
 
 ```bash
 just-scrape extract <url> -p <prompt>
 just-scrape extract <url> -p <prompt> --schema <json>
 just-scrape extract <url> -p <prompt> --scrolls <n>     # infinite scroll (0-100)
-just-scrape extract <url> -p <prompt> --stealth          # anti-bot bypass (+4 credits)
+just-scrape extract <url> -p <prompt> --mode js+stealth  # anti-bot bypass
 just-scrape extract <url> -p <prompt> --cookies <json> --headers <json>
 just-scrape extract <url> -p <prompt> --country <iso>    # geo-targeting
 ```
 
 ## search
 
-Search the web and extract structured data from results. [Full docs →](/services/search)
+Search the web and extract structured data from results (replaces `search-scraper`). [Full docs →](/api-reference/search)
 
 ```bash
 just-scrape search <query>
@@ -30,30 +30,30 @@ just-scrape search <query> --headers <json>
 
 ## markdownify
 
-Convert any webpage to clean markdown (uses `scrape` with `format=markdown` internally). [Full docs →](/services/scrape)
+Convert any webpage to clean markdown (convenience wrapper for `scrape --format markdown`). [Full docs →](/api-reference/scrape)
 
 ```bash
 just-scrape markdownify <url>
-just-scrape markdownify <url> --stealth
+just-scrape markdownify <url> -m direct+stealth          # anti-bot bypass
 just-scrape markdownify <url> --headers <json>
 ```
 
 ## scrape
 
-Scrape content from a URL in your preferred format. [Full docs →](/services/scrape)
+Scrape content from a URL in various formats. [Full docs →](/api-reference/scrape)
 
 ```bash
-just-scrape scrape <url>
-just-scrape scrape <url> -f html                         # output as HTML
-just-scrape scrape <url> -f screenshot                   # take a screenshot
+just-scrape scrape <url>                                 # markdown (default)
+just-scrape scrape <url> -f html                         # raw HTML
+just-scrape scrape <url> -f screenshot                   # screenshot
 just-scrape scrape <url> -f branding                     # extract branding info
-just-scrape scrape <url> --stealth                       # anti-bot bypass (+4 credits)
+just-scrape scrape <url> -m direct+stealth               # anti-bot bypass
 just-scrape scrape <url> --country <iso>                 # geo-targeting
 ```
 
 ## crawl
 
-Crawl multiple pages starting from a URL. [Full docs →](/services/crawl)
+Crawl multiple pages. The CLI starts the crawl and polls until completion. [Full docs →](/api-reference/crawl)
 
 ```bash
 just-scrape crawl <url>
@@ -61,7 +61,7 @@ just-scrape crawl <url> --max-pages <n>                  # max pages (default 50
 just-scrape crawl <url> --max-depth <n>                  # crawl depth (default 2)
 just-scrape crawl <url> --max-links-per-page <n>         # max links per page (default 10)
 just-scrape crawl <url> --allow-external                 # allow external domains
-just-scrape crawl <url> --stealth
+just-scrape crawl <url> -m direct+stealth                # anti-bot bypass
 ```
 
 ## history

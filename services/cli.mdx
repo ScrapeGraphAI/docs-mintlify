@@ -6,7 +6,7 @@ icon: 'terminal'
 
 ## Overview
 
-`just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal.
+`just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal. Uses the **v2 API**.
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
@@ -58,110 +58,81 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v1` |
-| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
-| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
+| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com` |
+| `SGAI_TIMEOUT_S` | Request timeout in seconds | `30` |
+
+Legacy variables (`JUST_SCRAPE_API_URL`, `JUST_SCRAPE_TIMEOUT_S`, `JUST_SCRAPE_DEBUG`) are still bridged.
 
 ## JSON Mode
 
 All commands support `--json` for machine-readable output. Banner, spinners, and interactive prompts are suppressed — only minified JSON on stdout. Saves tokens when piped to AI agents.
 
 ```bash
-just-scrape credits --json | jq '.remaining_credits'
-just-scrape smart-scraper https://example.com -p "Extract data" --json > result.json
+just-scrape credits --json | jq '.remainingCredits'
+just-scrape extract https://example.com -p "Extract data" --json > result.json
 ```
 
 ## Commands
 
-### SmartScraper
+### Extract
 
-Extract structured data from any URL using AI. [Full docs →](/services/smartscraper)
+Extract structured data from any URL using AI (replaces `smart-scraper`). [Full docs →](/api-reference/extract)
 
 ```bash
-just-scrape smart-scraper <url> -p <prompt>
-just-scrape smart-scraper <url> -p <prompt> --schema <json>
-just-scrape smart-scraper <url> -p <prompt> --scrolls <n>
-just-scrape smart-scraper <url> -p <prompt> --pages <n>
-just-scrape smart-scraper <url> -p <prompt> --stealth
-just-scrape smart-scraper <url> -p <prompt> --cookies <json> --headers <json>
-just-scrape smart-scraper <url> -p <prompt> --plain-text
+just-scrape extract <url> -p <prompt>
+just-scrape extract <url> -p <prompt> --schema <json>
+just-scrape extract <url> -p <prompt> --scrolls <n>
+just-scrape extract <url> -p <prompt> --mode direct+stealth
+just-scrape extract <url> -p <prompt> --cookies <json> --headers <json>
+just-scrape extract <url> -p <prompt> --country <iso>
 ```
 
-### SearchScraper
+### Search
 
-Search the web and extract structured data from results. [Full docs →](/services/searchscraper)
+Search the web and extract structured data from results (replaces `search-scraper`). [Full docs →](/api-reference/search)
 
 ```bash
-just-scrape search-scraper <prompt>
-just-scrape search-scraper <prompt> --num-results <n>
-just-scrape search-scraper <prompt> --no-extraction
-just-scrape search-scraper <prompt> --schema <json>
-just-scrape search-scraper <prompt> --stealth --headers <json>
+just-scrape search <query>
+just-scrape search <query> --num-results <n>
+just-scrape search <query> -p <prompt>
+just-scrape search <query> --schema <json>
+just-scrape search <query> --headers <json>
+```
+
+### Scrape
+
+Scrape content from a URL in various formats: markdown (default), html, screenshot, or branding. [Full docs →](/api-reference/scrape)
+
+```bash
+just-scrape scrape <url>
+just-scrape scrape <url> -f html
+just-scrape scrape <url> -f screenshot
+just-scrape scrape <url> -f branding
+just-scrape scrape <url> -m direct+stealth
+just-scrape scrape <url> --country <iso>
 ```
 
 ### Markdownify
 
-Convert any webpage to clean markdown. [Full docs →](/services/markdownify)
+Convert any webpage to clean markdown (convenience wrapper for `scrape --format markdown`). [Full docs →](/api-reference/scrape)
 
 ```bash
 just-scrape markdownify <url>
-just-scrape markdownify <url> --stealth
+just-scrape markdownify <url> -m direct+stealth
 just-scrape markdownify <url> --headers <json>
 ```
 
 ### Crawl
 
-Crawl multiple pages and extract data from each. [Full docs →](/services/smartcrawler)
+Crawl multiple pages. The CLI starts the crawl and polls until completion. [Full docs →](/api-reference/crawl)
 
 ```bash
-just-scrape crawl <url> -p <prompt>
-just-scrape crawl <url> -p <prompt> --max-pages <n>
-just-scrape crawl <url> -p <prompt> --depth <n>
-just-scrape crawl <url> --no-extraction --max-pages <n>
-just-scrape crawl <url> -p <prompt> --schema <json>
-just-scrape crawl <url> -p <prompt> --rules <json>
-just-scrape crawl <url> -p <prompt> --no-sitemap
-just-scrape crawl <url> -p <prompt> --stealth
-```
-
-### Scrape
-
-Get raw HTML content from a URL. [Full docs →](/services/scrape)
-
-```bash
-just-scrape scrape <url>
-just-scrape scrape <url> --stealth
-just-scrape scrape <url> --branding
-just-scrape scrape <url> --country-code <iso>
-```
-
-### Sitemap
-
-Get all URLs from a website's sitemap. [Full docs →](/services/sitemap)
-
-```bash
-just-scrape sitemap <url>
-just-scrape sitemap <url> --json | jq -r '.urls[]'
-```
-
-### Agentic Scraper
-
-Browser automation with AI — login, click, navigate, fill forms. [Full docs →](/services/agenticscraper)
-
-```bash
-just-scrape agentic-scraper <url> -s <steps>
-just-scrape agentic-scraper <url> -s <steps> --ai-extraction -p <prompt>
-just-scrape agentic-scraper <url> -s <steps> --schema <json>
-just-scrape agentic-scraper <url> -s <steps> --use-session
-```
-
-### Generate Schema
-
-Generate a JSON schema from a natural language description.
-
-```bash
-just-scrape generate-schema <prompt>
-just-scrape generate-schema <prompt> --existing-schema <json>
+just-scrape crawl <url>
+just-scrape crawl <url> --max-pages <n>
+just-scrape crawl <url> --max-depth <n>
+just-scrape crawl <url> --max-links-per-page <n>
+just-scrape crawl <url> --allow-external
+just-scrape crawl <url> -m direct+stealth
 ```
 
 ### History
@@ -176,7 +147,7 @@ just-scrape history <service> --page-size <n>
 just-scrape history <service> --json
 ```
 
-Services: `markdownify`, `smartscraper`, `searchscraper`, `scrape`, `crawl`, `agentic-scraper`, `sitemap`
+Services: `scrape`, `extract`, `search`, `monitor`, `crawl`
 
 ### Credits
 
@@ -184,14 +155,7 @@ Check your credit balance.
 
 ```bash
 just-scrape credits
-```
-
-### Validate
-
-Validate your API key.
-
-```bash
-just-scrape validate
+just-scrape credits --json | jq '.remainingCredits'
 ```
 
 ## AI Agent Integration
