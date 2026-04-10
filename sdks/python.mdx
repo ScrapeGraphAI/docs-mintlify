@@ -212,9 +212,10 @@ Create and manage site monitoring jobs.
 ```python
 # Create a monitor
 monitor = client.monitor.create(
+    name="Price Tracker",
     url="https://example.com",
     prompt="Track price changes",
-    schedule="daily",
+    interval="0 9 * * *",  # Daily at 9 AM
 )
 
 # List all monitors

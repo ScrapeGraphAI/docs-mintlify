@@ -28,7 +28,7 @@ monitor = client.monitor.create(
     name="Price Tracker",
     url="https://example.com/products",
     prompt="Extract current product prices",
-    cron="0 9 * * *",  # Daily at 9 AM
+    interval="0 9 * * *",  # Daily at 9 AM
 )
 print("Monitor created:", monitor)
 ```
@@ -42,7 +42,7 @@ const monitor = await sgai.monitor.create({
   name: 'Price Tracker',
   url: 'https://example.com/products',
   prompt: 'Extract current product prices',
-  cron: '0 9 * * *',
+  interval: '0 9 * * *',  // Daily at 9 AM
 });
 
 console.log('Monitor created:', monitor.data.id);
@@ -62,7 +62,7 @@ curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
     "name": "Price Tracker",
     "url": "https://example.com/products",
     "prompt": "Extract current product prices",
-    "cron": "0 9 * * *"
+    "interval": "0 9 * * *"
   }'
 ```
 
@@ -75,9 +75,9 @@ curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
 | name | string | Yes | A descriptive name for the monitor. |
 | url | string | Yes | The URL to monitor. |
 | prompt | string | Yes | What data to extract on each run. |
-| cron | string | Yes | Cron expression for the schedule (e.g., `"0 9 * * *"` for daily at 9 AM). |
-| output_schema | object | No | Pydantic or Zod schema for structured response format. |
-| fetch_config | FetchConfig | No | Configuration for page fetching (headers, stealth, etc.). |
+| interval | string | Yes | Cron expression for the schedule (5 fields, e.g., `"0 9 * * *"` for daily at 9 AM). |
+| output_schema | object | No | JSON Schema (Python dict / JS object) for structured response format. |
+| fetch_config | FetchConfig | No | Configuration for page fetching (mode, headers, wait, etc.). |
 | llm_config | LlmConfig | No | Configuration for the AI model (temperature, max_tokens, etc.). |
 
 <Note>
@@ -123,13 +123,25 @@ client.monitor.delete(monitor_id)
 ### With Output Schema and Config
 
 ```python
-from pydantic import BaseModel, Field
 from scrapegraph_py import Client, FetchConfig, LlmConfig
 
-class ProductPrice(BaseModel):
-    name: str = Field(description="Product name")
-    price: float = Field(description="Current price")
-    in_stock: bool = Field(description="Whether the product is in stock")
+schema = {
+    "type": "object",
+    "properties": {
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "price": {"type": "number"},
+                    "in_stock": {"type": "boolean"},
+                },
+                "required": ["name", "price"],
+            },
+        },
+    },
+}
 
 client = Client(api_key="your-api-key")
 
@@ -137,9 +149,9 @@ monitor = client.monitor.create(
     name="Product Price Monitor",
     url="https://example.com/products",
     prompt="Extract product names, prices, and stock status",
-    cron="0 */6 * * *",  # Every 6 hours
-    output_schema=ProductPrice,
-    fetch_config=FetchConfig(stealth=True),
+    interval="0 */6 * * *",  # Every 6 hours
+    output_schema=schema,
+    fetch_config=FetchConfig(mode="js+stealth", wait=2000),
     llm_config=LlmConfig(temperature=0.1),
 )
 ```
@@ -156,7 +168,7 @@ async def main():
             name="Tracker",
             url="https://example.com",
             prompt="Extract prices",
-            cron="0 9 * * *",
+            interval="0 9 * * *",
         )
 
         monitors = await client.monitor.list()
