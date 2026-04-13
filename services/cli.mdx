@@ -96,21 +96,41 @@ just-scrape search <query>
 just-scrape search <query> --num-results <n>
 just-scrape search <query> -p <prompt>
 just-scrape search <query> --schema <json>
+just-scrape search <query> --format markdown            # or html
+just-scrape search <query> --location-geo-code <iso>    # e.g. us, it, gb
+just-scrape search <query> --time-range past_week       # past_hour|past_24_hours|past_week|past_month|past_year
 just-scrape search <query> --headers <json>
 ```
 
 ### Scrape
 
-Scrape content from a URL in various formats: markdown (default), html, screenshot, or branding. [Full docs →](/api-reference/scrape)
+Scrape a URL into one or more of 8 output formats. Multi-format is supported via comma-separated `-f`. [Full docs →](/api-reference/scrape)
 
 ```bash
-just-scrape scrape <url>
+just-scrape scrape <url>                                   # markdown (default)
 just-scrape scrape <url> -f html
 just-scrape scrape <url> -f screenshot
-just-scrape scrape <url> -f branding
+just-scrape scrape <url> -f markdown,links,images          # multi-format
+just-scrape scrape <url> -f json -p "Extract the title"    # json format requires --prompt
+just-scrape scrape <url> -f json -p <prompt> --schema <json>
+just-scrape scrape <url> --html-mode reader                # normal | reader | prune
+just-scrape scrape <url> --scrolls 3
 just-scrape scrape <url> -m direct+stealth
 just-scrape scrape <url> --country <iso>
 ```
+
+#### Formats
+
+| Format | Description |
+|---|---|
+| `markdown` | Clean markdown conversion (default). Respects `--html-mode`. |
+| `html` | Raw / processed HTML. Respects `--html-mode`. |
+| `screenshot` | Page screenshot (PNG). |
+| `branding` | Extracted brand assets (logos, colors, fonts). |
+| `links` | All links on the page. |
+| `images` | All images on the page. |
+| `summary` | AI-generated page summary. |
+| `json` | Structured JSON via `--prompt` (+ optional `--schema`). |
 
 ### Markdownify
 
@@ -132,8 +152,21 @@ just-scrape crawl <url> --max-pages <n>
 just-scrape crawl <url> --max-depth <n>
 just-scrape crawl <url> --max-links-per-page <n>
 just-scrape crawl <url> --allow-external
+just-scrape crawl <url> -f markdown        # or html, json, etc.
 just-scrape crawl <url> -m direct+stealth
 ```
+
+### Fetch Modes
+
+Use `-m / --mode` on `extract`, `search`, `scrape`, `markdownify`, and `crawl` to choose how pages are fetched. The legacy `--stealth` boolean is replaced by the mode enum below.
+
+| Mode | Description |
+|---|---|
+| `auto` | Automatic selection (default) |
+| `fast` | Fastest, no JS rendering |
+| `js` | Full JS rendering |
+| `direct+stealth` | Direct fetch with anti-bot bypass |
+| `js+stealth` | JS rendering with anti-bot bypass |
 
 ### History
 

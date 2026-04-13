@@ -22,10 +22,15 @@ A production‑ready Model Context Protocol (MCP) server that connects LLMs to t
 
 ## Key Features
 
-- 8 tools covering markdown conversion, AI extraction, search, crawling, sitemap, and agentic flows
+- Full v2 API coverage: extract, search, scrape, crawl (+ stop/resume), monitor lifecycle, credits, and history
+- Uses the v2 API base URL (`https://api.scrapegraphai.com/api/v2`) with `Authorization: Bearer` + `SGAI-APIKEY` headers
 - Remote HTTP MCP endpoint and local Python server support
 - Works with Cursor, Claude Desktop, and any MCP‑compatible client
 - Robust error handling, timeouts, and production‑tested reliability
+
+<Warning>
+The MCP server is now on **v2** (`scrapegraph-mcp@2.0.0`). The v1 tools `sitemap`, `agentic_scrapper`, `markdownify_status`, and `smartscraper_status` have been removed. See [scrapegraph-mcp#16](https://github.com/ScrapeGraphAI/scrapegraph-mcp/pull/16) for the migration details.
+</Warning>
 
 ## Get Your API Key
 
@@ -164,19 +169,30 @@ python -m scrapegraph_mcp.server
 
 ---
 
+## Configuration
+
+The server reads the ScrapeGraph API key from `SGAI_API_KEY` (local) or the `X-API-Key` header (remote). Optional environment overrides:
+
+| Variable | Description | Default |
+|---|---|---|
+| `SGAI_API_KEY` | ScrapeGraph API key | — |
+| `SCRAPEGRAPH_API_BASE_URL` | Override the v2 API base URL | `https://api.scrapegraphai.com/api/v2` |
+
 ## Available Tools
 
-The server exposes 8 enterprise‑ready tools:
+The server exposes the full v2 API surface.
 
-### 1. markdownify
+### Content tools
+
+#### markdownify
 Convert a webpage to clean markdown.
 
 ```python
 markdownify(website_url: str)
 ```
 
-### 2. smartscraper
-AI‑powered extraction with optional infinite scrolls.
+#### smartscraper
+AI‑powered extraction (v2 `/extract`) with optional infinite scrolls.
 
 ```python
 smartscraper(
@@ -186,8 +202,8 @@ smartscraper(
 )
 ```
 
-### 3. searchscraper
-Search the web and extract structured results.
+#### searchscraper
+Search the web and extract structured results (v2 `/search`).
 
 ```python
 searchscraper(
@@ -197,53 +213,92 @@ searchscraper(
 )
 ```
 
-### 4. scrape
-Fetch raw HTML from a URL.
+#### scrape
+Fetch a URL using the v2 `/scrape` endpoint with configurable formats.
 
 ```python
-scrape(website_url: str)
+scrape(
+  website_url: str,
+  formats: list | None = None,   # e.g. [{"type": "markdown", "mode": "normal"}]
+  content_type: str | None = None,
+)
 ```
 
-### 5. sitemap
-Discover a site’s URLs and structure.
+### Crawl tools
 
-```python
-sitemap(website_url: str)
-```
-
-### 6. smartcrawler_initiate
-Start an async multi‑page crawl (AI or markdown mode).
+#### smartcrawler_initiate
+Start a multi‑page crawl. `extraction_mode` defaults to `markdown` in v2 (also supports `html`).
 
 ```python
 smartcrawler_initiate(
   url: str,
-  prompt: str | None = None,
-  extraction_mode: str = "ai",
-  depth: int | None = None,
+  extraction_mode: str = "markdown",   # markdown | html
+  max_depth: int | None = None,
   max_pages: int | None = None,
-  same_domain_only: bool | None = None
+  max_links_per_page: int | None = None,
+  allow_external: bool | None = None,
+  include_patterns: list[str] | None = None,
+  exclude_patterns: list[str] | None = None,
 )
 ```
 
-### 7. smartcrawler_fetch_results
-Poll results using the returned request_id.
+#### smartcrawler_fetch_results
+Poll status / results for a crawl.
 
 ```python
 smartcrawler_fetch_results(request_id: str)
 ```
 
-### 8. agentic_scrapper
-Agentic, multi‑step workflows with optional schema and session persistence.
+#### crawl_stop
+Stop a running crawl.
 
 ```python
-agentic_scrapper(
+crawl_stop(request_id: str)
+```
+
+#### crawl_resume
+Resume a paused / stopped crawl.
+
+```python
+crawl_resume(request_id: str)
+```
+
+### Monitor tools
+
+Replace v1 "scheduled jobs". All monitor operations sit under a single namespace.
+
+```python
+monitor_create(
   url: str,
-  user_prompt: str | None = None,
-  output_schema: dict | None = None,
-  steps: list | None = None,
-  ai_extraction: bool | None = None,
-  persistent_session: bool | None = None,
-  timeout_seconds: float | None = None
+  interval: str,                 # 5-field cron expression
+  name: str | None = None,
+  formats: list | None = None,
+  webhook_url: str | None = None,
+)
+monitor_list()
+monitor_get(monitor_id: str)
+monitor_pause(monitor_id: str)
+monitor_resume(monitor_id: str)
+monitor_delete(monitor_id: str)
+```
+
+### Account tools
+
+#### credits
+Get the remaining credit balance.
+
+```python
+credits()
+```
+
+#### sgai_history
+Browse paginated request history, optionally filtered by service.
+
+```python
+sgai_history(
+  service: str | None = None,   # scrape | extract | search | monitor | crawl
+  page: int | None = None,
+  limit: int | None = None,
 )
 ```
 
