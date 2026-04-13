@@ -85,10 +85,19 @@ print(response)
 
 | Parameter    | Type        | Required | Description                                              |
 | ------------ | ----------- | -------- | -------------------------------------------------------- |
-| url          | string      | Yes      | The URL of the webpage to scrape                         |
+| url          | string      | Yes\*    | The URL of the webpage to extract from                   |
 | prompt       | string      | Yes      | A description of what you want to extract                |
-| output_schema| object      | No       | Pydantic model for structured response                   |
+| output_schema| object      | No       | Pydantic model for structured response (alias for `schema`) |
+| schema       | dict        | No       | JSON schema for structured response                      |
+| mode         | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"`  |
+| content_type | string      | No       | Override the detected content type                       |
 | fetch_config | FetchConfig | No       | Fetch configuration (stealth, rendering, etc.)           |
+| html         | string      | No       | Raw HTML input (alternative to `url`)                    |
+| markdown     | string      | No       | Raw markdown input (alternative to `url`)                |
+
+<Note>
+\*One of `url`, `html`, or `markdown` is required.
+</Note>
 
 <Accordion title="Schema Example" icon="code">
 ```python
@@ -123,12 +132,18 @@ response = client.search(
 
 #### Parameters
 
-| Parameter     | Type        | Required | Description                                              |
-| ------------- | ----------- | -------- | -------------------------------------------------------- |
-| query         | string      | Yes      | The search query                                         |
-| num_results   | number      | No       | Number of results (3-20). Default: 5                     |
-| output_schema | object      | No       | Pydantic model for structured response                   |
-| fetch_config  | FetchConfig | No       | Fetch configuration                                      |
+| Parameter         | Type        | Required | Description                                              |
+| ----------------- | ----------- | -------- | -------------------------------------------------------- |
+| query             | string      | Yes      | The search query (1-500 chars)                           |
+| num_results       | int         | No       | Number of results (1-20). Default: 5                     |
+| prompt            | string      | No       | Prompt used when extracting structured results           |
+| output_schema     | object      | No       | Pydantic model for structured response (alias for `schema`) |
+| schema            | dict        | No       | JSON schema for structured response (requires `prompt`)  |
+| format            | string      | No       | `"markdown"` (default) or `"html"`                       |
+| mode              | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default) |
+| location_geo_code | string      | No       | Geo code for localized results (e.g. `"us"`, `"it"`, `"gb"`) |
+| time_range        | string      | No       | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
+| fetch_config      | FetchConfig | No       | Fetch configuration                                      |
 
 <Accordion title="Schema Example" icon="code">
 ```python
@@ -154,7 +169,7 @@ print(f"Price: {response['data']['price']}")
 
 ### Scrape
 
-Convert any webpage into markdown, HTML, screenshot, or branding format.
+Convert any webpage into one or more output formats in a single request.
 
 ```python
 response = client.scrape(
@@ -167,8 +182,29 @@ response = client.scrape(
 | Parameter     | Type        | Required | Description                                              |
 | ------------- | ----------- | -------- | -------------------------------------------------------- |
 | url           | string      | Yes      | The URL of the webpage to scrape                         |
-| format        | string      | No       | Output format: `"markdown"`, `"html"`, `"screenshot"`, `"branding"` |
+| formats       | list[dict]  | No       | Array of format entries. Defaults to `[{"type": "markdown", "mode": "normal"}]` |
+| format        | string      | No       | Legacy single-format shortcut (`"markdown"`, `"html"`, `"screenshot"`, `"branding"`) |
+| content_type  | string      | No       | Override the detected content type                       |
 | fetch_config  | FetchConfig | No       | Fetch configuration                                      |
+
+Each format entry is a dict with a `type` key. Supported types: `"markdown"`, `"html"`, `"screenshot"`, `"links"`, `"images"`, `"summary"`, `"json"`, `"branding"`. Entries can carry their own config:
+
+<Accordion title="Multi-format Example" icon="code">
+```python
+response = client.scrape(
+    url="https://example.com",
+    formats=[
+        {"type": "markdown", "mode": "normal"},
+        {"type": "screenshot", "fullPage": True, "width": 1440, "height": 900},
+        {
+            "type": "json",
+            "prompt": "Extract the product list",
+            "schema": {"products": [{"name": "string", "price": "string"}]},
+        },
+    ],
+)
+```
+</Accordion>
 
 ### Crawl
 
@@ -178,7 +214,8 @@ Manage multi-page crawl operations asynchronously.
 # Start a crawl
 job = client.crawl.start(
     url="https://example.com",
-    depth=2,
+    max_depth=2,
+    max_pages=50,
     include_patterns=["/blog/*", "/docs/**"],
     exclude_patterns=["/admin/*", "/api/*"],
 )
@@ -197,13 +234,19 @@ client.crawl.resume(job["id"])
 
 #### crawl.start() Parameters
 
-| Parameter        | Type        | Required | Description                                              |
-| ---------------- | ----------- | -------- | -------------------------------------------------------- |
-| url              | string      | Yes      | The starting URL to crawl                                |
-| depth            | int         | No       | Crawl depth level                                        |
-| include_patterns | list[str]   | No       | URL patterns to include (`*` any chars, `**` any path)   |
-| exclude_patterns | list[str]   | No       | URL patterns to exclude                                  |
-| fetch_config     | FetchConfig | No       | Fetch configuration                                      |
+| Parameter            | Type        | Required | Description                                              |
+| -------------------- | ----------- | -------- | -------------------------------------------------------- |
+| url                  | string      | Yes      | The starting URL to crawl                                |
+| formats              | list[dict]  | No       | Output formats per page. Defaults to `[{"type": "markdown", "mode": "normal"}]` |
+| max_depth            | int         | No       | Maximum crawl depth. Default: `2`                        |
+| max_pages            | int         | No       | Maximum pages to crawl (1-1000). Default: `10`           |
+| max_links_per_page   | int         | No       | Maximum links followed per page. Default: `10`           |
+| allow_external       | bool        | No       | Allow crossing domains. Default: `False`                 |
+| include_patterns     | list[str]   | No       | URL patterns to include (`*` any chars, `**` any path)   |
+| exclude_patterns     | list[str]   | No       | URL patterns to exclude                                  |
+| content_types        | list[str]   | No       | Allowed content types                                    |
+| fetch_config         | FetchConfig | No       | Fetch configuration                                      |
+| depth                | int         | No       | Legacy alias for `max_depth`                             |
 
 ### Monitor
 
@@ -214,8 +257,9 @@ Create and manage site monitoring jobs.
 monitor = client.monitor.create(
     name="Price Tracker",
     url="https://example.com",
-    prompt="Track price changes",
     interval="0 9 * * *",  # Daily at 9 AM
+    formats=[{"type": "markdown", "mode": "normal"}],
+    webhook_url="https://example.com/webhook",
 )
 
 # List all monitors
@@ -273,14 +317,14 @@ config = FetchConfig(
 
 ### LlmConfig
 
-Controls LLM behavior for AI-powered methods.
+Controls LLM behavior for format entries that run an LLM (scrape `json` and `summary` formats). Pass it inside the format entry — it is deprecated at the top level of `extract` and `search` in v2 and is ignored by the API.
 
 ```python
 from scrapegraph_py import LlmConfig
 
 config = LlmConfig(
     model="gpt-4o-mini",      # LLM model to use
-    temperature=0.3,           # Response creativity (0.0-2.0)
+    temperature=0.3,           # Response creativity (0.0-1.0)
     max_tokens=1000,           # Maximum response tokens
     chunker="auto",            # Content chunking strategy ("auto" or custom config)
 )
@@ -304,7 +348,7 @@ async def main():
         print(response)
 
         # Crawl
-        job = await client.crawl.start("https://example.com", depth=2)
+        job = await client.crawl.start("https://example.com", max_depth=2)
         status = await client.crawl.status(job["id"])
         print(status)
 

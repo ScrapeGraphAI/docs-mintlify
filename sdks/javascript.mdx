@@ -100,11 +100,18 @@ const { data, requestId } = await sgai.extract(
 
 | Parameter            | Type        | Required | Description                                              |
 | -------------------- | ----------- | -------- | -------------------------------------------------------- |
-| url                  | string      | Yes      | The URL of the webpage to scrape                         |
+| url                  | string      | Yes\*    | The URL of the webpage to scrape                         |
 | options.prompt       | string      | Yes      | A description of what you want to extract                |
 | options.schema       | ZodSchema / object | No | Zod schema or JSON schema for structured response       |
+| options.mode         | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"`  |
+| options.contentType  | string      | No       | Override the detected content type (e.g. `"text/html"`)  |
 | options.fetchConfig  | FetchConfig | No       | Fetch configuration                                      |
-| options.llmConfig    | LlmConfig   | No       | LLM configuration                                        |
+| options.html         | string      | No       | Raw HTML input (alternative to `url`)                    |
+| options.markdown     | string      | No       | Raw markdown input (alternative to `url`)                |
+
+<Note>
+\*One of `url`, `html`, or `markdown` is required.
+</Note>
 
 <Accordion title="With Zod Schema" icon="code">
 ```javascript
@@ -130,7 +137,7 @@ console.log(`Author: ${data.author}`);
 ```
 </Accordion>
 
-<Accordion title="With FetchConfig and LlmConfig" icon="code">
+<Accordion title="With FetchConfig" icon="code">
 ```javascript
 const { data } = await sgai.extract(
   "https://example.com",
@@ -140,10 +147,6 @@ const { data } = await sgai.extract(
       mode: 'js+stealth',
       wait: 2000,
       scrolls: 3,
-    },
-    llmConfig: {
-      temperature: 0.3,
-      maxTokens: 1000,
     },
   }
 );
@@ -163,13 +166,17 @@ const { data } = await sgai.search(
 
 #### Parameters
 
-| Parameter            | Type        | Required | Description                                              |
-| -------------------- | ----------- | -------- | -------------------------------------------------------- |
-| query                | string      | Yes      | The search query                                         |
-| options.numResults   | number      | No       | Number of results (3-20). Default: 5                     |
-| options.schema       | ZodSchema / object | No | Schema for structured response                          |
-| options.fetchConfig  | FetchConfig | No       | Fetch configuration                                      |
-| options.llmConfig    | LlmConfig   | No       | LLM configuration                                        |
+| Parameter                | Type        | Required | Description                                              |
+| ------------------------ | ----------- | -------- | -------------------------------------------------------- |
+| query                    | string      | Yes      | The search query (1-500 chars)                           |
+| options.numResults       | number      | No       | Number of results (1-20). Default: 3                     |
+| options.prompt           | string      | No       | Prompt used when extracting structured results           |
+| options.schema           | ZodSchema / object | No | Schema for structured response (requires `prompt`)     |
+| options.format           | string      | No       | `"markdown"` (default) or `"html"`                       |
+| options.mode             | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default) |
+| options.locationGeoCode  | string      | No       | Geo code for localized search (e.g. `"us"`, `"it"`, `"gb"`) |
+| options.timeRange        | string      | No       | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
+| options.fetchConfig      | FetchConfig | No       | Fetch configuration                                      |
 
 <Accordion title="Schema Example" icon="code">
 ```javascript
@@ -196,7 +203,7 @@ console.log(`Price: ${data.price}`);
 
 ### scrape()
 
-Convert any webpage to markdown, HTML, screenshot, or branding format.
+Convert any webpage into one or more output formats in a single request.
 
 ```javascript
 const { data } = await sgai.scrape("https://example.com");
@@ -205,11 +212,30 @@ console.log(data);
 
 #### Parameters
 
-| Parameter            | Type        | Required | Description                                              |
-| -------------------- | ----------- | -------- | -------------------------------------------------------- |
-| url                  | string      | Yes      | The URL of the webpage to scrape                         |
-| options.format       | string      | No       | `"markdown"`, `"html"`, `"screenshot"`, `"branding"`     |
-| options.fetchConfig  | FetchConfig | No       | Fetch configuration                                      |
+| Parameter            | Type          | Required | Description                                              |
+| -------------------- | ------------- | -------- | -------------------------------------------------------- |
+| url                  | string        | Yes      | The URL of the webpage to scrape                         |
+| options.formats      | FormatEntry[] | No       | Array of format entries. Defaults to `[{ type: "markdown", mode: "normal" }]` |
+| options.contentType  | string        | No       | Override the detected content type                       |
+| options.fetchConfig  | FetchConfig   | No       | Fetch configuration                                      |
+
+Each format entry is a tagged object. Supported `type` values: `"markdown"`, `"html"`, `"screenshot"`, `"links"`, `"images"`, `"summary"`, `"json"`, `"branding"`. Entries can carry their own config:
+
+<Accordion title="Multi-format Example" icon="code">
+```javascript
+const { data } = await sgai.scrape("https://example.com", {
+  formats: [
+    { type: "markdown", mode: "normal" },
+    { type: "screenshot", fullPage: true, width: 1440, height: 900 },
+    {
+      type: "json",
+      prompt: "Extract the product list",
+      schema: { products: [{ name: "string", price: "string" }] },
+    },
+  ],
+});
+```
+</Accordion>
 
 ### crawl
 
@@ -219,7 +245,7 @@ Manage multi-page crawl operations asynchronously.
 // Start a crawl
 const job = await sgai.crawl.start("https://example.com", {
   maxDepth: 2,
-  maxPages: 10,
+  maxPages: 50,
   includePatterns: ["/blog/*", "/docs/**"],
   excludePatterns: ["/admin/*", "/api/*"],
 });
@@ -234,6 +260,21 @@ await sgai.crawl.stop(job.data.id);
 await sgai.crawl.resume(job.data.id);
 ```
 
+#### crawl.start() Parameters
+
+| Parameter                   | Type          | Required | Description                                              |
+| --------------------------- | ------------- | -------- | -------------------------------------------------------- |
+| url                         | string        | Yes      | The starting URL                                         |
+| options.formats             | FormatEntry[] | No       | Output formats per page. Defaults to `[{ type: "markdown", mode: "normal" }]` |
+| options.maxDepth            | number        | No       | Maximum crawl depth. Default: `2`                        |
+| options.maxPages            | number        | No       | Maximum pages to crawl (1-1000). Default: `50`           |
+| options.maxLinksPerPage     | number        | No       | Maximum links followed per page. Default: `10`           |
+| options.allowExternal       | boolean       | No       | Allow crossing domains. Default: `false`                 |
+| options.includePatterns     | string[]      | No       | URL patterns to include                                  |
+| options.excludePatterns     | string[]      | No       | URL patterns to exclude                                  |
+| options.contentTypes        | string[]      | No       | Allowed content types                                    |
+| options.fetchConfig         | FetchConfig   | No       | Fetch configuration                                      |
+
 ### monitor
 
 Create and manage site monitoring jobs.
@@ -243,8 +284,9 @@ Create and manage site monitoring jobs.
 const monitor = await sgai.monitor.create({
   name: "Price Tracker",
   url: "https://example.com",
-  prompt: "Track price changes",
   interval: "0 9 * * *",  // Daily at 9 AM
+  formats: [{ type: "markdown", mode: "normal" }],
+  webhookUrl: "https://example.com/webhook",
 });
 
 // List all monitors
@@ -305,7 +347,7 @@ Controls how pages are fetched. See the [proxy configuration guide](/services/ad
 
 ### LlmConfig
 
-Controls LLM behavior for AI-powered methods.
+Controls LLM behavior for format entries that run an LLM (scrape `json` and `summary` formats). Pass it inside the format entry — it is not accepted at the top level of `extract` or `search` in v2.
 
 ```javascript
 {
