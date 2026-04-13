@@ -53,6 +53,23 @@
                   "services/crawl",
                   "services/monitor",
                   {
+                    "group": "Additional Parameters",
+                    "pages": [
+                      "services/additional-parameters/headers",
+                      "services/additional-parameters/pagination",
+                      "services/additional-parameters/proxy",
+                      "services/additional-parameters/wait-ms"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Official SDKs",
+                "pages": [
+                  "sdks/python",
+                  "sdks/javascript",
+                  "sdks/mocking",
+                  {
                     "group": "CLI",
                     "icon": "terminal",
                     "pages": [
@@ -73,24 +90,7 @@
                       "services/mcp-server/smithery"
                     ]
                   },
-                  "services/toonify",
-                  {
-                    "group": "Additional Parameters",
-                    "pages": [
-                      "services/additional-parameters/headers",
-                      "services/additional-parameters/pagination",
-                      "services/additional-parameters/proxy",
-                      "services/additional-parameters/wait-ms"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Official SDKs",
-                "pages": [
-                  "sdks/python",
-                  "sdks/javascript",
-                  "sdks/mocking"
+                  "services/toonify"
                 ]
               },
               {
