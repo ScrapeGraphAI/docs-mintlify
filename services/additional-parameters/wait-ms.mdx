@@ -67,24 +67,19 @@ response = client.markdownify(
 ### JavaScript SDK
 
 ```javascript
-import { scrapegraphai } from 'scrapegraph-js';
-
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+import { extract, scrape } from 'scrapegraph-js';
 
 // Extract with custom wait time
-const { data } = await sgai.extract('https://example.com', {
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
   prompt: 'Extract product information',
   fetchConfig: { wait: 5000 },
 });
 
 // Scrape with custom wait time
-const { data: scrapeData } = await sgai.scrape('https://example.com', {
-  fetchConfig: { wait: 5000 },
-});
-
-// Markdownify with custom wait time
-const { data: mdData } = await sgai.scrape('https://example.com', {
-  format: 'markdown',
+const scrapeResult = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'markdown' }],
   fetchConfig: { wait: 5000 },
 });
 ```

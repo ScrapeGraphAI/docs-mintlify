@@ -34,24 +34,26 @@ print("Crawl started:", response)
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { crawl } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
-
-const job = await sgai.crawl.start('https://example.com', {
+const job = await crawl.start('your-api-key', {
+  url: 'https://example.com',
   maxDepth: 2,
   maxPages: 10,
-  format: 'markdown',
+  formats: [{ type: 'markdown' }],
 });
 
-console.log('Crawl started:', job.data.id);
+if (job.status === 'success') {
+  console.log('Crawl started:', job.data?.id);
 
-// Check status
-const status = await sgai.crawl.status(job.data.id);
+  // Check status
+  const status = await crawl.get('your-api-key', job.data?.id);
 
-// Stop / Resume
-await sgai.crawl.stop(job.data.id);
-await sgai.crawl.resume(job.data.id);
+  // Stop / Resume / Delete
+  await crawl.stop('your-api-key', job.data?.id);
+  await crawl.resume('your-api-key', job.data?.id);
+  await crawl.delete('your-api-key', job.data?.id);
+}
 ```
 
 ```bash cURL
@@ -122,9 +124,9 @@ response = client.crawl.start(
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
     fetch_config=FetchConfig(
-        render_js=True,
+        mode="js",
         stealth=True,
-        wait_ms=1000,
+        wait=1000,
         headers={"User-Agent": "MyBot"},
     ),
 )

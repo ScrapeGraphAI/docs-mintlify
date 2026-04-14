@@ -34,24 +34,25 @@ print("Monitor created:", monitor)
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { monitor } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
-
-const monitor = await sgai.monitor.create({
+const result = await monitor.create('your-api-key', {
   name: 'Price Tracker',
   url: 'https://example.com/products',
-  prompt: 'Extract current product prices',
   interval: '0 9 * * *',  // Daily at 9 AM
+  formats: [{ type: 'markdown' }],
+  webhookUrl: 'https://your-server.com/webhook',  // optional
 });
 
-console.log('Monitor created:', monitor.data.id);
+if (result.status === 'success') {
+  console.log('Monitor created:', result.data?.cronId);
 
-// List / Get / Pause / Resume / Delete
-const monitors = await sgai.monitor.list();
-await sgai.monitor.pause(monitor.data.id);
-await sgai.monitor.resume(monitor.data.id);
-await sgai.monitor.delete(monitor.data.id);
+  // List / Get / Pause / Resume / Delete
+  const monitors = await monitor.list('your-api-key');
+  await monitor.pause('your-api-key', result.data?.cronId);
+  await monitor.resume('your-api-key', result.data?.cronId);
+  await monitor.delete('your-api-key', result.data?.cronId);
+}
 ```
 
 ```bash cURL
@@ -77,8 +78,7 @@ curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
 | prompt | string | Yes | What data to extract on each run. |
 | interval | string | Yes | Cron expression for the schedule (5 fields, e.g., `"0 9 * * *"` for daily at 9 AM). |
 | output_schema | object | No | JSON Schema (Python dict / JS object) for structured response format. |
-| fetch_config | FetchConfig | No | Configuration for page fetching (mode, headers, wait, etc.). |
-| llm_config | LlmConfig | No | Configuration for the AI model (temperature, max_tokens, etc.). |
+| fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, wait, etc.). |
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
@@ -123,7 +123,7 @@ client.monitor.delete(monitor_id)
 ### With Output Schema and Config
 
 ```python
-from scrapegraph_py import Client, FetchConfig, LlmConfig
+from scrapegraph_py import Client, FetchConfig
 
 schema = {
     "type": "object",
@@ -151,8 +151,7 @@ monitor = client.monitor.create(
     prompt="Extract product names, prices, and stock status",
     interval="0 */6 * * *",  # Every 6 hours
     output_schema=schema,
-    fetch_config=FetchConfig(mode="js+stealth", wait=2000),
-    llm_config=LlmConfig(temperature=0.1),
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
 )
 ```
 

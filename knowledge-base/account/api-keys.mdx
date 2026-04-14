@@ -24,10 +24,12 @@ client = Client(api_key="your-api-key")
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
-const sgai = scrapegraphai({ apiKey: "your-api-key" });
-const { data } = await sgai.extract(url, { prompt });
+const result = await extract("your-api-key", {
+  url: "https://example.com",
+  prompt: "Extract the title",
+});
 ```
 
 ```bash cURL

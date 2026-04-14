@@ -77,9 +77,7 @@ response = client.markdownify(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
-
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+import { extract } from 'scrapegraph-js';
 
 // Define custom headers
 const headers = {
@@ -88,8 +86,9 @@ const headers = {
   'Sec-Ch-Ua-Platform': '"Windows"',
 };
 
-// Use with extract (SmartScraper)
-const { data } = await sgai.extract('https://example.com', {
+// Use with extract
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
   prompt: 'Extract the main content',
   fetchConfig: { headers },
 });
@@ -138,9 +137,7 @@ response = client.smartscraper(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
-
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+import { extract } from 'scrapegraph-js';
 
 // Example with session cookies
 const headers = {
@@ -148,7 +145,8 @@ const headers = {
   'Cookie': 'session_id=abc123; user_id=12345; theme=dark',
 };
 
-const { data } = await sgai.extract('https://example.com/dashboard', {
+const result = await extract('your-api-key', {
+  url: 'https://example.com/dashboard',
   prompt: 'Extract user information',
   fetchConfig: { headers },
 });

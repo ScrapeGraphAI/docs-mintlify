@@ -57,21 +57,7 @@ The ScrapeGraph SDK can be used like any other tool. See [Vercel AI tool calling
 import { z } from "zod";
 import { generateText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { scrapegraphai } from "scrapegraph-js";
-
-const sgai = scrapegraphai({ apiKey: process.env.SGAI_API_KEY });
-
-const ArticleSchema = z.object({
-  title: z.string().describe("The article title"),
-  author: z.string().describe("The author's name"),
-  publishDate: z.string().describe("Article publication date"),
-  content: z.string().describe("Main article content"),
-  category: z.string().describe("Article category"),
-});
-
-const ArticlesArraySchema = z
-  .array(ArticleSchema)
-  .describe("Array of articles");
+import { extract } from "scrapegraph-js";
 
 const result = await generateText({
   model: openai("gpt-4.1-mini"),
@@ -82,11 +68,29 @@ const result = await generateText({
         url: z.string().describe("The exact URL."),
       }),
       execute: async ({ url }) => {
-        const response = await sgai.extract(url, {
+        const response = await extract(process.env.SGAI_API_KEY!, {
+          url,
           prompt: "Extract the article information",
-          schema: ArticlesArraySchema,
+          schema: {
+            type: "object",
+            properties: {
+              articles: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    author: { type: "string" },
+                    publishDate: { type: "string" },
+                    content: { type: "string" },
+                    category: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
         });
-        return response.data;
+        return response.data?.json;
       },
     }),
   },

@@ -34,19 +34,23 @@ response = client.scrape("https://example.com", format="screenshot")
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
-
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+import { scrape } from 'scrapegraph-js';
 
 // Get markdown (default)
-const { data } = await sgai.scrape('https://example.com');
-
-// Get HTML
-const { data: htmlData } = await sgai.scrape('https://example.com', {
-  format: 'html',
+const result = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'markdown' }],
 });
 
-console.log(data);
+// Get HTML
+const htmlResult = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'html' }],
+});
+
+if (result.status === 'success') {
+  console.log(result.data?.results.markdown?.data);
+}
 ```
 
 ```bash cURL
@@ -110,9 +114,9 @@ response = client.scrape(
     "https://example.com",
     format="markdown",
     fetch_config=FetchConfig(
-        render_js=True,
+        mode="js",
         stealth=True,
-        wait_ms=2000,
+        wait=2000,
         headers={"User-Agent": "MyBot"},
     ),
 )
@@ -167,7 +171,7 @@ asyncio.run(main())
     Get content as markdown, HTML, screenshot, or branding data
   </Card>
   <Card title="JavaScript Rendering" icon="code">
-    Handle JavaScript-heavy sites with render_js support
+    Handle JavaScript-heavy sites with `mode: "js"` fetch mode
   </Card>
   <Card title="Fast Processing" icon="clock">
     Quick extraction for simple content

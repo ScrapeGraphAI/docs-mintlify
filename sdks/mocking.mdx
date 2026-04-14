@@ -148,38 +148,40 @@ async def test_async_extract():
 
 ```javascript
 import { describe, it, expect, vi } from "vitest";
-import { scrapegraphai } from "scrapegraph-js";
+import { extract, getCredits, search } from "scrapegraph-js";
 
 // Mock the module
 vi.mock("scrapegraph-js", () => ({
-  scrapegraphai: vi.fn(() => ({
-    extract: vi.fn().mockResolvedValue({
-      data: { title: "Mock Title" },
-      requestId: "mock-123",
-    }),
+  extract: vi.fn().mockResolvedValue({
+    status: "success",
+    data: { raw: null, json: { title: "Mock Title" }, usage: {}, metadata: {} },
+    elapsedMs: 100,
+  }),
     search: vi.fn().mockResolvedValue({
+      status: "success",
       data: { results: [] },
-      requestId: "mock-456",
+      elapsedMs: 100,
     }),
-    credits: vi.fn().mockResolvedValue({
-      data: { remainingCredits: 100 },
+    getCredits: vi.fn().mockResolvedValue({
+      status: "success",
+      data: { remaining: 100, used: 50, plan: "pro" },
+      elapsedMs: 50,
     }),
-  })),
+  };
 }));
 
 describe("ScrapeGraphAI", () => {
-  const sgai = scrapegraphai({ apiKey: "test-key" });
-
   it("should extract data", async () => {
-    const { data } = await sgai.extract("https://example.com", {
+    const result = await extract("test-key", {
+      url: "https://example.com",
       prompt: "Extract the title",
     });
-    expect(data.title).toBe("Mock Title");
+    expect(result.data?.json?.title).toBe("Mock Title");
   });
 
   it("should check credits", async () => {
-    const { data } = await sgai.credits();
-    expect(data.remainingCredits).toBe(100);
+    const result = await getCredits("test-key");
+    expect(result.data?.remaining).toBe(100);
   });
 });
 ```
@@ -191,18 +193,15 @@ Mock at the network level for more realistic testing:
 ```javascript
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { scrapegraphai } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
 const server = setupServer(
-  http.post("https://api.scrapegraphai.com/api/v2/extract", () => {
+  http.post("https://api.scrapegraphai.com/v2/extract", () => {
     return HttpResponse.json({
-      data: { title: "MSW Mock Title" },
-      requestId: "msw-123",
-    });
-  }),
-  http.get("https://api.scrapegraphai.com/api/v2/credits", () => {
-    return HttpResponse.json({
-      data: { remainingCredits: 50, totalCreditsUsed: 50 },
+      raw: null,
+      json: { title: "MSW Mock Title" },
+      usage: { promptTokens: 100, completionTokens: 50 },
+      metadata: { chunker: { chunks: [] } },
     });
   })
 );
@@ -212,11 +211,11 @@ afterAll(() => server.close());
 afterEach(() => server.resetHandlers());
 
 test("extract returns mocked data", async () => {
-  const sgai = scrapegraphai({ apiKey: "test-key" });
-  const { data } = await sgai.extract("https://example.com", {
+  const result = await extract("test-key", {
+    url: "https://example.com",
     prompt: "Extract the title",
   });
-  expect(data.title).toBe("MSW Mock Title");
+  expect(result.data?.json?.title).toBe("MSW Mock Title");
 });
 ```
 

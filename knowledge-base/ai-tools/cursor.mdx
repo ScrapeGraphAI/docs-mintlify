@@ -53,12 +53,11 @@ Ask Cursor:
 > Write a JavaScript function using scrapegraph-js that extracts product details from an e-commerce page.
 
 ```javascript
-import { scrapegraphai } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
-const sgai = scrapegraphai({ apiKey: "your-api-key" });
-
-async function extractProduct(url) {
-  return await sgai.extract(url, {
+async function extractProduct(apiKey, url) {
+  return await extract(apiKey, {
+    url,
     prompt: "Extract the product name, price, and availability",
   });
 }

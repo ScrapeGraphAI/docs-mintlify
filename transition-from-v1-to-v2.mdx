@@ -18,10 +18,10 @@ Use this table to map old entry points to new ones. Details and examples follow 
 | `markdownify` | **`scrape`** with `format="markdown"` (Python) or `format: "markdown"` (JS) | HTML → markdown and related “raw page” outputs live under **`scrape`**. |
 | `smartscraper` / `smartScraper` | **`extract`** | Same job: structured extraction from a URL. Rename params and pass extra fetch/LLM options via config objects. |
 | `searchscraper` / `searchScraper` | **`search`** | Web search + extraction; use `query` (or positional string in JS). |
-| `crawl` (single start call) | **`crawl.start`**, then **`crawl.status`**, **`crawl.stop`**, **`crawl.resume`** | Crawl is explicitly async: you poll or track job id. |
+| `crawl` (single start call) | **`crawl.start`**, then **`crawl.get`**, **`crawl.stop`**, **`crawl.resume`**, **`crawl.delete`** | Crawl is explicitly async: you poll or track job id. |
 | Monitors (if you used them) | **`monitor.create`**, **`monitor.list`**, **`monitor.get`**, pause/resume/delete | Same product, namespaced API. |
 | `sitemap` | **Removed from v2 SDKs** | Discover URLs with **`crawl.start`** and URL patterns, or call the REST sitemap endpoint if your integration still requires it—see [Sitemap](/services/sitemap) and SDK release notes. |
-| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `render_js`, `wait_ms`, `stealth`) for hard pages, or **`crawl.start`** for multi-page flows. |
+| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `mode="js"`, `stealth=True`, `wait=2000`) for hard pages, or **`crawl.start`** for multi-page flows. |
 | `healthz` / `checkHealth`, `feedback`, built-in mock helpers | **Removed or changed** | Use **`credits`**, **`history`**, and dashboard features; check the SDK migration guides for replacements. |
 
 ## Code-level transition
@@ -47,14 +47,16 @@ print(response)
 ```
 
 ```javascript JavaScript (v2)
-import { scrapegraphai } from "scrapegraph-js";
+import { scrape } from "scrapegraph-js";
 
-const sgai = scrapegraphai({ apiKey });
-const { data, requestId } = await sgai.scrape("https://example.com", {
-  format: "markdown",
+const result = await scrape(apiKey, {
+  url: "https://example.com",
+  formats: [{ type: "markdown" }],
 });
 
-console.log(data);
+if (result.status === "success") {
+  console.log(result.data?.results.markdown?.data);
+}
 ```
 
 </CodeGroup>
@@ -100,13 +102,16 @@ const response = await smartScraper(apiKey, {
 ```
 
 ```javascript JavaScript (v2)
-import { scrapegraphai } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
-const sgai = scrapegraphai({ apiKey });
-const { data, requestId } = await sgai.extract("https://example.com", {
+const result = await extract(apiKey, {
+  url: "https://example.com",
   prompt: "Extract the title and price",
-  fetchConfig: { stealth: true },
 });
+
+if (result.status === "success") {
+  console.log(result.data?.json);
+}
 ```
 
 </CodeGroup>
@@ -127,7 +132,10 @@ response = client.search(
 ```
 
 ```javascript JavaScript (v2)
-const { data } = await sgai.search("Latest pricing for product X", {
+import { search } from "scrapegraph-js";
+
+const result = await search(apiKey, {
+  query: "Latest pricing for product X",
   numResults: 5,
 });
 ```
@@ -153,12 +161,15 @@ status = client.crawl.status(job["id"])
 ```
 
 ```javascript JavaScript (v2)
-const job = await sgai.crawl.start("https://example.com", {
+import { crawl } from "scrapegraph-js";
+
+const job = await crawl.start(apiKey, {
+  url: "https://example.com",
   maxDepth: 2,
   includePatterns: ["/blog/*"],
   excludePatterns: ["/admin/*"],
 });
-const status = await sgai.crawl.status(job.data.id);
+const status = await crawl.get(apiKey, job.data?.id);
 ```
 
 </CodeGroup>

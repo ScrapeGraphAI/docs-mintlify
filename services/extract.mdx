@@ -30,16 +30,16 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+const result = await extract('your-api-key', {
+  url: 'https://scrapegraphai.com',
+  prompt: 'What does the company do?',
+});
 
-const { data, requestId } = await sgai.extract(
-  'https://scrapegraphai.com',
-  { prompt: 'What does the company do?' }
-);
-
-console.log(data);
+if (result.status === 'success') {
+  console.log(result.data?.json);
+}
 ```
 
 ```bash cURL
@@ -62,7 +62,6 @@ curl -X POST https://api.scrapegraphai.com/api/v2/extract \
 | prompt | string | Yes | A textual description of what you want to extract. |
 | output_schema | object | No | Pydantic or Zod schema for structured response format. |
 | fetch_config | FetchConfig | No | Configuration for page fetching (headers, cookies, stealth, etc.). |
-| llm_config | LlmConfig | No | Configuration for the AI model (model, temperature, max_tokens, etc.). |
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
@@ -99,24 +98,29 @@ response = client.extract(
     url="https://example.com",
     prompt="Extract the main content",
     fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
         headers={"User-Agent": "MyBot"},
         cookies={"session": "abc123"},
         scrolls=3,
-        render_js=True,
-        stealth=True,
-        wait_ms=2000,
+        wait=2000,
     ),
 )
 ```
 
+<Note>
+In the JavaScript SDK, pass `fetchConfig` as a property of the params object: `extract(apiKey, { url, prompt, fetchConfig: { ... } })`.
+</Note>
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
+| mode | string | Fetch mode: `"auto"` (default), `"fast"`, or `"js"`. |
+| stealth | bool | Enable stealth mode with residential proxy and anti-bot headers. |
 | headers | dict | Custom HTTP headers to send. |
 | cookies | dict | Cookies to include in the request. |
 | scrolls | int | Number of page scrolls (0-100). |
-| render_js | bool | Render heavy JavaScript before extraction. |
-| stealth | bool | Enable stealth mode to avoid bot detection. |
-| wait_ms | int | Milliseconds to wait before capturing page content. |
+| wait | int | Milliseconds to wait after page load (0-30000). |
+| timeout | int | Request timeout in milliseconds (1000-60000). |
 | country | string | Two-letter ISO country code for geo-targeted proxy routing. |
 
 ## Custom Schema Example
@@ -145,26 +149,25 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
-import { z } from 'zod';
+import { extract } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
-
-const schema = z.object({
-  title: z.string().describe('The title of the webpage'),
-  description: z.string().describe('The description of the webpage'),
-  summary: z.string().describe('A brief summary of the webpage'),
+const result = await extract('your-api-key', {
+  url: 'https://scrapegraphai.com/',
+  prompt: 'What does the company do?',
+  schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string' },
+      description: { type: 'string' },
+      summary: { type: 'string' },
+    },
+    required: ['title'],
+  },
 });
 
-const { data } = await sgai.extract(
-  'https://scrapegraphai.com/',
-  {
-    prompt: 'What does the company do?',
-    schema: schema,
-  }
-);
-
-console.log(data);
+if (result.status === 'success') {
+  console.log(result.data?.json);
+}
 ```
 
 </CodeGroup>

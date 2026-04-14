@@ -16,8 +16,8 @@ The `mode` parameter controls how pages are retrieved:
 | `auto` | Automatically selects the best strategy (default) |
 | `fast` | Direct HTTP fetch, no JS rendering — fastest option |
 | `js` | Headless browser for JavaScript-heavy pages |
-| `direct+stealth` | Residential proxy with stealth headers (no JS) |
-| `js+stealth` | JS rendering + residential/stealth proxy |
+
+Set `stealth: true` alongside any mode to enable residential proxy with anti-bot headers.
 
 ## Examples
 
@@ -40,11 +40,10 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
-
-const { data } = await sgai.extract('https://example.com', {
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
   prompt: 'Extract the main content',
   fetchConfig: { country: 'de' },
 });
@@ -67,7 +66,8 @@ response = client.scrape(
     url="https://protected-site.com",
     format="markdown",
     fetch_config=FetchConfig(
-        mode="js+stealth",
+        mode="js",
+        stealth=True,
         wait=3000,
         scrolls=3,
         country="us",
@@ -76,10 +76,14 @@ response = client.scrape(
 ```
 
 ```javascript JavaScript
-const { data } = await sgai.scrape('https://protected-site.com', {
-  format: 'markdown',
+import { scrape } from 'scrapegraph-js';
+
+const result = await scrape('your-api-key', {
+  url: 'https://protected-site.com',
+  formats: [{ type: 'markdown' }],
   fetchConfig: {
-    mode: 'js+stealth',
+    mode: 'js',
+    stealth: true,
     wait: 3000,
     scrolls: 3,
     country: 'us',
@@ -111,7 +115,10 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-const { data } = await sgai.extract('https://example.com', {
+import { extract } from 'scrapegraph-js';
+
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
   prompt: 'Extract product details',
   fetchConfig: {
     headers: { 'Accept-Language': 'en-US' },
@@ -125,7 +132,7 @@ const { data } = await sgai.extract('https://example.com', {
 ## Tips
 
 - Start with `mode: "auto"` and only switch to a specific mode if you need to.
-- Use `js+stealth` for sites with strong anti-bot protections.
+- Set `stealth: true` for sites with strong anti-bot protections (combine with `mode: "js"` for dynamic sites).
 - Add `wait` time for pages that load content dynamically after the initial render.
 - Use `scrolls` to trigger lazy-loaded content on infinite-scroll pages.
 - The `country` parameter doesn't affect pricing — credits are charged the same regardless of proxy location.

@@ -43,17 +43,19 @@ print(f"Total products extracted: {len(all_results)}")
 ```
 
 ```javascript
-import { scrapegraphai } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
-const sgai = scrapegraphai({ apiKey: "your-api-key" });
 const allResults = [];
 
 for (let page = 1; page <= 5; page++) {
   const url = `https://example.com/products?page=${page}`;
-  const { data } = await sgai.extract(url, {
+  const result = await extract("your-api-key", {
+    url,
     prompt: "Extract all product names and prices on this page",
   });
-  allResults.push(...(data?.products ?? []));
+  if (result.status === "success") {
+    allResults.push(...(result.data?.json?.products ?? []));
+  }
 }
 ```
 

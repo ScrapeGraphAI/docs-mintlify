@@ -139,17 +139,17 @@ except APIError as e:
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract data',
+});
 
-try {
-  const { data } = await sgai.extract('https://example.com', {
-    prompt: 'Extract data',
-  });
-  console.log('Data:', data);
-} catch (error) {
-  console.error('Error:', error.message);
+if (result.status === 'success') {
+  console.log('Data:', result.data);
+} else {
+  console.error('Error:', result.error);
 }
 ```
 </CodeGroup>

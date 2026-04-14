@@ -27,15 +27,16 @@ If using Node < 20, install `dotenv` and add `import 'dotenv/config'` to your co
 This example demonstrates a simple workflow: scrape a website and summarize the content using Gemini.
 
 ```typescript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import { GoogleGenAI } from '@google/genai';
 
-const sgai = scrapegraphai({ apiKey: process.env.SGAI_APIKEY });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const { data } = await sgai.extract('https://scrapegraphai.com', {
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://scrapegraphai.com',
     prompt: 'Extract all content from this page',
 });
+const data = result.data?.json;
 
 console.log('Scraped content length:', JSON.stringify(data).length);
 
@@ -52,15 +53,16 @@ console.log('Summary:', response.text);
 This example shows how to analyze website content using Gemini's multi-turn conversation capabilities.
 
 ```typescript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import { GoogleGenAI } from '@google/genai';
 
-const sgai = scrapegraphai({ apiKey: process.env.SGAI_APIKEY });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const { data } = await sgai.extract('https://news.ycombinator.com/', {
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://news.ycombinator.com/',
     prompt: 'Extract all content from this page',
 });
+const data = result.data?.json;
 
 console.log('Scraped content length:', JSON.stringify(data).length);
 
@@ -86,15 +88,16 @@ console.log('4th and 5th Stories:', result2.text);
 This example demonstrates how to extract structured data using Gemini's JSON mode from scraped website content.
 
 ```typescript
-import { scrapegraphai } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import { GoogleGenAI, Type } from '@google/genai';
 
-const sgai = scrapegraphai({ apiKey: process.env.SGAI_APIKEY });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const { data } = await sgai.extract('https://stripe.com', {
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://stripe.com',
     prompt: 'Extract all content from this page',
 });
+const data = result.data?.json;
 
 console.log('Scraped content length:', JSON.stringify(data).length);
 

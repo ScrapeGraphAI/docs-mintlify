@@ -29,15 +29,17 @@ response = client.search(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
+import { search } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
+const result = await search('your-api-key', {
+  query: 'What are the key features of ChatGPT Plus?',
+});
 
-const { data } = await sgai.search(
-  'What are the key features of ChatGPT Plus?'
-);
-
-console.log(data);
+if (result.status === 'success') {
+  for (const r of result.data?.results ?? []) {
+    console.log(`${r.title} - ${r.url}`);
+  }
+}
 ```
 
 ```bash cURL
@@ -94,24 +96,25 @@ response = client.search(
 ```
 
 ```javascript JavaScript
-import { scrapegraphai } from 'scrapegraph-js';
-import { z } from 'zod';
+import { search } from 'scrapegraph-js';
 
-const sgai = scrapegraphai({ apiKey: 'your-api-key' });
-
-const schema = z.object({
-  title: z.string().describe('The result title'),
-  summary: z.string().describe('Brief summary'),
-  url: z.string().describe('Source URL'),
+const result = await search('your-api-key', {
+  query: 'Latest AI developments 2024',
+  numResults: 10,
+  prompt: 'Extract the title, summary, and source URL',
+  schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string' },
+      summary: { type: 'string' },
+      url: { type: 'string' },
+    },
+  },
 });
 
-const { data } = await sgai.search(
-  'Latest AI developments 2024',
-  {
-    schema: schema,
-    numResults: 10,
-  }
-);
+if (result.status === 'success') {
+  console.log(result.data?.json);
+}
 ```
 
 </CodeGroup>
