@@ -61,7 +61,7 @@ curl -X POST https://api.scrapegraphai.com/api/v2/search \
 | output_schema | object | No | Pydantic or Zod schema for structured response format (requires `prompt`). |
 | format | string | No | Output format: `"markdown"` (default) or `"html"`. |
 | mode | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default). |
-| location_geo_code | string | No | Geo code for localized results (e.g. `"us"`, `"it"`, `"gb"`). In the JS SDK, use `locationGeoCode`. |
+| country | string | No | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`, `"gb"`). |
 | time_range | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, etc.). |
 

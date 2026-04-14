@@ -22,7 +22,7 @@ pip install scrapegraph-py
 ## What's New in v2
 
 - **Renamed methods**: `smartscraper()` → `extract()`, `searchscraper()` → `search()`
-- **Unified config objects**: `FetchConfig` and `LlmConfig` replace scattered parameters
+- **Unified config object**: `FetchConfig` replaces scattered parameters (`render_js`, `stealth`, `wait_ms`, etc.)
 - **Namespace methods**: `crawl.start()`, `crawl.status()`, `monitor.create()`, etc.
 - **New endpoints**: `credits()`, `history()`, `crawl.stop()`, `crawl.resume()`
 - **Removed**: `markdownify()`, `agenticscraper()`, `sitemap()`, `healthz()`, `feedback()`, built-in mock mode
@@ -141,7 +141,7 @@ response = client.search(
 | schema            | dict        | No       | JSON schema for structured response (requires `prompt`)  |
 | format            | string      | No       | `"markdown"` (default) or `"html"`                       |
 | mode              | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default) |
-| location_geo_code | string      | No       | Geo code for localized results (e.g. `"us"`, `"it"`, `"gb"`) |
+| country           | string      | No       | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`, `"gb"`) |
 | time_range        | string      | No       | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | fetch_config      | FetchConfig | No       | Fetch configuration                                      |
 
@@ -304,7 +304,8 @@ Controls how pages are fetched. See the [proxy configuration guide](/services/ad
 from scrapegraph_py import FetchConfig
 
 config = FetchConfig(
-    mode="js+stealth",   # Proxy strategy: auto, fast, js, direct+stealth, js+stealth
+    mode="js",           # Fetch mode: auto, fast, js
+    stealth=True,        # Enable stealth mode (residential proxy, anti-bot headers)
     timeout=15000,       # Request timeout in ms (1000-60000)
     wait=2000,           # Wait after page load in ms (0-30000)
     scrolls=3,           # Number of scrolls (0-100)
@@ -315,20 +316,6 @@ config = FetchConfig(
 )
 ```
 
-### LlmConfig
-
-Controls LLM behavior for format entries that run an LLM (scrape `json` and `summary` formats). Pass it inside the format entry — it is deprecated at the top level of `extract` and `search` in v2 and is ignored by the API.
-
-```python
-from scrapegraph_py import LlmConfig
-
-config = LlmConfig(
-    model="gpt-4o-mini",      # LLM model to use
-    temperature=0.3,           # Response creativity (0.0-1.0)
-    max_tokens=1000,           # Maximum response tokens
-    chunker="auto",            # Content chunking strategy ("auto" or custom config)
-)
-```
 
 ## Async Support
 
