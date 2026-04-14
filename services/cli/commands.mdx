@@ -25,6 +25,10 @@ just-scrape search <query>
 just-scrape search <query> -p <prompt>                   # extraction prompt for results
 just-scrape search <query> --num-results <n>             # sources to scrape (1-20, default 3)
 just-scrape search <query> --schema <json>
+just-scrape search <query> --location-geo-code <code>    # geo-target (e.g. 'us', 'de', 'jp-tk')
+just-scrape search <query> --time-range <range>          # past_hour | past_24_hours | past_week | past_month | past_year
+just-scrape search <query> --format <markdown|html>      # result format (default markdown)
+just-scrape search <query> --nationality <iso>           # 2-letter ISO nationality code
 just-scrape search <query> --headers <json>
 ```
 
@@ -40,13 +44,21 @@ just-scrape markdownify <url> --headers <json>
 
 ## scrape
 
-Scrape content from a URL in various formats. [Full docs →](/api-reference/scrape)
+Scrape content from a URL in one or more formats. Supports **8 formats**: `markdown`, `html`, `screenshot`, `branding`, `links`, `images`, `summary`, `json`. [Full docs →](/api-reference/scrape)
 
 ```bash
 just-scrape scrape <url>                                 # markdown (default)
 just-scrape scrape <url> -f html                         # raw HTML
-just-scrape scrape <url> -f screenshot                   # screenshot
-just-scrape scrape <url> -f branding                     # extract branding info
+just-scrape scrape <url> -f screenshot                   # page screenshot
+just-scrape scrape <url> -f branding                     # branding info (logos, colors, fonts)
+just-scrape scrape <url> -f links                        # all links on the page
+just-scrape scrape <url> -f images                       # all images on the page
+just-scrape scrape <url> -f summary                      # AI-generated page summary
+just-scrape scrape <url> -f json -p <prompt>             # structured JSON via prompt
+just-scrape scrape <url> -f json -p <prompt> --schema <json>  # JSON with enforced schema
+just-scrape scrape <url> -f markdown,links,images        # multi-format (comma-separated)
+just-scrape scrape <url> --html-mode reader              # normal (default), reader, or prune
+just-scrape scrape <url> --scrolls <n>                   # infinite scroll (0-100)
 just-scrape scrape <url> -m direct+stealth               # anti-bot bypass
 just-scrape scrape <url> --country <iso>                 # geo-targeting
 ```
@@ -61,6 +73,7 @@ just-scrape crawl <url> --max-pages <n>                  # max pages (default 50
 just-scrape crawl <url> --max-depth <n>                  # crawl depth (default 2)
 just-scrape crawl <url> --max-links-per-page <n>         # max links per page (default 10)
 just-scrape crawl <url> --allow-external                 # allow external domains
+just-scrape crawl <url> -f html                          # page format (default markdown)
 just-scrape crawl <url> -m direct+stealth                # anti-bot bypass
 ```
 
@@ -83,7 +96,7 @@ Check your credit balance.
 
 ```bash
 just-scrape credits
-just-scrape credits --json | jq '.remaining_credits'
+just-scrape credits --json | jq '.remainingCredits'
 ```
 
 ## Global flags

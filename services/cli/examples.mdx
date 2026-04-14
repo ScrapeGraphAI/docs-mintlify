@@ -29,6 +29,10 @@ just-scrape extract https://app.example.com/dashboard \
 just-scrape search "What are the best Python web frameworks in 2025?" \
   --num-results 10
 
+# Recent news only, scoped to Germany
+just-scrape search "EU AI act latest news" \
+  --time-range past_week --location-geo-code de
+
 # Structured output with schema
 just-scrape search "Top 5 cloud providers pricing" \
   --schema '{"type":"object","properties":{"providers":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"free_tier":{"type":"string"}}}}}}'
@@ -58,14 +62,21 @@ just-scrape markdownify https://protected.example.com -m js+stealth
 # Get markdown (default format)
 just-scrape scrape https://example.com
 
-# Get raw HTML
-just-scrape scrape https://example.com -f html
+# Get raw HTML with reader-mode extraction
+just-scrape scrape https://blog.example.com -f html --html-mode reader
 
 # Take a screenshot
 just-scrape scrape https://example.com -f screenshot
 
 # Extract branding info (logos, colors, fonts)
 just-scrape scrape https://example.com -f branding
+
+# Multi-format: markdown + links + images in a single call
+just-scrape scrape https://example.com -f markdown,links,images
+
+# Structured JSON output with a prompt
+just-scrape scrape https://store.example.com \
+  -f json -p "Extract product name and price"
 
 # Geo-targeted + anti-bot bypass
 just-scrape scrape https://store.example.com \
@@ -78,6 +89,10 @@ just-scrape scrape https://store.example.com \
 # Crawl a docs site
 just-scrape crawl https://docs.example.com \
   --max-pages 20 --max-depth 3
+
+# Crawl and get HTML instead of markdown
+just-scrape crawl https://example.com \
+  --max-pages 50 -f html
 
 # Allow external links
 just-scrape crawl https://example.com \
