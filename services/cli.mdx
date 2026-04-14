@@ -82,7 +82,8 @@ Extract structured data from any URL using AI (replaces `smart-scraper`). [Full 
 just-scrape extract <url> -p <prompt>
 just-scrape extract <url> -p <prompt> --schema <json>
 just-scrape extract <url> -p <prompt> --scrolls <n>
-just-scrape extract <url> -p <prompt> --mode direct+stealth
+just-scrape extract <url> -p <prompt> --mode reader          # HTML mode: normal, reader, prune
+just-scrape extract <url> -p <prompt> --stealth
 just-scrape extract <url> -p <prompt> --cookies <json> --headers <json>
 just-scrape extract <url> -p <prompt> --country <iso>
 ```
@@ -97,7 +98,7 @@ just-scrape search <query> --num-results <n>
 just-scrape search <query> -p <prompt>
 just-scrape search <query> --schema <json>
 just-scrape search <query> --format markdown            # or html
-just-scrape search <query> --location-geo-code <iso>    # e.g. us, it, gb
+just-scrape search <query> --country <iso>              # e.g. us, de, jp
 just-scrape search <query> --time-range past_week       # past_hour|past_24_hours|past_week|past_month|past_year
 just-scrape search <query> --headers <json>
 ```
@@ -115,7 +116,7 @@ just-scrape scrape <url> -f json -p "Extract the title"    # json format require
 just-scrape scrape <url> -f json -p <prompt> --schema <json>
 just-scrape scrape <url> --html-mode reader                # normal | reader | prune
 just-scrape scrape <url> --scrolls 3
-just-scrape scrape <url> -m direct+stealth
+just-scrape scrape <url> -m js --stealth
 just-scrape scrape <url> --country <iso>
 ```
 
@@ -138,7 +139,7 @@ Convert any webpage to clean markdown (convenience wrapper for `scrape --format 
 
 ```bash
 just-scrape markdownify <url>
-just-scrape markdownify <url> -m direct+stealth
+just-scrape markdownify <url> -m js --stealth
 just-scrape markdownify <url> --headers <json>
 ```
 
@@ -153,20 +154,49 @@ just-scrape crawl <url> --max-depth <n>
 just-scrape crawl <url> --max-links-per-page <n>
 just-scrape crawl <url> --allow-external
 just-scrape crawl <url> -f markdown        # or html, json, etc.
-just-scrape crawl <url> -m direct+stealth
+just-scrape crawl <url> -m js --stealth
 ```
 
 ### Fetch Modes
 
-Use `-m / --mode` on `extract`, `search`, `scrape`, `markdownify`, and `crawl` to choose how pages are fetched. The legacy `--stealth` boolean is replaced by the mode enum below.
+Use `-m / --mode` on `scrape`, `markdownify`, and `crawl` to choose how pages are fetched. Add `--stealth` to enable anti-bot bypass.
 
 | Mode | Description |
 |---|---|
 | `auto` | Automatic selection (default) |
 | `fast` | Fastest, no JS rendering |
 | `js` | Full JS rendering |
-| `direct+stealth` | Direct fetch with anti-bot bypass |
-| `js+stealth` | JS rendering with anti-bot bypass |
+
+<Note>
+On `extract`, `--mode` sets the **HTML processing mode** (`normal`, `reader`, `prune`) instead. Use `--stealth` separately for anti-bot bypass.
+</Note>
+
+### Monitor
+
+Create and manage page-change monitors that track changes on a URL at a set interval.
+
+```bash
+# Create a monitor
+just-scrape monitor create --url <url> --interval <interval>
+just-scrape monitor create --url <url> --interval 1h --name "My Monitor"
+just-scrape monitor create --url <url> --interval 30m -f markdown,links --webhook-url <url>
+just-scrape monitor create --url <url> --interval 1d -m js --stealth
+
+# List all monitors
+just-scrape monitor list
+
+# Get a specific monitor
+just-scrape monitor get --id <monitor-id>
+
+# Update a monitor
+just-scrape monitor update --id <monitor-id> --interval 2h
+just-scrape monitor update --id <monitor-id> --name "New Name" -f html,screenshot
+
+# Pause / resume / delete
+just-scrape monitor pause --id <monitor-id>
+just-scrape monitor resume --id <monitor-id>
+just-scrape monitor delete --id <monitor-id>
+```
 
 ### History
 
@@ -180,7 +210,7 @@ just-scrape history <service> --page-size <n>
 just-scrape history <service> --json
 ```
 
-Services: `scrape`, `extract`, `search`, `monitor`, `crawl`
+Services: `scrape`, `extract`, `schema`, `search`, `monitor`, `crawl`
 
 ### Credits
 
