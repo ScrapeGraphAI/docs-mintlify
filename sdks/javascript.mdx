@@ -105,7 +105,6 @@ const { data, requestId } = await sgai.extract(
 | options.schema       | ZodSchema / object | No | Zod schema or JSON schema for structured response       |
 | options.mode         | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"`  |
 | options.contentType  | string      | No       | Override the detected content type (e.g. `"text/html"`)  |
-| options.fetchConfig  | FetchConfig | No       | Fetch configuration                                      |
 | options.html         | string      | No       | Raw HTML input (alternative to `url`)                    |
 | options.markdown     | string      | No       | Raw markdown input (alternative to `url`)                |
 
@@ -137,22 +136,6 @@ console.log(`Author: ${data.author}`);
 ```
 </Accordion>
 
-<Accordion title="With FetchConfig" icon="code">
-```javascript
-const { data } = await sgai.extract(
-  "https://example.com",
-  {
-    prompt: "Extract the main heading",
-    fetchConfig: {
-      mode: 'js+stealth',
-      wait: 2000,
-      scrolls: 3,
-    },
-  }
-);
-```
-</Accordion>
-
 ### search()
 
 Search the web and extract information. Replaces the v1 `searchScraper` function.
@@ -174,7 +157,7 @@ const { data } = await sgai.search(
 | options.schema           | ZodSchema / object | No | Schema for structured response (requires `prompt`)     |
 | options.format           | string      | No       | `"markdown"` (default) or `"html"`                       |
 | options.mode             | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default) |
-| options.locationGeoCode  | string      | No       | Geo code for localized search (e.g. `"us"`, `"it"`, `"gb"`) |
+| options.locationGeoCode  | string      | No       | Two-letter ISO country code for localized search (e.g. `"us"`, `"it"`, `"gb"`) |
 | options.timeRange        | string      | No       | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | options.fetchConfig      | FetchConfig | No       | Fetch configuration                                      |
 
@@ -334,32 +317,18 @@ Controls how pages are fetched. See the [proxy configuration guide](/services/ad
 
 ```javascript
 {
-  mode: 'js+stealth',        // Proxy strategy: auto, fast, js, direct+stealth, js+stealth
-  timeout: 15000,             // Request timeout in ms (1000-60000)
-  wait: 2000,                 // Wait after page load in ms (0-30000)
-  scrolls: 3,                 // Number of scrolls (0-100)
-  country: 'us',              // Proxy country code (ISO 3166-1 alpha-2)
+  mode: 'js',                  // Fetch mode: auto, fast, js
+  stealth: true,               // Enable stealth mode (residential proxy, anti-bot headers)
+  timeout: 15000,              // Request timeout in ms (1000-60000)
+  wait: 2000,                  // Wait after page load in ms (0-30000)
+  scrolls: 3,                  // Number of scrolls (0-100)
+  country: 'us',               // Proxy country code (ISO 3166-1 alpha-2)
   headers: { 'X-Custom': 'header' },
   cookies: { key: 'value' },
-  mock: false,                // Enable mock mode for testing
+  mock: false,                 // Enable mock mode for testing
 }
 ```
 
-### LlmConfig
-
-Controls LLM behavior for format entries that run an LLM (scrape `json` and `summary` formats). Pass it inside the format entry — it is not accepted at the top level of `extract` or `search` in v2.
-
-```javascript
-{
-  model: "gpt-4o-mini",   // LLM model to use
-  temperature: 0.3,       // Response creativity (0-1)
-  maxTokens: 1000,        // Maximum response tokens
-  chunker: {              // Content chunking strategy
-    size: "dynamic",      // Chunk size (number or "dynamic")
-    overlap: 100,         // Overlap between chunks
-  },
-}
-```
 
 ## Error Handling
 

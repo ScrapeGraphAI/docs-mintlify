@@ -56,9 +56,14 @@ curl -X POST https://api.scrapegraphai.com/api/v2/search \
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | query | string | Yes | The search query to execute. |
-| num_results | int | No | Number of search results to return (3-20). Default: 5. |
-| output_schema | object | No | Pydantic or Zod schema for structured response format. |
-| llm_config | LlmConfig | No | Configuration for the AI model (model, temperature, max_tokens, etc.). |
+| num_results | int | No | Number of search results to return (1-20). Default: 5. |
+| prompt | string | No | Prompt used when extracting structured results. |
+| output_schema | object | No | Pydantic or Zod schema for structured response format (requires `prompt`). |
+| format | string | No | Output format: `"markdown"` (default) or `"html"`. |
+| mode | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default). |
+| location_geo_code | string | No | Geo code for localized results (e.g. `"us"`, `"it"`, `"gb"`). In the JS SDK, use `locationGeoCode`. |
+| time_range | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
+| fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, etc.). |
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
