@@ -11,7 +11,8 @@ Extract structured data from any URL using AI (replaces `smart-scraper`). [Full 
 just-scrape extract <url> -p <prompt>
 just-scrape extract <url> -p <prompt> --schema <json>
 just-scrape extract <url> -p <prompt> --scrolls <n>     # infinite scroll (0-100)
-just-scrape extract <url> -p <prompt> --mode js+stealth  # anti-bot bypass
+just-scrape extract <url> -p <prompt> --stealth          # anti-bot bypass
+just-scrape extract <url> -p <prompt> --mode reader      # HTML mode: normal (default), reader, prune
 just-scrape extract <url> -p <prompt> --cookies <json> --headers <json>
 just-scrape extract <url> -p <prompt> --country <iso>    # geo-targeting
 ```
@@ -37,7 +38,7 @@ Convert any webpage to clean markdown (convenience wrapper for `scrape --format 
 
 ```bash
 just-scrape markdownify <url>
-just-scrape markdownify <url> -m direct+stealth          # anti-bot bypass
+just-scrape markdownify <url> -m js --stealth            # anti-bot bypass
 just-scrape markdownify <url> --headers <json>
 ```
 
@@ -58,7 +59,7 @@ just-scrape scrape <url> -f json -p <prompt> --schema <json>  # JSON with enforc
 just-scrape scrape <url> -f markdown,links,images        # multi-format (comma-separated)
 just-scrape scrape <url> --html-mode reader              # normal (default), reader, or prune
 just-scrape scrape <url> --scrolls <n>                   # infinite scroll (0-100)
-just-scrape scrape <url> -m direct+stealth               # anti-bot bypass
+just-scrape scrape <url> -m js --stealth                 # anti-bot bypass (fetch mode: auto, fast, js)
 just-scrape scrape <url> --country <iso>                 # geo-targeting
 ```
 
@@ -73,7 +74,28 @@ just-scrape crawl <url> --max-depth <n>                  # crawl depth (default 
 just-scrape crawl <url> --max-links-per-page <n>         # max links per page (default 10)
 just-scrape crawl <url> --allow-external                 # allow external domains
 just-scrape crawl <url> -f html                          # page format (default markdown)
-just-scrape crawl <url> -m direct+stealth                # anti-bot bypass
+just-scrape crawl <url> -f markdown,links,images         # multi-format (comma-separated)
+just-scrape crawl <url> -m js --stealth                  # anti-bot bypass
+```
+
+## monitor
+
+Create and manage page-change monitors. A monitor periodically re-scrapes a URL and tracks diffs between ticks. [Full docs →](/api-reference/monitor)
+
+```bash
+just-scrape monitor create --url <url> --interval <interval>    # e.g. '1h', '30m', '1d'
+just-scrape monitor create --url <url> --interval 1h --name "My Monitor"
+just-scrape monitor create --url <url> --interval 30m --webhook-url <url>
+just-scrape monitor create --url <url> --interval 1d -f markdown,screenshot
+just-scrape monitor list                                        # list all monitors
+just-scrape monitor get --id <id>                               # get monitor details
+just-scrape monitor update --id <id> --interval 2h              # update interval
+just-scrape monitor pause --id <id>                             # pause
+just-scrape monitor resume --id <id>                            # resume
+just-scrape monitor delete --id <id>                            # delete
+just-scrape monitor activity --id <id>                          # paginated tick history
+just-scrape monitor activity --id <id> --limit 50               # ticks per page (max 100)
+just-scrape monitor activity --id <id> --cursor <cursor>        # paginate with a cursor
 ```
 
 ## history
@@ -87,7 +109,7 @@ just-scrape history <service> --page-size <n>            # results per page (max
 just-scrape history <service> --json
 ```
 
-Services: `scrape`, `extract`, `search`, `monitor`, `crawl`
+Services: `scrape`, `extract`, `schema`, `search`, `monitor`, `crawl`
 
 ## credits
 
@@ -95,7 +117,7 @@ Check your credit balance.
 
 ```bash
 just-scrape credits
-just-scrape credits --json | jq '.remainingCredits'
+just-scrape credits --json | jq '.remaining'
 ```
 
 ## Global flags

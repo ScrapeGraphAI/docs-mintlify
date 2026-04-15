@@ -19,7 +19,7 @@ just-scrape extract https://news.example.com \
 # Anti-bot bypass for JS-heavy SPAs
 just-scrape extract https://app.example.com/dashboard \
   -p "Extract user stats" \
-  --mode js+stealth
+  --stealth
 ```
 
 ## search
@@ -31,7 +31,7 @@ just-scrape search "What are the best Python web frameworks in 2025?" \
 
 # Recent news only, scoped to Germany
 just-scrape search "EU AI act latest news" \
-  --time-range past_week --location-geo-code de
+  --time-range past_week --country de
 
 # Structured output with schema
 just-scrape search "Top 5 cloud providers pricing" \
@@ -53,7 +53,7 @@ just-scrape markdownify https://docs.example.com/api \
   --json | jq -r '.markdown' > api-docs.md
 
 # Bypass Cloudflare
-just-scrape markdownify https://protected.example.com -m js+stealth
+just-scrape markdownify https://protected.example.com -m js --stealth
 ```
 
 ## scrape
@@ -80,7 +80,7 @@ just-scrape scrape https://store.example.com \
 
 # Geo-targeted + anti-bot bypass
 just-scrape scrape https://store.example.com \
-  -m direct+stealth --country DE
+  -m js --stealth --country DE
 ```
 
 ## crawl
@@ -99,7 +99,33 @@ just-scrape crawl https://example.com \
   --max-pages 50 --allow-external
 
 # Anti-bot bypass for protected sites
-just-scrape crawl https://example.com -m direct+stealth
+just-scrape crawl https://example.com -m js --stealth
+```
+
+## monitor
+
+```bash
+# Monitor a pricing page every hour
+just-scrape monitor create --url https://store.example.com/pricing --interval 1h
+
+# Daily monitor tracking markdown + screenshots, with webhook
+just-scrape monitor create --url https://example.com \
+  --interval 1d -f markdown,screenshot \
+  --webhook-url https://hooks.example.com/notify \
+  --name "Daily check"
+
+# List, pause, resume, delete
+just-scrape monitor list
+just-scrape monitor pause --id abc123
+just-scrape monitor resume --id abc123
+just-scrape monitor delete --id abc123
+
+# Browse the tick history (runs the monitor has already performed)
+just-scrape monitor activity --id abc123 --limit 20
+
+# Only show ticks where a change was detected
+just-scrape monitor activity --id abc123 --json \
+  | jq '.ticks[] | select(.hasChanges == true)'
 ```
 
 ## history
