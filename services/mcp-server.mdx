@@ -22,8 +22,8 @@ A production‑ready Model Context Protocol (MCP) server that connects LLMs to t
 
 ## Key Features
 
-- Full v2 API coverage: extract, search, scrape, crawl (+ stop/resume), monitor lifecycle, credits, and history
-- Uses the v2 API base URL (`https://api.scrapegraphai.com/api/v2`) with `Authorization: Bearer` + `SGAI-APIKEY` headers
+- Full v2 API coverage: scrape, extract, search, crawl (+ stop/resume), monitor lifecycle, credits, history, and schema generation
+- Uses the v2 API base URL (`https://api.scrapegraphai.com/v2`) with the `SGAI-APIKEY` header — wire format matches [scrapegraph-py v2](https://github.com/ScrapeGraphAI/scrapegraph-py/pull/84)
 - Remote HTTP MCP endpoint and local Python server support
 - Works with Cursor, Claude Desktop, and any MCP‑compatible client
 - Robust error handling, timeouts, and production‑tested reliability
@@ -171,12 +171,14 @@ python -m scrapegraph_mcp.server
 
 ## Configuration
 
-The server reads the ScrapeGraph API key from `SGAI_API_KEY` (local) or the `X-API-Key` header (remote). Optional environment overrides:
+The server reads the ScrapeGraph API key from `SGAI_API_KEY` (local) or the `X-API-Key` header (remote). Environment variables align 1:1 with the Python SDK:
 
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `SCRAPEGRAPH_API_BASE_URL` | Override the v2 API base URL | `https://api.scrapegraphai.com/api/v2` |
+| `SGAI_API_URL` | Override the v2 API base URL | `https://api.scrapegraphai.com/v2` |
+| `SGAI_TIMEOUT_S` | Request timeout in seconds | `120` |
+| `SCRAPEGRAPH_API_BASE_URL` | Legacy alias for `SGAI_API_URL` (still honored) | — |
 
 ## Available Tools
 
@@ -184,61 +186,93 @@ The server exposes the full v2 API surface.
 
 ### Content tools
 
+All content tools accept the same `FetchConfig` passthrough parameters: `mode` (`auto | fast | js`), `stealth`, `timeout`, `wait`, `scrolls`, `country`, `headers`, `cookies`, `mock`.
+
 #### markdownify
-Convert a webpage to clean markdown.
+Convert a webpage to clean markdown (wraps v2 `POST /scrape` with a markdown format entry).
 
 ```python
-markdownify(website_url: str)
+markdownify(website_url: str, **fetch_config)
+```
+
+#### scrape
+Fetch a URL via v2 `POST /scrape` with a single format entry.
+
+```python
+scrape(
+  website_url: str,
+  output_format: str = "markdown",   # markdown | html | screenshot | branding | links | images | summary
+  screenshot_full_page: bool = False,
+  content_type: str | None = None,
+  **fetch_config,
+)
 ```
 
 #### smartscraper
-AI‑powered extraction (v2 `/extract`) with optional infinite scrolls.
+AI‑powered structured extraction (v2 `POST /extract`).
 
 ```python
 smartscraper(
   user_prompt: str,
   website_url: str,
-  number_of_scrolls: int | None = None
+  output_schema: dict | str | None = None,
+  **fetch_config,
 )
 ```
 
 #### searchscraper
-Search the web and extract structured results (v2 `/search`).
+Search the web and optionally extract structured results (v2 `POST /search`).
 
 ```python
 searchscraper(
-  user_prompt: str,
-  num_results: int | None = None,
-  number_of_scrolls: int | None = None
+  user_prompt: str,                   # maps to the v2 `query` field
+  num_results: int | None = None,     # 1–20
+  output_schema: dict | str | None = None,
+  prompt: str | None = None,          # required when output_schema is set
+  country_search: str | None = None,  # locationGeoCode (e.g. "us", "it")
+  time_range: str | None = None,      # past_hour | past_24_hours | past_week | past_month | past_year
+  search_format: str = "markdown",    # markdown | html
+  search_mode: str = "prune",         # prune | normal
+  **fetch_config,
 )
 ```
 
-#### scrape
-Fetch a URL using the v2 `/scrape` endpoint with configurable formats.
+#### generate_schema
+Generate or augment a JSON Schema from a prompt (v2 `POST /schema`).
 
 ```python
-scrape(
-  website_url: str,
-  formats: list | None = None,   # e.g. [{"type": "markdown", "mode": "normal"}]
-  content_type: str | None = None,
+generate_schema(
+  prompt: str,
+  existing_schema: dict | str | None = None,
+  model: str | None = None,
 )
 ```
 
 ### Crawl tools
 
 #### smartcrawler_initiate
-Start a multi‑page crawl. `extraction_mode` defaults to `markdown` in v2 (also supports `html`).
+Start a multi‑page crawl. `extraction_mode` defaults to `markdown` (also: `html`, `links`, `images`, `summary`, `branding`, `screenshot`).
 
 ```python
 smartcrawler_initiate(
   url: str,
-  extraction_mode: str = "markdown",   # markdown | html
-  max_depth: int | None = None,
+  extraction_mode: str = "markdown",   # markdown | html | links | images | summary | branding | screenshot
+  depth: int | None = None,            # v2 maxDepth
   max_pages: int | None = None,
   max_links_per_page: int | None = None,
-  allow_external: bool | None = None,
+  allow_external: bool = False,
   include_patterns: list[str] | None = None,
   exclude_patterns: list[str] | None = None,
+  content_types: list[str] | None = None,
+  # FetchConfig passthrough
+  mode: str | None = None,             # auto | fast | js
+  stealth: bool | None = None,
+  timeout: int | None = None,
+  wait: int | None = None,
+  scrolls: int | None = None,
+  country: str | None = None,
+  headers: dict | None = None,
+  cookies: dict | None = None,
 )
 ```
 
@@ -265,15 +299,17 @@ crawl_resume(request_id: str)
 
 ### Monitor tools
 
-Replace v1 "scheduled jobs". All monitor operations sit under a single namespace.
+Replace v1 "scheduled jobs". `monitor_create` wraps the supplied `prompt` (+ optional `output_schema`) into a v2 `{type: "json", ...}` format entry for you.
 
 ```python
 monitor_create(
   url: str,
-  interval: str,                 # 5-field cron expression
+  prompt: str,                      # what to extract on each run
+  interval: str,                    # 5-field cron expression
   name: str | None = None,
-  formats: list | None = None,
   webhook_url: str | None = None,
+  output_schema: dict | str | None = None,
+  **fetch_config,
 )
 monitor_list()
 monitor_get(monitor_id: str)
