@@ -349,6 +349,32 @@ await monitor.resume("your-api-key", cronId);
 await monitor.delete("your-api-key", cronId);
 ```
 
+#### monitor.activity() — poll tick history
+
+Paginate through per-run ticks for a monitor (what changed on each scheduled run).
+
+```javascript
+import { monitor } from "scrapegraph-js";
+
+const activity = await monitor.activity("your-api-key", cronId, { limit: 20 });
+
+if (activity.status === "success") {
+  for (const tick of activity.data?.ticks ?? []) {
+    const changed = tick.changed ? "CHANGED" : "no change";
+    console.log(`[${tick.createdAt}] ${tick.status} - ${changed} (${tick.elapsedMs}ms)`);
+  }
+
+  if (activity.data?.nextCursor) {
+    const next = await monitor.activity("your-api-key", cronId, {
+      limit: 20,
+      cursor: activity.data.nextCursor,
+    });
+  }
+}
+```
+
+Params: `limit` (1–100, default `20`), `cursor` (opaque pagination token). Each tick has `id`, `createdAt`, `status`, `changed`, `elapsedMs`, and `diffs` with per-format deltas.
+
 ### getCredits
 
 Check your account credit balance.
@@ -436,9 +462,9 @@ if (result.status === "success") {
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v2` |
+| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
 | `SGAI_DEBUG` | Enable debug logging (`"1"`) | off |
-| `SGAI_TIMEOUT_S` | Request timeout in seconds | `120` |
+| `SGAI_TIMEOUT` | Request timeout in seconds | `120` |
 
 ## Support
 

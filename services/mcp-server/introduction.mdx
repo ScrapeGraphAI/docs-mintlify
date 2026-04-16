@@ -22,8 +22,8 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card title="17 Powerful Tools" icon="tools">
-    Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs, and manage your account
+  <Card title="18 Powerful Tools" icon="tools">
+    Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs (with activity polling), and manage your account
   </Card>
   <Card title="Remote & Local" icon="server">
     Use the hosted HTTP endpoint or run locally via Python
@@ -59,6 +59,7 @@ The MCP server exposes the following tools via API v2:
 | **monitor_pause** | Pause a running monitor (POST /monitor/:id/pause) |
 | **monitor_resume** | Resume a paused monitor (POST /monitor/:id/resume) |
 | **monitor_delete** | Delete a monitor (DELETE /monitor/:id) |
+| **monitor_activity** | Poll tick history for a monitor with pagination (GET /monitor/:id/activity) |
 
 <Note>
   Removed from v1: `sitemap`, `agentic_scrapper`, `markdownify_status`, `smartscraper_status` (no v2 API equivalents).

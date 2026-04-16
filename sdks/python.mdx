@@ -71,12 +71,12 @@ class ApiResult(BaseModel, Generic[T]):
 
 ### Environment Variables
 
-| Variable          | Description                                  | Default                              |
-| ----------------- | -------------------------------------------- | ------------------------------------ |
-| `SGAI_API_KEY`    | Your ScrapeGraphAI API key                   | —                                    |
-| `SGAI_API_URL`    | Override API base URL                        | `https://api.scrapegraphai.com/v2`   |
-| `SGAI_TIMEOUT_S`  | Request timeout in seconds                   | `120`                                |
-| `SGAI_DEBUG`      | Enable debug logging (set to `"1"`)          | off                                  |
+| Variable        | Description                                  | Default                                 |
+| --------------- | -------------------------------------------- | --------------------------------------- |
+| `SGAI_API_KEY`  | Your ScrapeGraphAI API key                   | —                                       |
+| `SGAI_API_URL`  | Override API base URL                        | `https://api.scrapegraphai.com/api/v2`  |
+| `SGAI_TIMEOUT`  | Request timeout in seconds                   | `120`                                   |
+| `SGAI_DEBUG`    | Enable debug logging (set to `"1"`)          | off                                     |
 
 The client supports context managers for automatic session cleanup:
 
@@ -309,6 +309,28 @@ sgai.monitor.pause(cron_id)
 sgai.monitor.resume(cron_id)
 sgai.monitor.delete(cron_id)
 ```
+
+#### `monitor.activity()` — poll tick history
+
+Paginate through the per-run ticks a monitor has produced (what changed on each scheduled run).
+
+```python
+from scrapegraph_py import MonitorActivityRequest
+
+act = sgai.monitor.activity(cron_id, MonitorActivityRequest(limit=20))
+
+if act.status == "success":
+    for tick in act.data.ticks:
+        status = "CHANGED" if tick.changed else "no change"
+        print(f"[{tick.created_at}] {tick.status} - {status} ({tick.elapsed_ms}ms)")
+
+    if act.data.next_cursor:
+        more = sgai.monitor.activity(
+            cron_id, MonitorActivityRequest(limit=20, cursor=act.data.next_cursor),
+        )
+```
+
+`MonitorActivityRequest` fields: `limit` (1–100, default `20`) and optional `cursor` for pagination. Each `MonitorTickEntry` exposes `id`, `created_at`, `status`, `changed`, `elapsed_ms`, and a `diffs` model with per-format deltas.
 
 #### `MonitorCreateRequest` fields
 

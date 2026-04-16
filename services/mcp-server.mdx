@@ -22,8 +22,8 @@ A production‑ready Model Context Protocol (MCP) server that connects LLMs to t
 
 ## Key Features
 
-- Full v2 API coverage: scrape, extract, search, crawl (+ stop/resume), monitor lifecycle, credits, history, and schema generation
-- Uses the v2 API base URL (`https://api.scrapegraphai.com/v2`) with the `SGAI-APIKEY` header — wire format matches [scrapegraph-py v2](https://github.com/ScrapeGraphAI/scrapegraph-py/pull/84)
+- Full v2 API coverage: scrape, extract, search, crawl (+ stop/resume), monitor lifecycle (+ activity polling), credits, history, and schema generation
+- Uses the v2 API base URL (`https://api.scrapegraphai.com/api/v2`) with the `SGAI-APIKEY` header — wire format matches [scrapegraph-py v2](https://github.com/ScrapeGraphAI/scrapegraph-py/pull/84)
 - Remote HTTP MCP endpoint and local Python server support
 - Works with Cursor, Claude Desktop, and any MCP‑compatible client
 - Robust error handling, timeouts, and production‑tested reliability
@@ -176,9 +176,10 @@ The server reads the ScrapeGraph API key from `SGAI_API_KEY` (local) or the `X-A
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `SGAI_API_URL` | Override the v2 API base URL | `https://api.scrapegraphai.com/v2` |
-| `SGAI_TIMEOUT_S` | Request timeout in seconds | `120` |
+| `SGAI_API_URL` | Override the v2 API base URL | `https://api.scrapegraphai.com/api/v2` |
+| `SGAI_TIMEOUT` | Request timeout in seconds | `120` |
 | `SCRAPEGRAPH_API_BASE_URL` | Legacy alias for `SGAI_API_URL` (still honored) | — |
+| `SGAI_TIMEOUT_S` | Legacy alias for `SGAI_TIMEOUT` (still honored) | — |
 
 ## Available Tools
 
@@ -316,7 +317,14 @@ monitor_get(monitor_id: str)
 monitor_pause(monitor_id: str)
 monitor_resume(monitor_id: str)
 monitor_delete(monitor_id: str)
+monitor_activity(
+  monitor_id: str,
+  limit: int | None = None,         # 1–100, default 20
+  cursor: str | None = None,        # pagination cursor
+)
 ```
+
+`monitor_activity` returns the tick history (`id`, `createdAt`, `status`, `changed`, `elapsedMs`, `diffs`) plus a `nextCursor` when more results are available — mirrors `sgai.monitor.activity()` in the SDKs.
 
 ### Account tools
 
