@@ -67,27 +67,20 @@ response = client.markdownify(
 ### JavaScript SDK
 
 ```javascript
-import { smartScraper, scrape, markdownify } from 'scrapegraph-js';
+import { extract, scrape } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
-
-// SmartScraper with custom wait time
-const response = await smartScraper(apiKey, {
-  website_url: 'https://example.com',
-  user_prompt: 'Extract product information',
-  wait_ms: 5000,
+// Extract with custom wait time
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
+  fetchConfig: { wait: 5000 },
 });
 
 // Scrape with custom wait time
-const scrapeResponse = await scrape(apiKey, {
-  website_url: 'https://example.com',
-  wait_ms: 5000,
-});
-
-// Markdownify with custom wait time
-const mdResponse = await markdownify(apiKey, {
-  website_url: 'https://example.com',
-  wait_ms: 5000,
+const scrapeResult = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'markdown' }],
+  fetchConfig: { wait: 5000 },
 });
 ```
 

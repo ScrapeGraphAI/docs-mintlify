@@ -22,8 +22,8 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card title="8 Powerful Tools" icon="tools">
-    Access markdown conversion, AI extraction, search, crawling, sitemap discovery, and agentic workflows
+  <Card title="18 Powerful Tools" icon="tools">
+    Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs (with activity polling), and manage your account
   </Card>
   <Card title="Remote & Local" icon="server">
     Use the hosted HTTP endpoint or run locally via Python
@@ -38,22 +38,38 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
 
 ## Available Tools
 
-The MCP server exposes 8 enterprise-ready tools:
+The MCP server exposes the following tools via API v2:
 
-1. **markdownify** - Convert webpages to clean markdown
-2. **smartscraper** - AI-powered extraction with optional infinite scrolls
-3. **searchscraper** - Search the web and extract structured results
-4. **scrape** - Fetch raw HTML with optional JavaScript rendering
-5. **sitemap** - Discover a site's URLs and structure
-6. **smartcrawler_initiate** - Start async multi-page crawls
-7. **smartcrawler_fetch_results** - Poll crawl results
-8. **agentic_scrapper** - Multi-step workflows with session persistence
+| Tool | Description |
+|---|---|
+| **markdownify** | Convert webpages to clean markdown (POST /scrape) |
+| **scrape** | Fetch page content in any single format: markdown, html, screenshot, branding, links, images, summary (POST /scrape) |
+| **smartscraper** | AI-powered structured extraction from a URL (POST /extract) |
+| **searchscraper** | Search the web and extract structured results (POST /search) |
+| **smartcrawler_initiate** | Start async multi-page crawl — markdown, html, links, images, summary, branding, or screenshot (POST /crawl) |
+| **smartcrawler_fetch_results** | Poll crawl results (GET /crawl/:id) |
+| **crawl_stop** | Stop a running crawl job (POST /crawl/:id/stop) |
+| **crawl_resume** | Resume a stopped crawl job (POST /crawl/:id/resume) |
+| **generate_schema** | Generate or augment a JSON Schema from a prompt (POST /schema) |
+| **credits** | Check your credit balance (GET /credits) |
+| **sgai_history** | Browse request history with pagination (GET /history) |
+| **monitor_create** | Create a scheduled extraction job (POST /monitor) |
+| **monitor_list** | List all monitors (GET /monitor) |
+| **monitor_get** | Get monitor details (GET /monitor/:id) |
+| **monitor_pause** | Pause a running monitor (POST /monitor/:id/pause) |
+| **monitor_resume** | Resume a paused monitor (POST /monitor/:id/resume) |
+| **monitor_delete** | Delete a monitor (DELETE /monitor/:id) |
+| **monitor_activity** | Poll tick history for a monitor with pagination (GET /monitor/:id/activity) |
+
+<Note>
+  Removed from v1: `sitemap`, `agentic_scrapper`, `markdownify_status`, `smartscraper_status` (no v2 API equivalents).
+</Note>
 
 ## Quick Start
 
 <Steps>
   <Step title="Get Your API Key">
-    Create an account and copy your API key from the [ScrapeGraph Dashboard](https://dashboard.scrapegraphai.com)
+    Create an account and copy your API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard)
   </Step>
   <Step title="Choose Your Client">
     Select your preferred AI assistant: <a href="/services/mcp-server/cursor">Cursor</a> or <a href="/services/mcp-server/claude">Claude Desktop</a>

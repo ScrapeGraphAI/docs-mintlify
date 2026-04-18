@@ -1,14 +1,8 @@
 ---
 title: 'Python SDK'
-description: 'Official Python SDK for ScrapeGraphAI'
+description: 'Official Python SDK for ScrapeGraphAI v2'
 icon: 'python'
 ---
-
-<img
-  style={{ borderRadius: '0.5rem' }}
-  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
-  alt="ScrapeGraph API Banner"
-/>
 
 <CardGroup cols={2}>
   <Card title="PyPI Package" icon="box">
@@ -21,369 +15,415 @@ icon: 'python'
 
 ## Installation
 
-Install the package using pip:
-
 ```bash
 pip install scrapegraph-py
+# or
+uv add scrapegraph-py
 ```
 
-## Features
+## What's New in v2
 
-- **AI-Powered Extraction**: Advanced web scraping using artificial intelligence
-- **Flexible Clients**: Both synchronous and asynchronous support
-- **Type Safety**: Structured output with Pydantic schemas
-- **Production Ready**: Detailed logging and automatic retries
-- **Developer Friendly**: Comprehensive error handling
+- **Complete rewrite** built on [Pydantic v2](https://docs.pydantic.dev) + [httpx](https://www.python-httpx.org).
+- **Client rename**: `Client` → `ScrapeGraphAI`, `AsyncClient` → `AsyncScrapeGraphAI`.
+- **Typed request models**: every method takes a Pydantic request (`ScrapeRequest`, `ExtractRequest`, `SearchRequest`, `CrawlRequest`, `MonitorCreateRequest`, …).
+- **`ApiResult[T]` wrapper**: no exceptions on API errors — every call returns `status: "success" | "error"`, `data`, `error`, and `elapsed_ms`.
+- **Nested resources**: `sgai.crawl.*`, `sgai.monitor.*`, `sgai.history.*`.
+- **camelCase on the wire, snake_case in Python**: automatic via Pydantic's `alias_generator`.
+- **Removed**: `markdownify()`, `agenticscraper()`, `sitemap()`, `feedback()` — use `scrape()` with the appropriate format entry instead.
+
+<Warning>
+v2 is a breaking release. See the [Migration Guide](/transition-from-v1-to-v2) if you're upgrading from v1.
+</Warning>
 
 ## Quick Start
 
-Initialize the client with your API key:
-
 ```python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest
 
-client = Client(api_key="your-api-key-here")
+# reads SGAI_API_KEY from env, or pass it explicitly:
+# sgai = ScrapeGraphAI(api_key="sgai-...")
+sgai = ScrapeGraphAI()
+
+result = sgai.scrape(ScrapeRequest(url="https://example.com"))
+
+if result.status == "success":
+    print(result.data.results["markdown"]["data"])
+else:
+    print(result.error)
 ```
 
-<Note>
-You can also set the `SGAI_API_KEY` environment variable and initialize the client without parameters: `client = Client()`
-</Note>
+### ApiResult
+
+Every method returns `ApiResult[T]` — no try/except needed for API errors:
+
+```python
+from typing import Generic, Literal, TypeVar
+from pydantic import BaseModel
+
+T = TypeVar("T")
+
+class ApiResult(BaseModel, Generic[T]):
+    status: Literal["success", "error"]
+    data: T | None
+    error: str | None = None
+    elapsed_ms: int
+```
+
+### Environment Variables
+
+| Variable        | Description                                  | Default                                 |
+| --------------- | -------------------------------------------- | --------------------------------------- |
+| `SGAI_API_KEY`  | Your ScrapeGraphAI API key                   | —                                       |
+| `SGAI_API_URL`  | Override API base URL                        | `https://api.scrapegraphai.com/api/v2`  |
+| `SGAI_TIMEOUT`  | Request timeout in seconds                   | `120`                                   |
+| `SGAI_DEBUG`    | Enable debug logging (set to `"1"`)          | off                                     |
+
+The client supports context managers for automatic session cleanup:
+
+```python
+with ScrapeGraphAI() as sgai:
+    result = sgai.scrape(ScrapeRequest(url="https://example.com"))
+```
 
 ## Services
 
-### SmartScraper
+### Scrape
 
-Extract specific information from any webpage using AI:
-
-```python
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract the main heading and description"
-)
-```
-
-#### Parameters
-
-| Parameter        | Type    | Required | Description                                                                        |
-| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
-| website_url      | string  | Yes      | The URL of the webpage that needs to be scraped.                                    |
-| user_prompt      | string  | Yes      | A textual description of what you want to achieve.                                  |
-| output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response.        |
-
-<Accordion title="Basic Schema Example" icon="code">
-Define a simple schema for basic data extraction:
+Fetch a page in one or more formats (markdown, html, screenshot, json, links, images, summary, branding).
 
 ```python
-from pydantic import BaseModel, Field
-
-class ArticleData(BaseModel):
-    title: str = Field(description="The article title")
-    author: str = Field(description="The author's name")
-    publish_date: str = Field(description="Article publication date")
-    content: str = Field(description="Main article content")
-    category: str = Field(description="Article category")
-
-response = client.smartscraper(
-    website_url="https://example.com/blog/article",
-    user_prompt="Extract the article information",
-    output_schema=ArticleData
+from scrapegraph_py import (
+    ScrapeGraphAI, ScrapeRequest, FetchConfig,
+    MarkdownFormatConfig, ScreenshotFormatConfig, JsonFormatConfig,
 )
 
-print(f"Title: {response.title}")
-print(f"Author: {response.author}")
-print(f"Published: {response.publish_date}")
-```
-</Accordion>
+sgai = ScrapeGraphAI()
 
-<Accordion title="Advanced Schema Example" icon="code">
-Define a complex schema for nested data structures:
+res = sgai.scrape(ScrapeRequest(
+    url="https://example.com",
+    formats=[
+        MarkdownFormatConfig(mode="reader"),
+        ScreenshotFormatConfig(full_page=True, width=1440, height=900),
+        JsonFormatConfig(prompt="Extract product info"),
+    ],
+    content_type="text/html",  # optional, auto-detected
+    fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
+        timeout=30000,
+        wait=2000,
+        scrolls=3,
+    ),
+))
 
-```python
-from typing import List
-from pydantic import BaseModel, Field
-
-class Employee(BaseModel):
-    name: str = Field(description="Employee's full name")
-    position: str = Field(description="Job title")
-    department: str = Field(description="Department name")
-    email: str = Field(description="Email address")
-
-class Office(BaseModel):
-    location: str = Field(description="Office location/city")
-    address: str = Field(description="Full address")
-    phone: str = Field(description="Contact number")
-
-class CompanyData(BaseModel):
-    name: str = Field(description="Company name")
-    description: str = Field(description="Company description")
-    industry: str = Field(description="Industry sector")
-    founded_year: int = Field(description="Year company was founded")
-    employees: List[Employee] = Field(description="List of key employees")
-    offices: List[Office] = Field(description="Company office locations")
-    website: str = Field(description="Company website URL")
-
-# Extract comprehensive company information
-response = client.smartscraper(
-    website_url="https://example.com/about",
-    user_prompt="Extract detailed company information including employees and offices",
-    output_schema=CompanyData
-)
-
-# Access nested data
-print(f"Company: {response.name}")
-print("\nKey Employees:")
-for employee in response.employees:
-    print(f"- {employee.name} ({employee.position})")
-
-print("\nOffice Locations:")
-for office in response.offices:
-    print(f"- {office.location}: {office.address}")
-```
-</Accordion>
-
-### SearchScraper
-
-Search and extract information from multiple web sources using AI:
-
-```python
-from scrapegraph_py.models import TimeRange
-
-response = client.searchscraper(
-    user_prompt="What are the key features and pricing of ChatGPT Plus?",
-    time_range=TimeRange.PAST_WEEK  # Optional: Filter results by time range
-)
+if res.status == "success":
+    markdown = res.data.results["markdown"]["data"]
 ```
 
-#### Parameters
+#### `ScrapeRequest` fields
 
-| Parameter        | Type    | Required | Description                                                                        |
-| ---------------- | ------- | -------- | ---------------------------------------------------------------------------------- |
-| user_prompt      | string  | Yes      | A textual description of what you want to achieve.                                 |
-| num_results      | number  | No       | Number of websites to search (3-20). Default: 3.                                  |
-| extraction_mode  | boolean | No       | **True** = AI extraction mode (10 credits/page), **False** = markdown mode (2 credits/page). Default: True |
-| output_schema    | object  | No       | The Pydantic object that describes the structure and format of the response (AI extraction mode only) |
-| location_geo_code| string  | No       | Optional geo code for location-based search (e.g., "us")                          |
-| time_range       | TimeRange| No      | Optional time range filter for search results. Options: TimeRange.PAST_HOUR, TimeRange.PAST_24_HOURS, TimeRange.PAST_WEEK, TimeRange.PAST_MONTH, TimeRange.PAST_YEAR |
+| Field          | Type                     | Required | Description                                                                 |
+| -------------- | ------------------------ | -------- | --------------------------------------------------------------------------- |
+| `url`          | `HttpUrl`                | Yes      | URL to scrape                                                               |
+| `formats`      | `list[ScrapeFormatEntry]`| No       | Defaults to `[MarkdownFormatConfig()]`                                      |
+| `content_type` | `str`                    | No       | Override detected content type (e.g. `"application/pdf"`, `"text/html"`)    |
+| `fetch_config` | `FetchConfig`            | No       | Fetch configuration (mode, stealth, timeout, cookies, country, …)           |
 
-<Accordion title="Basic Schema Example" icon="code">
-Define a simple schema for structured search results:
+#### Format entries
 
-```python
-from pydantic import BaseModel, Field
-from typing import List
+| Class                     | Fields                                                         |
+| ------------------------- | -------------------------------------------------------------- |
+| `MarkdownFormatConfig`    | `mode`: `"normal" \| "reader" \| "prune"`                      |
+| `HtmlFormatConfig`        | `mode`: same as above                                          |
+| `ScreenshotFormatConfig`  | `full_page`, `width` (320–3840), `height` (200–2160), `quality`|
+| `JsonFormatConfig`        | `prompt` (1–10k chars), `schema`, `mode`                       |
+| `LinksFormatConfig`       | —                                                              |
+| `ImagesFormatConfig`      | —                                                              |
+| `SummaryFormatConfig`     | —                                                              |
+| `BrandingFormatConfig`    | —                                                              |
 
-class ProductInfo(BaseModel):
-    name: str = Field(description="Product name")
-    description: str = Field(description="Product description")
-    price: str = Field(description="Product price")
-    features: List[str] = Field(description="List of key features")
-    availability: str = Field(description="Availability information")
+<Note>
+Duplicate `type` entries in `formats` are rejected by a Pydantic validator.
+</Note>
 
-from scrapegraph_py.models import TimeRange
+### Extract
 
-response = client.searchscraper(
-    user_prompt="Find information about iPhone 15 Pro",
-    output_schema=ProductInfo,
-    location_geo_code="us",  # Optional: Geo code for location-based search
-    time_range=TimeRange.PAST_MONTH  # Optional: Filter results by time range
-)
-
-print(f"Product: {response.name}")
-print(f"Price: {response.price}")
-print("\nFeatures:")
-for feature in response.features:
-    print(f"- {feature}")
-```
-</Accordion>
-
-<Accordion title="Advanced Schema Example" icon="code">
-Define a complex schema for comprehensive market research:
+Run structured extraction against a URL, HTML, or markdown using AI.
 
 ```python
-from typing import List
-from pydantic import BaseModel, Field
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
 
-class MarketPlayer(BaseModel):
-    name: str = Field(description="Company name")
-    market_share: str = Field(description="Market share percentage")
-    key_products: List[str] = Field(description="Main products in market")
-    strengths: List[str] = Field(description="Company's market strengths")
+sgai = ScrapeGraphAI()
 
-class MarketTrend(BaseModel):
-    name: str = Field(description="Trend name")
-    description: str = Field(description="Trend description")
-    impact: str = Field(description="Expected market impact")
-    timeframe: str = Field(description="Trend timeframe")
+res = sgai.extract(ExtractRequest(
+    url="https://example.com",
+    prompt="Extract product names and prices",
+    schema={
+        "type": "object",
+        "properties": {
+            "products": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name":  {"type": "string"},
+                        "price": {"type": "string"},
+                    },
+                },
+            },
+        },
+    },
+))
 
-class MarketAnalysis(BaseModel):
-    market_size: str = Field(description="Total market size")
-    growth_rate: str = Field(description="Annual growth rate")
-    key_players: List[MarketPlayer] = Field(description="Major market players")
-    trends: List[MarketTrend] = Field(description="Market trends")
-    challenges: List[str] = Field(description="Industry challenges")
-    opportunities: List[str] = Field(description="Market opportunities")
-
-from scrapegraph_py.models import TimeRange
-
-# Perform comprehensive market research
-response = client.searchscraper(
-    user_prompt="Analyze the current AI chip market landscape",
-    output_schema=MarketAnalysis,
-    location_geo_code="us",  # Optional: Geo code for location-based search
-    time_range=TimeRange.PAST_MONTH  # Optional: Filter results by time range
-)
-
-# Access structured market data
-print(f"Market Size: {response.market_size}")
-print(f"Growth Rate: {response.growth_rate}")
-
-print("\nKey Players:")
-for player in response.key_players:
-    print(f"\n{player.name}")
-    print(f"Market Share: {player.market_share}")
-    print("Key Products:")
-    for product in player.key_products:
-        print(f"- {product}")
-
-print("\nMarket Trends:")
-for trend in response.trends:
-    print(f"\n{trend.name}")
-    print(f"Impact: {trend.impact}")
-    print(f"Timeframe: {trend.timeframe}")
-```
-</Accordion>
-
-<Accordion title="Markdown Mode Example" icon="code">
-Use markdown mode for cost-effective content gathering:
-
-```python
-from scrapegraph_py import Client
-
-client = Client(api_key="your-api-key")
-
-from scrapegraph_py.models import TimeRange
-
-# Enable markdown mode for cost-effective content gathering
-response = client.searchscraper(
-    user_prompt="Latest developments in artificial intelligence",
-    num_results=3,
-    extraction_mode=False,  # Enable markdown mode (2 credits per page vs 10 credits)
-    location_geo_code="us",  # Optional: Geo code for location-based search
-    time_range=TimeRange.PAST_WEEK  # Optional: Filter results by time range
-)
-
-# Access the raw markdown content
-markdown_content = response['markdown_content']
-reference_urls = response['reference_urls']
-
-print(f"Markdown content length: {len(markdown_content)} characters")
-print(f"Reference URLs: {len(reference_urls)}")
-
-# Process the markdown content
-print("Content preview:", markdown_content[:500] + "...")
-
-# Save to file for analysis
-with open('ai_research_content.md', 'w', encoding='utf-8') as f:
-    f.write(markdown_content)
-
-print("Content saved to ai_research_content.md")
+if res.status == "success":
+    print(res.data.json_data)
+    print(f"Tokens: {res.data.usage.prompt_tokens} / {res.data.usage.completion_tokens}")
 ```
 
-**Markdown Mode Benefits:**
-- **Cost-effective**: Only 2 credits per page (vs 10 credits for AI extraction)
-- **Full content**: Get complete page content in markdown format
-- **Faster**: No AI processing overhead
-- **Perfect for**: Content analysis, bulk data collection, building datasets
+#### `ExtractRequest` fields
 
-</Accordion>
+| Field          | Type          | Required | Description                                                                       |
+| -------------- | ------------- | -------- | --------------------------------------------------------------------------------- |
+| `url`          | `HttpUrl`     | Yes\*    | Page URL                                                                          |
+| `html`         | `str`         | Yes\*    | Raw HTML (alternative to `url`)                                                   |
+| `markdown`     | `str`         | Yes\*    | Raw markdown (alternative to `url`)                                               |
+| `prompt`       | `str`         | Yes      | 1–10,000 chars                                                                    |
+| `schema`       | `dict`        | No       | JSON Schema for the structured output                                             |
+| `mode`         | `str`         | No       | `"normal"` (default), `"reader"`, `"prune"`                                       |
+| `content_type` | `str`         | No       | Override detected content type                                                    |
+| `fetch_config` | `FetchConfig` | No       | Fetch configuration                                                               |
 
-<Accordion title="Time Range Filter Example" icon="code">
-Filter search results by date range to get only recent information:
+<Note>
+\*At least one of `url`, `html`, or `markdown` is required — enforced by a Pydantic validator.
+</Note>
+
+### Search
+
+Run a web search and optionally extract structured data from the results.
 
 ```python
-from scrapegraph_py import Client
-from scrapegraph_py.models import TimeRange
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-# Search for recent news from the past week
-response = client.searchscraper(
-    user_prompt="Latest news about AI developments",
+res = sgai.search(SearchRequest(
+    query="best programming languages 2024",
     num_results=5,
-    time_range=TimeRange.PAST_WEEK  # Options: PAST_HOUR, PAST_24_HOURS, PAST_WEEK, PAST_MONTH, PAST_YEAR
-)
+    prompt="Summarize the top languages and reasons",
+    time_range="past_week",
+    location_geo_code="us",
+))
 
-print("Recent AI news:", response['result'])
-print("Reference URLs:", response['reference_urls'])
+if res.status == "success":
+    for hit in res.data.results:
+        print(hit.title, hit.url)
+    print(res.data.json_data)  # when prompt/schema are set
 ```
 
-**Time Range Options:**
-- `TimeRange.PAST_HOUR` - Results from the past hour
-- `TimeRange.PAST_24_HOURS` - Results from the past 24 hours
-- `TimeRange.PAST_WEEK` - Results from the past week
-- `TimeRange.PAST_MONTH` - Results from the past month
-- `TimeRange.PAST_YEAR` - Results from the past year
+#### `SearchRequest` fields
 
-**Use Cases:**
-- Finding recent news and updates
-- Tracking time-sensitive information
-- Getting latest product releases
-- Monitoring recent market changes
+| Field               | Type          | Required | Description                                                               |
+| ------------------- | ------------- | -------- | ------------------------------------------------------------------------- |
+| `query`             | `str`         | Yes      | 1–500 chars                                                               |
+| `num_results`       | `int`         | No       | 1–20, default `3`                                                         |
+| `format`            | `str`         | No       | `"markdown"` (default) or `"html"`                                        |
+| `mode`              | `str`         | No       | HTML processing: `"prune"` (default), `"normal"`, `"reader"`              |
+| `prompt`            | `str`         | No       | Required when `schema` is set                                             |
+| `schema`            | `dict`        | No       | JSON Schema for structured output                                         |
+| `location_geo_code` | `str`         | No       | Two-letter country code (e.g. `"us"`, `"it"`)                             |
+| `time_range`        | `str`         | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
+| `fetch_config`      | `FetchConfig` | No       | Fetch configuration                                                       |
 
-</Accordion>
+### Crawl
 
-### Markdownify
-
-Convert any webpage into clean, formatted markdown:
+Crawl a site and its linked pages asynchronously. Access via the `sgai.crawl` resource.
 
 ```python
-response = client.markdownify(
-    website_url="https://example.com"
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+
+sgai = ScrapeGraphAI()
+
+# Start
+start = sgai.crawl.start(CrawlRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
+    max_depth=2,
+    max_pages=50,
+    max_links_per_page=10,
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/admin/*"],
+))
+
+crawl_id = start.data.id
+
+# Poll
+status = sgai.crawl.get(crawl_id)
+print(f"{status.data.finished}/{status.data.total} - {status.data.status}")
+
+# Control
+sgai.crawl.stop(crawl_id)
+sgai.crawl.resume(crawl_id)
+sgai.crawl.delete(crawl_id)
+```
+
+#### `CrawlRequest` fields
+
+| Field                | Type                      | Required | Description                                              |
+| -------------------- | ------------------------- | -------- | -------------------------------------------------------- |
+| `url`                | `HttpUrl`                 | Yes      | Starting URL                                             |
+| `formats`            | `list[ScrapeFormatEntry]` | No       | Defaults to `[MarkdownFormatConfig()]`                   |
+| `max_depth`          | `int`                     | No       | `≥ 0`, default `2`                                       |
+| `max_pages`          | `int`                     | No       | `1–1000`, default `50`                                   |
+| `max_links_per_page` | `int`                     | No       | `≥ 1`, default `10`                                      |
+| `allow_external`     | `bool`                    | No       | Default `False`                                          |
+| `include_patterns`   | `list[str]`               | No       | URL glob patterns to include                             |
+| `exclude_patterns`   | `list[str]`               | No       | URL glob patterns to exclude                             |
+| `content_types`      | `list[str]`               | No       | Allowed response content types                           |
+| `fetch_config`       | `FetchConfig`             | No       | Fetch configuration                                      |
+
+### Monitor
+
+Scheduled extraction jobs. Access via the `sgai.monitor` resource.
+
+```python
+from scrapegraph_py import (
+    ScrapeGraphAI, MonitorCreateRequest, MonitorUpdateRequest, MarkdownFormatConfig,
+)
+
+sgai = ScrapeGraphAI()
+
+mon = sgai.monitor.create(MonitorCreateRequest(
+    url="https://example.com",
+    name="Price Monitor",
+    interval="0 * * * *",       # cron expression
+    formats=[MarkdownFormatConfig()],
+    webhook_url="https://example.com/webhook",
+))
+
+cron_id = mon.data.cron_id
+
+sgai.monitor.list()
+sgai.monitor.get(cron_id)
+sgai.monitor.update(cron_id, MonitorUpdateRequest(interval="0 */6 * * *"))
+sgai.monitor.pause(cron_id)
+sgai.monitor.resume(cron_id)
+sgai.monitor.delete(cron_id)
+```
+
+#### `monitor.activity()` — poll tick history
+
+Paginate through the per-run ticks a monitor has produced (what changed on each scheduled run).
+
+```python
+from scrapegraph_py import MonitorActivityRequest
+
+act = sgai.monitor.activity(cron_id, MonitorActivityRequest(limit=20))
+
+if act.status == "success":
+    for tick in act.data.ticks:
+        status = "CHANGED" if tick.changed else "no change"
+        print(f"[{tick.created_at}] {tick.status} - {status} ({tick.elapsed_ms}ms)")
+
+    if act.data.next_cursor:
+        more = sgai.monitor.activity(
+            cron_id, MonitorActivityRequest(limit=20, cursor=act.data.next_cursor),
+        )
+```
+
+`MonitorActivityRequest` fields: `limit` (1–100, default `20`) and optional `cursor` for pagination. Each `MonitorTickEntry` exposes `id`, `created_at`, `status`, `changed`, `elapsed_ms`, and a `diffs` model with per-format deltas.
+
+#### `MonitorCreateRequest` fields
+
+| Field          | Type                      | Required | Description                                    |
+| -------------- | ------------------------- | -------- | ---------------------------------------------- |
+| `url`          | `HttpUrl`                 | Yes      | URL to monitor                                 |
+| `interval`     | `str`                     | Yes      | Cron expression (1–100 chars)                  |
+| `name`         | `str`                     | No       | ≤ 200 chars                                    |
+| `formats`      | `list[ScrapeFormatEntry]` | No       | Defaults to `[MarkdownFormatConfig()]`         |
+| `webhook_url`  | `HttpUrl`                 | No       | Webhook invoked on change detection            |
+| `fetch_config` | `FetchConfig`             | No       | Fetch configuration                            |
+
+### History
+
+Fetch recent request history. Access via the `sgai.history` resource.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, HistoryFilter
+
+sgai = ScrapeGraphAI()
+
+page = sgai.history.list(HistoryFilter(service="scrape", page=1, limit=20))
+for entry in page.data.data:
+    print(entry.id, entry.service, entry.status, entry.elapsed_ms)
+
+one = sgai.history.get("request-id")
+```
+
+### Credits / Health
+
+```python
+credits = sgai.credits()
+# ApiResult[CreditsResponse] with .remaining, .used, .plan, .jobs.crawl, .jobs.monitor
+
+health = sgai.health()
+# ApiResult[HealthResponse] with .status, .uptime, .services
+```
+
+## Configuration Objects
+
+### FetchConfig
+
+Controls how pages are fetched. See the [proxy configuration guide](/services/additional-parameters/proxy) for details on modes and geotargeting.
+
+```python
+from scrapegraph_py import FetchConfig
+
+config = FetchConfig(
+    mode="js",            # "auto" (default), "fast", "js"
+    stealth=True,         # Residential proxies / anti-bot headers (+5 credits)
+    timeout=30000,        # 1,000–60,000 ms
+    wait=2000,            # 0–30,000 ms
+    scrolls=3,            # 0–100
+    country="us",         # ISO 3166-1 alpha-2
+    headers={"X-Custom": "header"},
+    cookies={"session": "abc"},
+    mock=False,           # Or a MockConfig object for testing
 )
 ```
 
 ## Async Support
 
-All endpoints support asynchronous operations:
+Every sync method has an async equivalent on `AsyncScrapeGraphAI`:
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest, CrawlRequest
 
 async def main():
-    async with AsyncClient() as client:
-        response = await client.smartscraper(
-            website_url="https://example.com",
-            user_prompt="Extract the main content"
-        )
-        print(response)
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.scrape(ScrapeRequest(url="https://example.com"))
+        if res.status == "success":
+            print(res.data.results["markdown"]["data"])
+
+        start = await sgai.crawl.start(CrawlRequest(
+            url="https://example.com", max_pages=25,
+        ))
+        status = await sgai.crawl.get(start.data.id)
+        print(status.data.status)
+
+        credits = await sgai.credits()
+        print(credits.data.remaining)
 
 asyncio.run(main())
-```
-
-## Feedback
-
-Help us improve by submitting feedback programmatically:
-
-```python
-client.submit_feedback(
-    request_id="your-request-id",
-    rating=5,
-    feedback_text="Great results!"
-)
 ```
 
 ## Support
 
 <CardGroup cols={2}>
-  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk">
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-py">
     Report issues and contribute to the SDK
   </Card>
   <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
     Get help from our development team
   </Card>
 </CardGroup>
-
-<Accordion title="License" icon="scale">
-  This project is licensed under the MIT License. See the [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/LICENSE) file for details.
-</Accordion>

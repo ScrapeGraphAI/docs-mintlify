@@ -1,0 +1,41 @@
+---
+title: 'SmartCrawler'
+description: 'AI-powered multi-page crawling service (v1)'
+icon: 'spider'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. In v2, crawling uses `crawl.start()`, `crawl.status()`, `crawl.stop()`, and `crawl.resume()`. See the [v2 documentation](/services/smartcrawler).
+</Warning>
+
+## Overview
+
+SmartCrawler enables AI-powered extraction across multiple pages of a website, automatically navigating and collecting structured data.
+
+## Usage
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.crawl(
+    website_url="https://example.com",
+    user_prompt="Extract all blog post titles",
+    depth=2
+)
+```
+
+```javascript JavaScript
+import { smartCrawler } from "scrapegraph-js";
+
+const response = await smartCrawler(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "Extract all blog post titles",
+  depth: 2,
+});
+```
+
+</CodeGroup>

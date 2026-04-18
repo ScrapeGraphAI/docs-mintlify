@@ -1,0 +1,256 @@
+---
+title: 'Extract'
+description: 'AI-powered structured data extraction from any webpage'
+icon: 'robot'
+---
+
+## Overview
+
+Extract is our flagship LLM-powered web scraping service that intelligently extracts structured data from any website. Using advanced LLM models, it understands context and content like a human would, making web data extraction more reliable and efficient than ever.
+
+<Note>
+Try Extract instantly in our [interactive playground](https://scrapegraphai.com/dashboard) 
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.extract(
+    url="https://scrapegraphai.com/",
+    prompt="Extract info about the company"
+)
+```
+
+```javascript JavaScript
+import { extract } from 'scrapegraph-js';
+
+const result = await extract('your-api-key', {
+  url: 'https://scrapegraphai.com',
+  prompt: 'What does the company do?',
+});
+
+if (result.status === 'success') {
+  console.log(result.data?.json);
+}
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/api/v2/extract \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "url": "https://example.com",
+    "prompt": "Extract product details including name, price, and availability."
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| url | string | Yes | The URL of the webpage to scrape. |
+| prompt | string | Yes | A textual description of what you want to extract. |
+| output_schema | object | No | Pydantic or Zod schema for structured response format. |
+| fetch_config | FetchConfig | No | Configuration for page fetching (headers, cookies, stealth, etc.). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "id": "sg-req-abc123",
+  "status": "completed",
+  "result": {
+    "company_name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI is a powerful AI scraping API designed for efficient web data extraction...",
+    "features": [
+      "Effortless, cost-effective, and AI-powered data extraction",
+      "Handles proxy rotation and rate limits",
+      "Supports a wide variety of websites"
+    ]
+  }
+}
+```
+</Accordion>
+
+## FetchConfig
+
+Use `FetchConfig` to control how the page is fetched:
+
+```python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract the main content",
+    fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
+        headers={"User-Agent": "MyBot"},
+        cookies={"session": "abc123"},
+        scrolls=3,
+        wait=2000,
+    ),
+)
+```
+
+<Note>
+In the JavaScript SDK, pass `fetchConfig` as a property of the params object: `extract(apiKey, { url, prompt, fetchConfig: { ... } })`.
+</Note>
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| mode | string | Fetch mode: `"auto"` (default), `"fast"`, or `"js"`. |
+| stealth | bool | Enable stealth mode with residential proxy and anti-bot headers. |
+| headers | dict | Custom HTTP headers to send. |
+| cookies | dict | Cookies to include in the request. |
+| scrolls | int | Number of page scrolls (0-100). |
+| wait | int | Milliseconds to wait after page load (0-30000). |
+| timeout | int | Request timeout in milliseconds (1000-60000). |
+| country | string | Two-letter ISO country code for geo-targeted proxy routing. |
+
+## Custom Schema Example
+
+Define exactly what data you want to extract:
+
+<CodeGroup>
+
+```python Python
+from pydantic import BaseModel, Field
+from scrapegraph_py import Client
+
+class ArticleData(BaseModel):
+    title: str = Field(description="Article title")
+    author: str = Field(description="Author name")
+    content: str = Field(description="Main article content")
+    publish_date: str = Field(description="Publication date")
+
+client = Client(api_key="your-api-key")
+
+response = client.extract(
+    url="https://example.com/article",
+    prompt="Extract the article information",
+    output_schema=ArticleData
+)
+```
+
+```javascript JavaScript
+import { extract } from 'scrapegraph-js';
+
+const result = await extract('your-api-key', {
+  url: 'https://scrapegraphai.com/',
+  prompt: 'What does the company do?',
+  schema: {
+    type: 'object',
+    properties: {
+      title: { type: 'string' },
+      description: { type: 'string' },
+      summary: { type: 'string' },
+    },
+    required: ['title'],
+  },
+});
+
+if (result.status === 'success') {
+  console.log(result.data?.json);
+}
+```
+
+</CodeGroup>
+
+## Async Support
+
+For applications requiring asynchronous execution:
+
+<CodeGroup>
+
+```python Python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        urls = [
+            "https://scrapegraphai.com/",
+            "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+        ]
+
+        tasks = [
+            client.extract(
+                url=url,
+                prompt="Summarize the main content",
+            )
+            for url in urls
+        ]
+
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for i, response in enumerate(responses):
+            if isinstance(response, Exception):
+                print(f"Error for {urls[i]}: {response}")
+            else:
+                print(f"Result for {urls[i]}: {response}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+</CodeGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Universal Compatibility" icon="globe">
+    Works with any website structure, including JavaScript-rendered content
+  </Card>
+  <Card title="AI Understanding" icon="brain">
+    Contextual understanding of content for accurate extraction
+  </Card>
+  <Card title="Structured Output" icon="table">
+    Returns clean, structured data in your preferred format
+  </Card>
+  <Card title="Schema Support" icon="code">
+    Define custom output schemas using Pydantic or Zod
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use Extract in your LLM workflows
+- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
