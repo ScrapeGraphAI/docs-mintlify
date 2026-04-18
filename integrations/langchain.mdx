@@ -78,7 +78,7 @@ result = tool.invoke({
 
 ### ScrapeTool
 
-Scrape a webpage and return it in the desired format:
+Scrape a webpage and return it in the desired format. Supported formats: `markdown`, `html`, `screenshot`, `branding`, `links`, `images`, `summary`.
 
 ```python
 from langchain_scrapegraph.tools import ScrapeTool
@@ -117,7 +117,7 @@ status_tool = CrawlStatusTool()
 # Start a crawl job
 result = start_tool.invoke({
     "url": "https://example.com",
-    "depth": 2,
+    "max_depth": 2,
     "max_pages": 5,
     "format": "markdown",
 })
@@ -141,12 +141,12 @@ from langchain_scrapegraph.tools import MonitorCreateTool, MonitorListTool
 create_tool = MonitorCreateTool()
 list_tool = MonitorListTool()
 
-# Create a monitor
+# Create a monitor (interval accepts cron expressions or shorthand like "1h", "30m")
 result = create_tool.invoke({
-    "name": "Price Monitor",
     "url": "https://example.com/products",
-    "prompt": "Extract current product prices",
-    "cron": "0 9 * * *",  # Daily at 9 AM
+    "name": "Price Monitor",
+    "interval": "0 9 * * *",  # Daily at 9 AM
+    "prompt": "Extract current product prices",  # optional JSON extraction
 })
 print("Monitor created:", result)
 
@@ -157,13 +157,18 @@ print("All monitors:", monitors)
 
 ### HistoryTool
 
-Retrieve request history:
+Retrieve request history, optionally filtered by service with pagination:
 
 ```python
 from langchain_scrapegraph.tools import HistoryTool
 
 tool = HistoryTool()
+
+# List the most recent requests
 history = tool.invoke({})
+
+# Filter to a specific service and page
+history = tool.invoke({"service": "scrape", "page": 1, "limit": 20})
 ```
 
 ### GetCreditsTool
