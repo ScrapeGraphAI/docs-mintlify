@@ -77,7 +77,9 @@ response = client.markdownify(
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
 
 // Define custom headers
 const headers = {
@@ -86,11 +88,11 @@ const headers = {
   'Sec-Ch-Ua-Platform': '"Windows"',
 };
 
-// Use with extract
-const result = await extract('your-api-key', {
-  url: 'https://example.com',
-  prompt: 'Extract the main content',
-  fetchConfig: { headers },
+// Use with SmartScraper
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com',
+  user_prompt: 'Extract the main content',
+  headers: headers,
 });
 ```
 
@@ -137,7 +139,9 @@ response = client.smartscraper(
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { smartScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
 
 // Example with session cookies
 const headers = {
@@ -145,10 +149,10 @@ const headers = {
   'Cookie': 'session_id=abc123; user_id=12345; theme=dark',
 };
 
-const result = await extract('your-api-key', {
-  url: 'https://example.com/dashboard',
-  prompt: 'Extract user information',
-  fetchConfig: { headers },
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example.com/dashboard',
+  user_prompt: 'Extract user information',
+  headers: headers,
 });
 ```
 

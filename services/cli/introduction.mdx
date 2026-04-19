@@ -7,7 +7,7 @@ icon: 'terminal'
 `just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal.
 
 <Note>
-  Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+  Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
 
 ## Installation
@@ -56,22 +56,21 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
-| `SGAI_TIMEOUT` | Request timeout in seconds | `120` |
-| `SGAI_DEBUG` | Set to `1` to log requests/responses | — |
-
-Legacy variables are still bridged transparently: `JUST_SCRAPE_API_URL` → `SGAI_API_URL`, `JUST_SCRAPE_TIMEOUT_S` and `SGAI_TIMEOUT_S` → `SGAI_TIMEOUT`, `JUST_SCRAPE_DEBUG` → `SGAI_DEBUG`.
+| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v1` |
+| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
+| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
 
 ## Verify your setup
 
 ```bash
+just-scrape validate   # check your API key
 just-scrape credits    # check your credit balance
 ```
 
 ## Quick start
 
 ```bash
-just-scrape extract https://news.ycombinator.com \
+just-scrape smart-scraper https://news.ycombinator.com \
   -p "Extract the top 5 story titles and their URLs"
 ```
 

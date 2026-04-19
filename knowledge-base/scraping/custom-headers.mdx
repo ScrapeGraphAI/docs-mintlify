@@ -26,18 +26,19 @@ response = client.smartscraper(
 ```
 
 ```javascript
-import { extract } from "scrapegraph-js";
+import { smartScraper } from "scrapegraph-js";
 
-const result = await extract("your-api-key", {
-  url: "https://example.com/protected-page",
-  prompt: "Extract the main content",
-  fetchConfig: {
+const result = await smartScraper(
+  "your-api-key",
+  "https://example.com/protected-page",
+  "Extract the main content",
+  {
     headers: {
       Authorization: "Bearer your-token-here",
       Cookie: "session=abc123",
     },
-  },
-});
+  }
+);
 ```
 
 See the [headers parameter documentation](/services/additional-parameters/headers) for the full reference.

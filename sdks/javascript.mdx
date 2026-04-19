@@ -1,6 +1,6 @@
 ---
 title: "JavaScript SDK"
-description: "Official JavaScript/TypeScript SDK for ScrapeGraphAI v2"
+description: "Official JavaScript/TypeScript SDK for ScrapeGraphAI"
 icon: "js"
 ---
 
@@ -22,6 +22,8 @@ icon: "js"
 
 ## Installation
 
+Install the package using npm, pnpm, yarn or bun:
+
 ```bash
 # Using npm
 npm i scrapegraph-js
@@ -36,32 +38,55 @@ yarn add scrapegraph-js
 bun add scrapegraph-js
 ```
 
+## Features
+
+- **AI-Powered Extraction**: Smart web scraping with artificial intelligence
+- **Async by Design**: Fully asynchronous architecture
+- **Type Safety**: Built-in TypeScript support with Zod schemas
+- **Zero Exceptions**: All errors wrapped in `ApiResult` — no try/catch needed
+- **Developer Friendly**: Comprehensive error handling and debug logging
+
 ## Quick Start
 
-```javascript
-import { scrape } from "scrapegraph-js";
+### Basic example
 
-const result = await scrape("your-api-key", {
-  url: "https://example.com",
-  formats: [{ type: "markdown" }],
+<Note>
+  Store your API keys securely in environment variables. Use `.env` files and
+  libraries like `dotenv` to load them into your app.
+</Note>
+
+```javascript
+import { smartScraper } from "scrapegraph-js";
+import "dotenv/config";
+
+const apiKey = process.env.SGAI_APIKEY;
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "What does the company do?",
 });
 
-if (result.status === "success") {
-  console.log(result.data?.results.markdown?.data);
+if (response.status === "error") {
+  console.error("Error:", response.error);
 } else {
-  console.error(result.error);
+  console.log(response.data.result);
 }
 ```
 
-<Note>
-Store your API keys securely in environment variables. Use `.env` files and
-libraries like `dotenv` to load them into your app.
-</Note>
+## Services
 
-## Return Type
+### SmartScraper
 
-All functions return `ApiResult<T>`:
+Extract specific information from any webpage using AI:
 
+```javascript
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "Extract the main content",
+});
+```
+
+All functions return an `ApiResult<T>` object:
 ```typescript
 type ApiResult<T> = {
   status: "success" | "error";
@@ -71,400 +96,329 @@ type ApiResult<T> = {
 };
 ```
 
-Check `result.status` before accessing `result.data`.
+#### Parameters
 
-## Services
+| Parameter       | Type    | Required | Description                                                                         |
+| --------------- | ------- | -------- | ----------------------------------------------------------------------------------- |
+| apiKey          | string  | Yes      | The ScrapeGraph API Key (first argument).                                           |
+| user_prompt     | string  | Yes      | A textual description of what you want to extract.                                  |
+| website_url     | string  | No*      | The URL of the webpage to scrape. *One of `website_url`, `website_html`, or `website_markdown` is required. |
+| output_schema   | object  | No       | A Zod schema (converted to JSON) that describes the structure of the response.      |
+| number_of_scrolls | number | No     | Number of scrolls for infinite scroll pages (0-50).                                 |
+| stealth         | boolean | No       | Enable anti-detection mode (+4 credits).                                            |
+| headers         | object  | No       | Custom HTTP headers.                                                                |
+| mock            | boolean | No       | Enable mock mode for testing.                                                       |
+| wait_ms         | number  | No       | Page load wait time in ms (default: 3000).                                          |
+| country_code    | string  | No       | Proxy routing country code (e.g., "us").                                            |
 
-### scrape
-
-Scrape a webpage in multiple formats (markdown, html, screenshot, json, etc).
+<Accordion title="Basic Schema Example" icon="code">
+Define a simple schema using Zod:
 
 ```javascript
-import { scrape } from "scrapegraph-js";
+import { z } from "zod";
 
-const result = await scrape("your-api-key", {
-  url: "https://example.com",
-  formats: [
-    { type: "markdown", mode: "reader" },
-    { type: "screenshot", fullPage: true, width: 1440, height: 900 },
-    { type: "json", prompt: "Extract product info" },
-  ],
-  contentType: "text/html",        // optional, auto-detected
-  fetchConfig: {                   // optional
-    mode: "js",
-    stealth: true,
-    timeout: 30000,
-    wait: 2000,
-    scrolls: 3,
-  },
+const ArticleSchema = z.object({
+  title: z.string().describe("The article title"),
+  author: z.string().describe("The author's name"),
+  publishDate: z.string().describe("Article publication date"),
+  content: z.string().describe("Main article content"),
+  category: z.string().describe("Article category"),
+});
+
+const ArticlesArraySchema = z
+  .array(ArticleSchema)
+  .describe("Array of articles");
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com/blog/article",
+  user_prompt: "Extract the article information",
+  output_schema: ArticlesArraySchema,
+});
+
+console.log(`Title: ${response.data.result.title}`);
+console.log(`Author: ${response.data.result.author}`);
+console.log(`Published: ${response.data.result.publishDate}`);
+```
+
+</Accordion>
+
+<Accordion title="Advanced Schema Example" icon="code">
+Define a complex schema for nested data structures:
+
+```javascript
+import { z } from "zod";
+
+const EmployeeSchema = z.object({
+  name: z.string().describe("Employee's full name"),
+  position: z.string().describe("Job title"),
+  department: z.string().describe("Department name"),
+  email: z.string().describe("Email address"),
+});
+
+const OfficeSchema = z.object({
+  location: z.string().describe("Office location/city"),
+  address: z.string().describe("Full address"),
+  phone: z.string().describe("Contact number"),
+});
+
+const CompanySchema = z.object({
+  name: z.string().describe("Company name"),
+  description: z.string().describe("Company description"),
+  industry: z.string().describe("Industry sector"),
+  foundedYear: z.number().describe("Year company was founded"),
+  employees: z.array(EmployeeSchema).describe("List of key employees"),
+  offices: z.array(OfficeSchema).describe("Company office locations"),
+  website: z.string().url().describe("Company website URL"),
+});
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com/about",
+  user_prompt: "Extract detailed company information including employees and offices",
+  output_schema: CompanySchema,
+});
+
+console.log(`Company: ${response.data.result.name}`);
+console.log("\nKey Employees:");
+response.data.result.employees.forEach((employee) => {
+  console.log(`- ${employee.name} (${employee.position})`);
+});
+
+console.log("\nOffice Locations:");
+response.data.result.offices.forEach((office) => {
+  console.log(`- ${office.location}: ${office.address}`);
+});
+```
+
+</Accordion>
+
+<Accordion title="Enhanced JavaScript Rendering Example" icon="code">
+For modern web applications built with React, Vue, Angular, or other JavaScript frameworks:
+
+```javascript
+import { smartScraper } from 'scrapegraph-js';
+import { z } from 'zod';
+
+const apiKey = 'your-api-key';
+
+const ProductSchema = z.object({
+  name: z.string().describe('Product name'),
+  price: z.string().describe('Product price'),
+  description: z.string().describe('Product description'),
+  availability: z.string().describe('Product availability status')
+});
+
+const response = await smartScraper(apiKey, {
+  website_url: 'https://example-react-store.com/products/123',
+  user_prompt: 'Extract product details including name, price, description, and availability',
+  output_schema: ProductSchema,
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Product:', response.data.result.name);
+  console.log('Price:', response.data.result.price);
+  console.log('Available:', response.data.result.availability);
+}
+```
+
+</Accordion>
+
+### SearchScraper
+
+Search and extract information from multiple web sources using AI:
+
+```javascript
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find the best restaurants in San Francisco",
+  location_geo_code: "us",
+  time_range: "past_week",
 });
 ```
 
 #### Parameters
 
-| Parameter            | Type          | Required | Description                                              |
-| -------------------- | ------------- | -------- | -------------------------------------------------------- |
-| url                  | string        | Yes      | The URL of the webpage to scrape                         |
-| formats              | FormatEntry[] | No       | Array of format entries. Defaults to `[{ type: "markdown" }]` |
-| contentType          | string        | No       | Override the detected content type (e.g. `"application/pdf"`) |
-| fetchConfig          | FetchConfig   | No       | Fetch configuration                                      |
+| Parameter          | Type    | Required | Description                                                                        |
+| ------------------ | ------- | -------- | ---------------------------------------------------------------------------------- |
+| apiKey             | string  | Yes      | The ScrapeGraph API Key (first argument).                                          |
+| user_prompt        | string  | Yes      | A textual description of what you want to achieve.                                 |
+| num_results        | number  | No       | Number of websites to search (3-20). Default: 3.                                   |
+| extraction_mode    | boolean | No       | **true** = AI extraction mode (10 credits/page), **false** = markdown mode (2 credits/page). |
+| output_schema      | object  | No       | Zod schema for structured response format (AI extraction mode only).               |
+| location_geo_code  | string  | No       | Geo code for location-based search (e.g., "us").                                   |
+| time_range         | string  | No       | Time range filter. Options: "past_hour", "past_24_hours", "past_week", "past_month", "past_year". |
 
-**Formats:**
-- `markdown` -- Clean markdown (modes: `normal`, `reader`, `prune`)
-- `html` -- Raw HTML (modes: `normal`, `reader`, `prune`)
-- `links` -- All links on the page
-- `images` -- All image URLs
-- `summary` -- AI-generated summary
-- `json` -- Structured extraction with prompt/schema
-- `branding` -- Brand colors, typography, logos
-- `screenshot` -- Page screenshot (fullPage, width, height, quality)
+<Accordion title="Basic Schema Example" icon="code">
+Define a simple schema using Zod:
 
-<Accordion title="Multi-format Example" icon="code">
 ```javascript
-import { scrape } from "scrapegraph-js";
+import { z } from "zod";
 
-const result = await scrape("your-api-key", {
-  url: "https://example.com",
-  formats: [
-    { type: "markdown", mode: "reader" },
-    { type: "links" },
-    { type: "images" },
-    { type: "screenshot", fullPage: false, width: 1440, height: 900, quality: 90 },
-  ],
+const ArticleSchema = z.object({
+  title: z.string().describe("The article title"),
+  author: z.string().describe("The author's name"),
+  publishDate: z.string().describe("Article publication date"),
+  content: z.string().describe("Main article content"),
+  category: z.string().describe("Article category"),
 });
 
-if (result.status === "success") {
-  const results = result.data?.results;
-  console.log("Markdown:", results?.markdown?.data);
-  console.log("Links:", results?.links?.data);
-  console.log("Screenshot URL:", results?.screenshot?.data.url);
-}
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find news about the latest trends in AI",
+  output_schema: ArticleSchema,
+  location_geo_code: "us",
+  time_range: "past_week",
+});
+
+console.log(`Title: ${response.data.result.title}`);
+console.log(`Author: ${response.data.result.author}`);
+console.log(`Published: ${response.data.result.publishDate}`);
 ```
+
 </Accordion>
 
-### extract
-
-Extract structured data from a URL, HTML, or markdown using AI.
+<Accordion title="Advanced Schema Example" icon="code">
+Define a complex schema for nested data structures:
 
 ```javascript
-import { extract } from "scrapegraph-js";
+import { z } from "zod";
 
-const result = await extract("your-api-key", {
-  url: "https://example.com",
-  prompt: "Extract the main heading and description",
+const EmployeeSchema = z.object({
+  name: z.string().describe("Employee's full name"),
+  position: z.string().describe("Job title"),
+  department: z.string().describe("Department name"),
+  email: z.string().describe("Email address"),
 });
 
-if (result.status === "success") {
-  console.log(result.data?.json);
+const OfficeSchema = z.object({
+  location: z.string().describe("Office location/city"),
+  address: z.string().describe("Full address"),
+  phone: z.string().describe("Contact number"),
+});
+
+const RestaurantSchema = z.object({
+  name: z.string().describe("Restaurant name"),
+  address: z.string().describe("Restaurant address"),
+  rating: z.number().describe("Restaurant rating"),
+  website: z.string().url().describe("Restaurant website URL"),
+});
+
+const response = await searchScraper(apiKey, {
+  user_prompt: "Find the best restaurants in San Francisco",
+  output_schema: RestaurantSchema,
+  location_geo_code: "us",
+  time_range: "past_month",
+});
+```
+
+</Accordion>
+
+<Accordion title="Markdown Mode Example" icon="code">
+Use markdown mode for cost-effective content gathering:
+
+```javascript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await searchScraper(apiKey, {
+  user_prompt: 'Latest developments in artificial intelligence',
+  num_results: 3,
+  extraction_mode: false,
+  location_geo_code: "us",
+  time_range: "past_week",
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  const markdownContent = response.data.markdown_content;
+  console.log('Markdown content length:', markdownContent.length);
+  console.log('Reference URLs:', response.data.reference_urls);
+  console.log('Content preview:', markdownContent.substring(0, 500) + '...');
 }
+```
+
+**Markdown Mode Benefits:**
+- **Cost-effective**: Only 2 credits per page (vs 10 credits for AI extraction)
+- **Full content**: Get complete page content in markdown format
+- **Faster**: No AI processing overhead
+- **Perfect for**: Content analysis, bulk data collection, building datasets
+
+</Accordion>
+
+<Accordion title="Time Range Filter Example" icon="code">
+Filter search results by date range to get only recent information:
+
+```javascript
+import { searchScraper } from 'scrapegraph-js';
+
+const apiKey = 'your-api-key';
+
+const response = await searchScraper(apiKey, {
+  user_prompt: 'Latest news about AI developments',
+  num_results: 5,
+  time_range: 'past_week', // Options: 'past_hour', 'past_24_hours', 'past_week', 'past_month', 'past_year'
+});
+
+if (response.status === 'error') {
+  console.error('Error:', response.error);
+} else {
+  console.log('Recent AI news:', response.data.result);
+  console.log('Reference URLs:', response.data.reference_urls);
+}
+```
+
+**Time Range Options:**
+- `past_hour` - Results from the past hour
+- `past_24_hours` - Results from the past 24 hours
+- `past_week` - Results from the past week
+- `past_month` - Results from the past month
+- `past_year` - Results from the past year
+
+**Use Cases:**
+- Finding recent news and updates
+- Tracking time-sensitive information
+- Getting latest product releases
+- Monitoring recent market changes
+
+</Accordion>
+
+### Markdownify
+
+Convert any webpage into clean, formatted markdown:
+
+```javascript
+const response = await markdownify(apiKey, {
+  website_url: "https://example.com",
+});
 ```
 
 #### Parameters
 
-| Parameter            | Type        | Required | Description                                              |
-| -------------------- | ----------- | -------- | -------------------------------------------------------- |
-| url                  | string      | Yes\*    | The URL of the webpage to scrape                         |
-| prompt               | string      | Yes      | A description of what you want to extract                |
-| schema               | object      | No       | JSON schema for structured response                      |
-| mode                 | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"`  |
-| contentType          | string      | No       | Override the detected content type                       |
-| html                 | string      | No       | Raw HTML input (alternative to `url`)                    |
-| markdown             | string      | No       | Raw markdown input (alternative to `url`)                |
-| fetchConfig          | FetchConfig | No       | Fetch configuration                                      |
+| Parameter   | Type    | Required | Description                                    |
+| ----------- | ------- | -------- | ---------------------------------------------- |
+| apiKey      | string  | Yes      | The ScrapeGraph API Key (first argument).      |
+| website_url | string  | Yes      | The URL of the webpage to convert to markdown. |
+| wait_ms     | number  | No       | Page load wait time in ms (default: 3000).     |
+| stealth     | boolean | No       | Enable anti-detection mode (+4 credits).       |
+| country_code| string  | No       | Proxy routing country code (e.g., "us").       |
 
-<Note>
-\*One of `url`, `html`, or `markdown` is required.
-</Note>
+## API Credits
 
-<Accordion title="With JSON Schema" icon="code">
-```javascript
-import { extract } from "scrapegraph-js";
-
-const result = await extract("your-api-key", {
-  url: "https://example.com/article",
-  prompt: "Extract the article information",
-  schema: {
-    type: "object",
-    properties: {
-      title: { type: "string" },
-      author: { type: "string" },
-      publishDate: { type: "string" },
-      content: { type: "string" },
-    },
-    required: ["title"],
-  },
-});
-
-if (result.status === "success") {
-  console.log("Extracted:", result.data?.json);
-  console.log("Tokens:", result.data?.usage);
-}
-```
-</Accordion>
-
-### search
-
-Search the web and optionally extract structured data.
-
-```javascript
-import { search } from "scrapegraph-js";
-
-const result = await search("your-api-key", {
-  query: "best programming languages 2024",
-  numResults: 5,
-});
-
-if (result.status === "success") {
-  for (const r of result.data?.results ?? []) {
-    console.log(`${r.title} - ${r.url}`);
-  }
-}
-```
-
-#### Parameters
-
-| Parameter                | Type        | Required | Description                                              |
-| ------------------------ | ----------- | -------- | -------------------------------------------------------- |
-| query                    | string      | Yes      | The search query (1-500 chars)                           |
-| numResults               | number      | No       | Number of results (1-20). Default: 3                     |
-| prompt                   | string      | No       | Prompt for AI extraction from results                    |
-| schema                   | object      | No       | JSON schema for structured response (requires `prompt`)  |
-| format                   | string      | No       | `"markdown"` (default) or `"html"`                       |
-| mode                     | string      | No       | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default) |
-| locationGeoCode          | string      | No       | Country code for localized search (e.g. `"us"`)          |
-| timeRange                | string      | No       | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
-| fetchConfig              | FetchConfig | No       | Fetch configuration                                      |
-
-<Accordion title="Search with Extraction" icon="code">
-```javascript
-import { search } from "scrapegraph-js";
-
-const result = await search("your-api-key", {
-  query: "typescript best practices",
-  numResults: 5,
-  prompt: "Extract the main tips and recommendations",
-  schema: {
-    type: "object",
-    properties: {
-      tips: { type: "array", items: { type: "string" } },
-    },
-  },
-});
-
-if (result.status === "success") {
-  console.log("Results:", result.data?.results.length);
-  console.log("Extracted:", result.data?.json);
-}
-```
-</Accordion>
-
-### generateSchema
-
-Generate a JSON schema from a natural language description.
-
-```javascript
-import { generateSchema } from "scrapegraph-js";
-
-const result = await generateSchema("your-api-key", {
-  prompt: "Schema for a product with name, price, and rating",
-  existingSchema: { /* optional, to modify */ },
-});
-
-if (result.status === "success") {
-  console.log("Refined prompt:", result.data?.refinedPrompt);
-  console.log("Schema:", result.data?.schema);
-}
-```
-
-### crawl
-
-Crawl a website and its linked pages.
-
-```javascript
-import { crawl } from "scrapegraph-js";
-
-// Start a crawl
-const result = await crawl.start("your-api-key", {
-  url: "https://example.com",
-  formats: [{ type: "markdown" }],
-  maxPages: 50,
-  maxDepth: 2,
-  maxLinksPerPage: 10,
-  includePatterns: ["/blog/*"],
-  excludePatterns: ["/admin/*"],
-  fetchConfig: { /* ... */ },
-});
-
-console.log("Crawl ID:", result.data?.id);
-
-// Check status
-const status = await crawl.get("your-api-key", result.data?.id);
-
-// Control crawl
-await crawl.stop("your-api-key", result.data?.id);
-await crawl.resume("your-api-key", result.data?.id);
-await crawl.delete("your-api-key", result.data?.id);
-```
-
-#### crawl.start() Parameters
-
-| Parameter                   | Type          | Required | Description                                              |
-| --------------------------- | ------------- | -------- | -------------------------------------------------------- |
-| url                         | string        | Yes      | The starting URL                                         |
-| formats                     | FormatEntry[] | No       | Output formats per page. Defaults to `[{ type: "markdown" }]` |
-| maxDepth                    | number        | No       | Maximum crawl depth. Default: `2`                        |
-| maxPages                    | number        | No       | Maximum pages to crawl (1-1000). Default: `50`           |
-| maxLinksPerPage              | number        | No       | Maximum links followed per page. Default: `10`           |
-| allowExternal               | boolean       | No       | Allow crossing domains. Default: `false`                 |
-| includePatterns              | string[]      | No       | URL patterns to include                                  |
-| excludePatterns              | string[]      | No       | URL patterns to exclude                                  |
-| contentTypes                 | string[]      | No       | Allowed content types                                    |
-| fetchConfig                  | FetchConfig   | No       | Fetch configuration                                      |
-
-### monitor
-
-Monitor a webpage for changes on a schedule.
-
-```javascript
-import { monitor } from "scrapegraph-js";
-
-// Create a monitor
-const result = await monitor.create("your-api-key", {
-  url: "https://example.com",
-  name: "Price Monitor",
-  interval: "0 * * * *",           // cron expression
-  formats: [{ type: "markdown" }],
-  webhookUrl: "https://...",       // optional
-  fetchConfig: { /* ... */ },
-});
-
-console.log("Monitor ID:", result.data?.cronId);
-
-// Manage monitors
-const all = await monitor.list("your-api-key");
-const details = await monitor.get("your-api-key", cronId);
-await monitor.update("your-api-key", cronId, { interval: "0 */6 * * *" });
-await monitor.pause("your-api-key", cronId);
-await monitor.resume("your-api-key", cronId);
-await monitor.delete("your-api-key", cronId);
-```
-
-#### monitor.activity() — poll tick history
-
-Paginate through per-run ticks for a monitor (what changed on each scheduled run).
-
-```javascript
-import { monitor } from "scrapegraph-js";
-
-const activity = await monitor.activity("your-api-key", cronId, { limit: 20 });
-
-if (activity.status === "success") {
-  for (const tick of activity.data?.ticks ?? []) {
-    const changed = tick.changed ? "CHANGED" : "no change";
-    console.log(`[${tick.createdAt}] ${tick.status} - ${changed} (${tick.elapsedMs}ms)`);
-  }
-
-  if (activity.data?.nextCursor) {
-    const next = await monitor.activity("your-api-key", cronId, {
-      limit: 20,
-      cursor: activity.data.nextCursor,
-    });
-  }
-}
-```
-
-Params: `limit` (1–100, default `20`), `cursor` (opaque pagination token). Each tick has `id`, `createdAt`, `status`, `changed`, `elapsedMs`, and `diffs` with per-format deltas.
-
-### getCredits
-
-Check your account credit balance.
+Check your available API credits:
 
 ```javascript
 import { getCredits } from "scrapegraph-js";
 
-const result = await getCredits("your-api-key");
+const credits = await getCredits(apiKey);
 
-if (result.status === "success") {
-  console.log(`Remaining: ${result.data?.remaining}`);
-  console.log(`Used: ${result.data?.used}`);
-  console.log(`Plan: ${result.data?.plan}`);
-}
-```
-
-### checkHealth
-
-Check API health status.
-
-```javascript
-import { checkHealth } from "scrapegraph-js";
-
-const result = await checkHealth("your-api-key");
-// { status: "ok", uptime: 12345 }
-```
-
-### history
-
-Fetch request history.
-
-```javascript
-import { history } from "scrapegraph-js";
-
-const list = await history.list("your-api-key", {
-  service: "scrape",               // optional filter
-  page: 1,
-  limit: 20,
-});
-
-const entry = await history.get("your-api-key", "request-id");
-```
-
-## Configuration Objects
-
-### FetchConfig
-
-Controls how pages are fetched. See the [proxy configuration guide](/services/additional-parameters/proxy) for details on modes and geotargeting.
-
-```javascript
-{
-  mode: 'js',                  // Fetch mode: auto, fast, js
-  stealth: true,               // Enable stealth mode (residential proxy, anti-bot headers)
-  timeout: 15000,              // Request timeout in ms (1000-60000)
-  wait: 2000,                  // Wait after page load in ms (0-30000)
-  scrolls: 3,                  // Number of scrolls (0-100)
-  country: 'us',               // Proxy country code (ISO 3166-1 alpha-2)
-  headers: { 'X-Custom': 'header' },
-  cookies: { key: 'value' },
-  mock: false,                 // Enable mock mode for testing
-}
-```
-
-
-## Error Handling
-
-Functions return `ApiResult<T>` with a `status` field. Check `status` before accessing `data`:
-
-```javascript
-import { extract } from "scrapegraph-js";
-
-const result = await extract("your-api-key", {
-  url: "https://example.com",
-  prompt: "Extract the title",
-});
-
-if (result.status === "success") {
-  console.log(result.data);
+if (credits.status === "error") {
+  console.error("Error fetching credits:", credits.error);
 } else {
-  console.error(`Request failed: ${result.error}`);
+  console.log("Remaining credits:", credits.data.remaining_credits);
+  console.log("Total used:", credits.data.total_credits_used);
 }
 ```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
-| `SGAI_DEBUG` | Enable debug logging (`"1"`) | off |
-| `SGAI_TIMEOUT` | Request timeout in seconds | `120` |
 
 ## Support
 
@@ -484,3 +438,9 @@ if (result.status === "success") {
     Get help from our development team
   </Card>
 </CardGroup>
+
+<Accordion title="License" icon="scale">
+  This project is licensed under the MIT License. See the
+  [LICENSE](https://github.com/ScrapeGraphAI/scrapegraph-js/blob/main/LICENSE)
+  file for details.
+</Accordion>

@@ -28,7 +28,7 @@ When you exceed the rate limit, the API returns an HTTP `429 Too Many Requests` 
 | Enterprise | Custom | Custom |
 
 <Note>
-  Check the [dashboard](https://scrapegraphai.com/dashboard) for up-to-date limits for your current plan.
+  Check the [dashboard](https://dashboard.scrapegraphai.com) for up-to-date limits for your current plan.
 </Note>
 
 ## How to handle rate limits in code
@@ -56,16 +56,21 @@ def scrape_with_retry(url: str, prompt: str, max_retries: int = 3):
 ### JavaScript — with retry
 
 ```javascript
-import { extract } from "scrapegraph-js";
+import { smartScraper } from "scrapegraph-js";
 
 async function scrapeWithRetry(apiKey, url, prompt, retries = 3) {
   for (let i = 0; i < retries; i++) {
-    const result = await extract(apiKey, { url, prompt });
-    if (result.status === "success") return result;
-    // Exponential backoff
-    const wait = Math.pow(2, i) * 1000;
-    console.log(`Attempt ${i + 1} failed: ${result.error}. Retrying in ${wait}ms...`);
-    await new Promise((r) => setTimeout(r, wait));
+    try {
+      return await smartScraper(apiKey, url, prompt);
+    } catch (err) {
+      if (err.status === 429) {
+        const wait = Math.pow(2, i) * 1000;
+        console.log(`Rate limited. Retrying in ${wait}ms...`);
+        await new Promise((r) => setTimeout(r, wait));
+      } else {
+        throw err;
+      }
+    }
   }
   throw new Error("Max retries exceeded");
 }
