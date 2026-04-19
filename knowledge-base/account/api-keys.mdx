@@ -7,7 +7,7 @@ Your API key authenticates every request you make to the ScrapeGraphAI API. Keep
 
 ## Finding your API key
 
-1. Log in to the [ScrapeGraphAI dashboard](https://scrapegraphai.com/dashboard).
+1. Log in to the [ScrapeGraphAI dashboard](https://dashboard.scrapegraphai.com).
 2. Navigate to **Settings**.
 3. Your API key is displayed in the **API Key** section.
 
@@ -24,12 +24,9 @@ client = Client(api_key="your-api-key")
 ```
 
 ```javascript JavaScript
-import { extract } from "scrapegraph-js";
+import { smartScraper } from "scrapegraph-js";
 
-const result = await extract("your-api-key", {
-  url: "https://example.com",
-  prompt: "Extract the title",
-});
+const result = await smartScraper("your-api-key", url, prompt);
 ```
 
 ```bash cURL
@@ -64,7 +61,7 @@ client = Client(api_key=os.getenv("SGAI_API_KEY"))
 
 If your key has been exposed or you want to rotate it for security:
 
-1. Go to **Settings** in the [dashboard](https://scrapegraphai.com/dashboard).
+1. Go to **Settings** in the [dashboard](https://dashboard.scrapegraphai.com).
 2. Click **Regenerate API Key**.
 3. Copy the new key immediately — it will only be shown once.
 4. Update all services and environment variables that use the old key.
