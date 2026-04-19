@@ -5,7 +5,7 @@ description: 'Build AI Assistants with ScrapeGraphAI and Agno'
 
 ## Overview
 
-[Agno](https://www.agno.com) is a development framework for building production-ready AI Assistants. This integration allows you to easily add ScrapeGraph's web scraping capabilities to your Agno-powered AI agents, enabling them to extract data from websites, convert content to markdown, and perform intelligent web searches.
+[Agno](https://www.agno.com) is a development framework for building production-ready AI Assistants. This integration adds ScrapeGraphAI's web scraping capabilities to your Agno-powered agents, letting them extract structured data from websites, convert pages to markdown, crawl with a schema, fetch raw HTML, and run intelligent web searches.
 
 <Card
   title="Official Agno Documentation"
@@ -21,45 +21,48 @@ Install the required packages:
 
 ```bash
 pip install -U agno
-pip install scrapegraph-py
+pip install "scrapegraph-py>=2.0.0"
+```
+
+Set your API key:
+
+```bash
+export SGAI_API_KEY="your-api-key"
 ```
 
 ## Quick Start
 
-Import the necessary modules and create your first ScrapeGraph-powered agent:
+Import the toolkit and attach it to an agent:
 
 ```python
 from agno.agent import Agent
 from agno.tools.scrapegraph import ScrapeGraphTools
 
-# Create a ScrapeGraph tools instance with default settings
-scrapegraph = ScrapeGraphTools(smartscraper=True)
+# smartscraper is enabled by default
+scrapegraph = ScrapeGraphTools(enable_smartscraper=True)
 
-# Initialize your AI agent with ScrapeGraph tools
 agent = Agent(
-    tools=[scrapegraph], 
-    show_tool_calls=True, 
-    markdown=True, 
-    stream=True
+    tools=[scrapegraph],
+    show_tool_calls=True,
+    markdown=True,
+    stream=True,
 )
 ```
 
 ## Usage Examples
 
-### Example 1: Smart Scraping (Default)
+### Example 1: Smart Scraping (default)
 
-Extract structured data from websites using natural language:
+Extract structured data from a page using a natural-language prompt:
 
 ```python
 from agno.agent import Agent
 from agno.tools.scrapegraph import ScrapeGraphTools
 
-# Default behavior - only smartscraper enabled
-scrapegraph = ScrapeGraphTools(smartscraper=True)
+scrapegraph = ScrapeGraphTools(enable_smartscraper=True)
 
 agent = Agent(tools=[scrapegraph], show_tool_calls=True, markdown=True, stream=True)
 
-# Use smartscraper to extract specific information
 agent.print_response("""
 Use smartscraper to extract the following from https://www.wired.com/category/science/:
 - News articles
@@ -72,15 +75,14 @@ Use smartscraper to extract the following from https://www.wired.com/category/sc
 
 ### Example 2: Markdown Conversion
 
-Convert web pages to clean markdown format:
+Convert a web page to clean markdown:
 
 ```python
-# Only markdownify enabled (by setting smartscraper=False)
-scrapegraph_md = ScrapeGraphTools(smartscraper=False)
+# Disable smartscraper to default to markdownify
+scrapegraph_md = ScrapeGraphTools(enable_smartscraper=False)
 
 agent_md = Agent(tools=[scrapegraph_md], show_tool_calls=True, markdown=True)
 
-# Use markdownify to convert webpage to markdown
 agent_md.print_response(
     "Fetch and convert https://www.wired.com/category/science/ to markdown format"
 )
@@ -88,75 +90,99 @@ agent_md.print_response(
 
 ### Example 3: Search Scraping
 
-Enable intelligent search capabilities:
+Run an intelligent web search and extract the answer:
 
 ```python
-# Enable searchscraper for finding specific information
-scrapegraph_search = ScrapeGraphTools(searchscraper=True)
+scrapegraph_search = ScrapeGraphTools(enable_searchscraper=True)
 
 agent_search = Agent(tools=[scrapegraph_search], show_tool_calls=True, markdown=True)
 
-# Use searchscraper to find specific information
 agent_search.print_response(
-    "Use searchscraper to find the CEO of company X and their contact details from https://example.com"
+    "Use searchscraper to find the CEO of company X and their public contact details"
 )
 ```
 
 ### Example 4: Smart Crawling
 
-Enable advanced crawling with custom schemas:
+Crawl a site and extract structured data against a JSON schema:
 
 ```python
-# Enable crawl for structured data extraction
-scrapegraph_crawl = ScrapeGraphTools(crawl=True)
+scrapegraph_crawl = ScrapeGraphTools(enable_crawl=True)
 
 agent_crawl = Agent(tools=[scrapegraph_crawl], show_tool_calls=True, markdown=True)
 
-# Use crawl with custom schema for structured extraction
 agent_crawl.print_response(
-    "Use crawl to extract what the company does and get text content from privacy and terms from https://scrapegraphai.com/ with a suitable schema."
+    "Use crawl to extract what the company does and get text content from privacy and terms "
+    "from https://scrapegraphai.com/ with a suitable schema."
+)
+```
+
+### Example 5: Raw HTML Scrape
+
+Fetch the full HTML source of a page — useful when you need to parse it yourself:
+
+```python
+scrapegraph_scrape = ScrapeGraphTools(enable_scrape=True, enable_smartscraper=False)
+
+agent_scrape = Agent(
+    tools=[scrapegraph_scrape],
+    show_tool_calls=True,
+    markdown=True,
+    stream=True,
+)
+
+agent_scrape.print_response(
+    "Use the scrape tool to get the complete raw HTML from "
+    "https://en.wikipedia.org/wiki/2025_FIFA_Club_World_Cup"
 )
 ```
 
 ## Configuration Options
 
-The `ScrapeGraphTools` class accepts several parameters to customize behavior:
+`ScrapeGraphTools` accepts the following parameters:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `smartscraper` | bool | `True` | Enable smart scraping capabilities |
-| `searchscraper` | bool | `False` | Enable search scraping functionality |
-| `crawl` | bool | `False` | Enable smart crawling with schema support |
-| `markdownify` | bool | `False` | Enable markdown conversion |
+| `api_key` | `str \| None` | `None` | ScrapeGraphAI API key. Falls back to `SGAI_API_KEY`. |
+| `enable_smartscraper` | `bool` | `True` | Extract structured data with a prompt. |
+| `enable_markdownify` | `bool` | `False` | Convert a page to markdown. Auto-enabled if `enable_smartscraper=False`. |
+| `enable_crawl` | `bool` | `False` | Crawl a site and extract against a JSON schema. |
+| `enable_searchscraper` | `bool` | `False` | Search the web and extract information. |
+| `enable_scrape` | `bool` | `False` | Return raw HTML for a page. |
+| `render_heavy_js` | `bool` | `False` | Use the JS-rendering fetch mode for JS-heavy sites. |
+| `all` | `bool` | `False` | Enable every tool in one call. |
 
 ## Advanced Usage
 
 ### Combining Multiple Tools
 
-You can enable multiple ScrapeGraph tools simultaneously:
+Enable several tools at once, or flip every tool on with `all=True`:
 
 ```python
-# Enable multiple tools at once
+# Select specific tools
 scrapegraph_multi = ScrapeGraphTools(
-    smartscraper=True,
-    searchscraper=True,
-    crawl=True
+    enable_smartscraper=True,
+    enable_searchscraper=True,
+    enable_crawl=True,
 )
 
-agent_multi = Agent(tools=[scrapegraph_multi], show_tool_calls=True, markdown=True)
+# Or enable everything, with heavy-JS rendering
+scrapegraph_all = ScrapeGraphTools(all=True, render_heavy_js=True)
+
+agent = Agent(tools=[scrapegraph_all], show_tool_calls=True, markdown=True)
 ```
 
 ### Custom Agent Configuration
 
-Configure your agent with additional options:
-
 ```python
+from agno.models.openai import OpenAIChat
+
 agent = Agent(
+    model=OpenAIChat(id="gpt-4.1"),
     tools=[scrapegraph],
-    show_tool_calls=True,  # Debug tool calls
-    markdown=True,         # Enable markdown rendering
-    stream=True,           # Enable streaming responses
-    temperature=0.7        # Control response creativity
+    show_tool_calls=True,
+    markdown=True,
+    stream=True,
 )
 ```
 
@@ -170,30 +196,27 @@ agent = Agent(
     Convert web pages to clean, readable markdown format
   </Card>
   <Card title="Search Scraping" icon="search">
-    Intelligent search and data extraction from websites
+    Intelligent search and data extraction from the web
   </Card>
   <Card title="Smart Crawling" icon="spider">
-    Advanced crawling with custom schema support
+    Crawl with a JSON schema for structured extraction
   </Card>
-  <Card title="Streaming Support" icon="stream">
-    Real-time responses with streaming capabilities
+  <Card title="Raw HTML Scrape" icon="code">
+    Fetch the full HTML source for downstream parsing
   </Card>
-  <Card title="Tool Visibility" icon="eye">
-    Debug and monitor tool calls for better development
+  <Card title="Heavy-JS Rendering" icon="bolt">
+    Toggle `render_heavy_js` for JavaScript-heavy sites
   </Card>
 </CardGroup>
 
 ## Best Practices
 
-- **Tool Selection**: Only enable the tools you need to optimize performance
-- **Error Handling**: Implement proper error handling for web scraping operations
-- **Rate Limiting**: Be mindful of website rate limits when scraping
-- **Schema Design**: Design clear schemas for crawling operations
-- **Testing**: Test your agents locally before deployment
+- **Tool selection** — only enable the tools the agent needs; it shortens the tool list and keeps prompts tighter.
+- **Schema design** — when using `crawl`, pass a concrete JSON schema so the extractor has a clear target.
+- **Heavy JS** — enable `render_heavy_js=True` for SPAs or sites where content is injected after load; leave it off for static pages (faster + cheaper).
+- **Rate limits** — respect target-site limits and ScrapeGraphAI's concurrency caps when running crawls in parallel.
 
 ## Support
-
-Need help with the integration?
 
 <CardGroup cols={2}>
   <Card
