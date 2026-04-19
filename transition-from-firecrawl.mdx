@@ -71,7 +71,8 @@ fc = Firecrawl(api_key="fc-...")
 
 # After
 from scrapegraph_py import ScrapeGraphAI
-sgai = ScrapeGraphAI(api_key="sgai-...")
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 ```
 
 ```javascript
@@ -80,7 +81,9 @@ import Firecrawl from "@mendable/firecrawl-js";
 const fc = new Firecrawl({ apiKey: "fc-..." });
 
 // After
-import { scrape, extract, search, crawl, monitor } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
+// reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI({ apiKey: "..." })
+const sgai = ScrapeGraphAI();
 ```
 
 ### Replace method calls
@@ -95,19 +98,30 @@ Use the endpoint mapping tables above to update each call. The main patterns:
 
 ### Handle the `ApiResult` wrapper
 
-ScrapeGraph v2 wraps all responses in an `ApiResult` envelope. Always check status before accessing data:
+The ScrapeGraph Python and JS SDKs wrap every response in an `ApiResult` — no exceptions to catch. Check `status` before reading `data`:
 
 ```python
-result = sgai.extract(ExtractRequest(...))
+result = sgai.extract(ExtractRequest(url="https://example.com", prompt="..."))
 if result.status == "success":
     data = result.data
 else:
     print(f"Error: {result.error}")
 ```
 
+```javascript
+const result = await sgai.scrape({ url: "https://example.com", formats: [{ type: "markdown" }] });
+if (result.status === "success") {
+  console.log(result.data?.results.markdown?.data);
+} else {
+  console.error(result.error);
+}
+```
+
+Direct HTTP callers (curl, fetch) receive the unwrapped response body — the envelope is applied client-side by the SDKs.
+
 ### Test and verify
 
-Run your existing test suite and compare outputs. ScrapeGraph returns equivalent data structures — the main difference is the `ApiResult` envelope.
+Run your existing test suite and compare outputs. ScrapeGraph returns equivalent data structures — the main difference is the `ApiResult` envelope in the SDKs.
 
 </Steps>
 
