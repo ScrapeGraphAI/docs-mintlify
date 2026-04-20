@@ -94,10 +94,16 @@
                 ]
               },
               {
-                "group": "LLM SDKs & Frameworks",
+                "group": "LLM SDKs",
                 "pages": [
                   "developer-guides/llm-sdks-and-frameworks/gemini",
                   "developer-guides/llm-sdks-and-frameworks/anthropic"
+                ]
+              },
+              {
+                "group": "Frameworks",
+                "pages": [
+                  "integrations/agno"
                 ]
               },
               {
