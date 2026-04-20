@@ -17,7 +17,7 @@ Agentic Scraper is our most advanced service for automating browser actions and 
 - **Optionally** use AI to extract structured data according to a schema
 
 <Note>
-Try it instantly in our [interactive playground](https://scrapegraphai.com/dashboard) – no coding required!
+Try it instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) – no coding required!
 </Note>
 
 ## Difference: With vs Without AI Extraction
@@ -39,7 +39,7 @@ const apiKey = process.env.SGAI_APIKEY;
 
 // Basic scraping without AI extraction
 const response = await agenticScraper(apiKey, {
-  url: 'https://scrapegraphai.com/dashboard',
+  url: 'https://dashboard.scrapegraphai.com/',
   steps: [
     'Type email@gmail.com in email input box',
     'Type test-password@123 in password inputbox',
@@ -52,7 +52,7 @@ console.log(response.data);
 
 // With AI extraction
 const aiResponse = await agenticScraper(apiKey, {
-  url: 'https://scrapegraphai.com/dashboard',
+  url: 'https://dashboard.scrapegraphai.com/',
   steps: [
     'Type email@gmail.com in email input box',
     'Type test-password@123 in password inputbox',
@@ -86,7 +86,7 @@ curl -X 'POST' \
   -H 'SGAI-APIKEY: your-api-key' \
   -H 'Content-Type: application/json' \
   -d '{
-  "url": "https://scrapegraphai.com/dashboard",
+  "url": "https://dashboard.scrapegraphai.com/",
   "use_session": true,
   "steps": ["Type email@gmail.com in email input box", "Type test-password@123 in password inputbox", "click on login"],
   "ai_extraction": false
@@ -99,7 +99,7 @@ curl -X 'POST' \
   -H 'SGAI-APIKEY: your-api-key' \
   -H 'Content-Type: application/json' \
   -d '{
-  "url": "https://scrapegraphai.com/dashboard",
+  "url": "https://dashboard.scrapegraphai.com/",
   "use_session": true,
   "steps": ["Type email@gmail.com in email input box", "Type test-password@123 in password inputbox", "click on login", "wait for dashboard to load completely"],
   "user_prompt": "Extract user info, dashboard sections, and remaining credits",
@@ -132,7 +132,7 @@ client = Client(api_key=api_key)
 
 # Basic example: login and scrape without AI
 response = client.agenticscraper(
-    url="https://scrapegraphai.com/dashboard",
+    url="https://dashboard.scrapegraphai.com/",
     use_session=True,
     steps=[
         "Type email@gmail.com in email input box",
@@ -157,7 +157,7 @@ output_schema = {
     }
 }
 ai_response = client.agenticscraper(
-    url="https://scrapegraphai.com/dashboard",
+    url="https://dashboard.scrapegraphai.com/",
     use_session=True,
     steps=[
         "Type email@gmail.com in email input box",
@@ -175,12 +175,12 @@ client.close()
 
 ```bash CLI
 # Basic scraping without AI extraction
-just-scrape agentic-scraper https://scrapegraphai.com/dashboard \
+just-scrape agentic-scraper https://dashboard.scrapegraphai.com/ \
   -s "Type email@gmail.com in email input box,Type test-password@123 in password inputbox,Click login" \
   --use-session
 
 # With AI extraction
-just-scrape agentic-scraper https://scrapegraphai.com/dashboard \
+just-scrape agentic-scraper https://dashboard.scrapegraphai.com/ \
   -s "Type email@gmail.com in email input box,Type test-password@123 in password inputbox,Click login,wait for dashboard to load" \
   --ai-extraction -p "Extract user info, dashboard sections, and remaining credits" \
   --use-session
@@ -201,7 +201,7 @@ just-scrape agentic-scraper https://scrapegraphai.com/dashboard \
 | ai_extraction    | bool     | No          | true = AI extraction, false = raw content only |
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
 
 ## Use Cases
@@ -245,6 +245,6 @@ For technical details see:
   </Card>
 </CardGroup>
 
-<Card title="Ready to try?" icon="rocket" href="https://scrapegraphai.com/dashboard">
+<Card title="Ready to try?" icon="rocket" href="https://dashboard.scrapegraphai.com">
   Get your API key and start using Agentic Scraper now!
 </Card>

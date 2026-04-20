@@ -43,9 +43,9 @@ class PriceMonitorResult(BaseModel):
 client = Client()
 
 # Monitor competitor prices
-response = client.extract(
-    url="https://competitor-store.com/category/products",
-    prompt="Extract pricing information for all products including name, current price, original price if available, and availability status",
+response = client.smartscraper(
+    website_url="https://competitor-store.com/category/products",
+    user_prompt="Extract pricing information for all products including name, current price, original price if available, and availability status",
     output_schema=PriceMonitorResult
 )
 
@@ -86,8 +86,8 @@ class TrendAnalysisResult(BaseModel):
 client = Client()
 
 # Search and analyze market trends
-response = client.search(
-    query="Analyze market trends and sentiment in the electric vehicle industry. Focus on pricing trends, consumer preferences, and technological advancements.",
+response = client.searchscraper(
+    user_prompt="Analyze market trends and sentiment in the electric vehicle industry. Focus on pricing trends, consumer preferences, and technological advancements.",
     num_results=10,  # Number of sources to analyze
     output_schema=TrendAnalysisResult
 )

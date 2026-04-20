@@ -3,313 +3,250 @@
   "theme": "mint",
   "name": "ScrapeGraphAI",
   "colors": {
-    "primary": "#AC6DFF",
-    "light": "#AC6DFF",
-    "dark": "#AC6DFF"
+    "primary": "#9333ea",
+    "light": "#9f52eb",
+    "dark": "#1f2937"
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "versions": [
+    "tabs": [
       {
-        "version": "v2",
-        "default": true,
-        "tabs": [
+        "tab": "Home",
+        "groups": [
           {
-            "tab": "Home",
-            "groups": [
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "install",
               {
-                "group": "Get Started",
+                "group": "Use Cases",
                 "pages": [
-                  "introduction",
-                  "install",
-                  "transition-from-v1-to-v2",
-                  {
-                    "group": "Use Cases",
-                    "pages": [
-                      "use-cases/overview",
-                      "use-cases/ai-llm",
-                      "use-cases/lead-generation",
-                      "use-cases/market-intelligence",
-                      "use-cases/content-aggregation",
-                      "use-cases/research-analysis",
-                      "use-cases/seo-analytics"
-                    ]
-                  },
-                  {
-                    "group": "Dashboard",
-                    "pages": [
-                      "dashboard/overview",
-                      "dashboard/settings"
-                    ]
-                  }
+                  "use-cases/overview",
+                  "use-cases/ai-llm",
+                  "use-cases/lead-generation",
+                  "use-cases/market-intelligence",
+                  "use-cases/content-aggregation",
+                  "use-cases/research-analysis",
+                  "use-cases/seo-analytics"
                 ]
               },
               {
-                "group": "Services",
+                "group": "Dashboard",
                 "pages": [
-                  "services/scrape",
-                  "services/extract",
-                  "services/search",
-                  "services/crawl",
-                  "services/monitor",
-                  {
-                    "group": "Additional Parameters",
-                    "pages": [
-                      "services/additional-parameters/headers",
-                      "services/additional-parameters/pagination",
-                      "services/additional-parameters/proxy",
-                      "services/additional-parameters/wait-ms"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Official SDKs",
-                "pages": [
-                  "sdks/python",
-                  "sdks/javascript",
-                  "sdks/mocking",
-                  {
-                    "group": "CLI",
-                    "icon": "terminal",
-                    "pages": [
-                      "services/cli/introduction",
-                      "services/cli/commands",
-                      "services/cli/json-mode",
-                      "services/cli/ai-agent-skill",
-                      "services/cli/examples"
-                    ]
-                  },
-                  {
-                    "group": "MCP Server",
-                    "icon": "/logo/mcp.svg",
-                    "pages": [
-                      "services/mcp-server/introduction",
-                      "services/mcp-server/cursor",
-                      "services/mcp-server/claude",
-                      "services/mcp-server/smithery"
-                    ]
-                  },
-                  "services/toonify"
-                ]
-              },
-              {
-                "group": "LLM SDKs & Frameworks",
-                "pages": [
-                  "developer-guides/llm-sdks-and-frameworks/gemini",
-                  "developer-guides/llm-sdks-and-frameworks/anthropic"
-                ]
-              },
-              {
-                "group": "Contribute",
-                "pages": [
-                  "contribute/opensource"
+                  "dashboard/overview",
+                  "dashboard/playground",
+                  "dashboard/settings"
                 ]
               }
             ]
           },
           {
-            "tab": "Knowledge Base",
-            "groups": [
-              {
-                "group": "Knowledge Base",
-                "pages": [
-                  "knowledge-base/introduction"
-                ]
-              },
-              {
-                "group": "Scraping Tools",
-                "pages": [
-                  "knowledge-base/ai-tools/lovable",
-                  "knowledge-base/ai-tools/v0",
-                  "knowledge-base/ai-tools/bolt",
-                  "knowledge-base/ai-tools/cursor"
-                ]
-              },
+            "group": "Services",
+            "pages": [
+              "services/smartscraper",
+              "services/searchscraper",
+              "services/markdownify",
+              "services/scrape",
+              "services/smartcrawler",
+              "services/sitemap",
+              "services/agenticscraper",
               {
                 "group": "CLI",
+                "icon": "terminal",
                 "pages": [
-                  "knowledge-base/cli/getting-started",
-                  "knowledge-base/cli/json-mode",
-                  "knowledge-base/cli/ai-agent-skill",
-                  "knowledge-base/cli/command-examples"
+                  "services/cli/introduction",
+                  "services/cli/commands",
+                  "services/cli/json-mode",
+                  "services/cli/ai-agent-skill",
+                  "services/cli/examples"
                 ]
               },
               {
-                "group": "Troubleshooting",
+                "group": "MCP Server",
+                "icon": "/logo/mcp.svg",
                 "pages": [
-                  "knowledge-base/troubleshooting/cors-error",
-                  "knowledge-base/troubleshooting/empty-results",
-                  "knowledge-base/troubleshooting/rate-limiting",
-                  "knowledge-base/troubleshooting/timeout-errors"
+                  "services/mcp-server/introduction",
+                  "services/mcp-server/cursor",
+                  "services/mcp-server/claude",
+                  "services/mcp-server/smithery"
                 ]
               },
+              "services/toonify",
               {
-                "group": "Scraping Guides",
+                "group": "Additional Parameters",
                 "pages": [
-                  "knowledge-base/scraping/javascript-rendering",
-                  "knowledge-base/scraping/pagination",
-                  "knowledge-base/scraping/custom-headers",
-                  "knowledge-base/scraping/proxy"
-                ]
-              },
-              {
-                "group": "Account & Credits",
-                "pages": [
-                  "knowledge-base/account/pricing",
-                  "knowledge-base/account/api-keys",
-                  "knowledge-base/account/credits",
-                  "knowledge-base/account/rate-limits"
+                  "services/additional-parameters/headers",
+                  "services/additional-parameters/pagination",
+                  "services/additional-parameters/proxy",
+                  "services/additional-parameters/wait-ms"
                 ]
               }
             ]
           },
           {
-            "tab": "Cookbook",
-            "groups": [
-              {
-                "group": "Cookbook",
-                "pages": [
-                  "cookbook/introduction"
-                ]
-              },
-              {
-                "group": "Examples",
-                "pages": [
-                  "cookbook/examples/company-info",
-                  "cookbook/examples/github-trending",
-                  "cookbook/examples/wired",
-                  "cookbook/examples/homes",
-                  "cookbook/examples/research-agent",
-                  "cookbook/examples/chat-webpage",
-                  "cookbook/examples/pagination"
-                ]
-              }
+            "group": "Official SDKs",
+            "pages": [
+              "sdks/python",
+              "sdks/javascript",
+              "sdks/mocking"
             ]
           },
           {
-            "tab": "API Reference",
-            "groups": [
-              {
-                "group": "API Documentation",
-                "pages": [
-                  "api-reference/introduction",
-                  "api-reference/errors"
-                ]
-              },
-              {
-                "group": "SmartScraper",
-                "pages": [
-                  "api-reference/endpoint/smartscraper/start",
-                  "api-reference/endpoint/smartscraper/get-status"
-                ]
-              },
-              {
-                "group": "SearchScraper",
-                "pages": [
-                  "api-reference/endpoint/searchscraper/start",
-                  "api-reference/endpoint/searchscraper/get-status"
-                ]
-              },
-              {
-                "group": "Markdownify",
-                "pages": [
-                  "api-reference/endpoint/markdownify/start",
-                  "api-reference/endpoint/markdownify/get-status"
-                ]
-              },
-              {
-                "group": "SmartCrawler",
-                "pages": [
-                  "api-reference/endpoint/smartcrawler/start",
-                  "api-reference/endpoint/smartcrawler/get-status"
-                ]
-              },
-              {
-                "group": "Sitemap",
-                "pages": [
-                  "api-reference/endpoint/sitemap/start",
-                  "api-reference/endpoint/sitemap/get-status"
-                ]
-              },
-              {
-                "group": "User",
-                "pages": [
-                  "api-reference/endpoint/user/get-credits",
-                  "api-reference/endpoint/user/submit-feedback"
-                ]
-              }
+            "group": "Integrations",
+            "pages": [
+              "integrations/langchain",
+              "integrations/llamaindex",
+              "integrations/crewai",
+              "integrations/agno",
+              "integrations/langflow",
+              "integrations/vercel_ai",
+              "integrations/google-adk",
+              "integrations/x402"
+            ]
+          },
+          {
+            "group": "LLM SDKs & Frameworks",
+            "pages": [
+              "developer-guides/llm-sdks-and-frameworks/gemini",
+              "developer-guides/llm-sdks-and-frameworks/anthropic"
+            ]
+          },
+          {
+            "group": "Contribute",
+            "pages": [
+              "contribute/opensource"
             ]
           }
         ]
       },
       {
-        "version": "v1",
-        "tabs": [
+        "tab": "Knowledge Base",
+        "groups": [
           {
-            "tab": "Home",
-            "groups": [
-              {
-                "group": "Get Started",
-                "pages": [
-                  "v1/introduction",
-                  "v1/quickstart"
-                ]
-              },
-              {
-                "group": "Services",
-                "pages": [
-                  "v1/smartscraper",
-                  "v1/searchscraper",
-                  "v1/markdownify",
-                  "v1/scrape",
-                  "v1/smartcrawler",
-                  "v1/sitemap",
-                  "v1/agenticscraper",
-                  {
-                    "group": "CLI",
-                    "icon": "terminal",
-                    "pages": [
-                      "v1/cli/introduction",
-                      "v1/cli/commands",
-                      "v1/cli/json-mode",
-                      "v1/cli/ai-agent-skill",
-                      "v1/cli/examples"
-                    ]
-                  },
-                  {
-                    "group": "MCP Server",
-                    "icon": "/logo/mcp.svg",
-                    "pages": [
-                      "v1/mcp-server/introduction",
-                      "v1/mcp-server/cursor",
-                      "v1/mcp-server/claude",
-                      "v1/mcp-server/smithery"
-                    ]
-                  },
-                  "v1/toonify",
-                  {
-                    "group": "Additional Parameters",
-                    "pages": [
-                      "v1/additional-parameters/headers",
-                      "v1/additional-parameters/pagination",
-                      "v1/additional-parameters/proxy",
-                      "v1/additional-parameters/wait-ms"
-                    ]
-                  }
-                ]
-              }
+            "group": "Knowledge Base",
+            "pages": [
+              "knowledge-base/introduction"
             ]
           },
           {
-            "tab": "API Reference",
-            "groups": [
-              {
-                "group": "API Documentation",
-                "pages": [
-                  "v1/api-reference/introduction"
-                ]
-              }
+            "group": "Scraping Tools",
+            "pages": [
+              "knowledge-base/ai-tools/lovable",
+              "knowledge-base/ai-tools/v0",
+              "knowledge-base/ai-tools/bolt",
+              "knowledge-base/ai-tools/cursor"
+            ]
+          },
+           {
+            "group": "CLI",
+            "pages": [
+              "knowledge-base/cli/getting-started",
+              "knowledge-base/cli/json-mode",
+              "knowledge-base/cli/ai-agent-skill",
+              "knowledge-base/cli/command-examples"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "knowledge-base/troubleshooting/cors-error",
+              "knowledge-base/troubleshooting/empty-results",
+              "knowledge-base/troubleshooting/rate-limiting",
+              "knowledge-base/troubleshooting/timeout-errors"
+            ]
+          },
+          {
+            "group": "Scraping Guides",
+            "pages": [
+              "knowledge-base/scraping/javascript-rendering",
+              "knowledge-base/scraping/pagination",
+              "knowledge-base/scraping/custom-headers",
+              "knowledge-base/scraping/proxy"
+            ]
+          },
+          {
+            "group": "Account & Credits",
+            "pages": [
+              "knowledge-base/account/api-keys",
+              "knowledge-base/account/credits",
+              "knowledge-base/account/rate-limits"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Cookbook",
+        "groups": [
+          {
+            "group": "Cookbook",
+            "pages": [
+              "cookbook/introduction"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "cookbook/examples/company-info",
+              "cookbook/examples/github-trending",
+              "cookbook/examples/wired",
+              "cookbook/examples/homes",
+              "cookbook/examples/research-agent",
+              "cookbook/examples/chat-webpage",
+              "cookbook/examples/pagination"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Documentation",
+            "pages": [
+              "api-reference/introduction",
+              "api-reference/errors"
+            ]
+          },
+          {
+            "group": "SmartScraper",
+            "pages": [
+              "api-reference/endpoint/smartscraper/start",
+              "api-reference/endpoint/smartscraper/get-status"
+            ]
+          },
+          {
+            "group": "SearchScraper",
+            "pages": [
+              "api-reference/endpoint/searchscraper/start",
+              "api-reference/endpoint/searchscraper/get-status"
+            ]
+          },
+          {
+            "group": "Markdownify",
+            "pages": [
+              "api-reference/endpoint/markdownify/start",
+              "api-reference/endpoint/markdownify/get-status"
+            ]
+          },
+          {
+            "group": "SmartCrawler",
+            "pages": [
+              "api-reference/endpoint/smartcrawler/start",
+              "api-reference/endpoint/smartcrawler/get-status"
+            ]
+          },
+          {
+            "group": "Sitemap",
+            "pages": [
+              "api-reference/endpoint/sitemap/start",
+              "api-reference/endpoint/sitemap/get-status"
+            ]
+          },
+          {
+            "group": "User",
+            "pages": [
+              "api-reference/endpoint/user/get-credits",
+              "api-reference/endpoint/user/submit-feedback"
             ]
           }
         ]
@@ -322,7 +259,12 @@
           "href": "https://scrapegraphai.com/",
           "icon": "globe"
         },
-{
+        {
+          "anchor": "Community",
+          "href": "https://discord.gg/uJN7TYcpNa",
+          "icon": "discord"
+        },
+        {
           "anchor": "Blog",
           "href": "https://scrapegraphai.com/blog",
           "icon": "newspaper"
@@ -331,24 +273,13 @@
     }
   },
   "logo": {
-    "light": "/logos/logo-light.svg",
-    "dark": "/logos/logo-dark.svg",
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
     "href": "https://docs.scrapegraphai.com"
   },
   "background": {
     "color": {
-      "dark": "#242424",
-      "light": "#EFEFEF"
-    }
-  },
-  "fonts": {
-    "heading": {
-      "family": "IBM Plex Sans",
-      "weight": 500
-    },
-    "body": {
-      "family": "IBM Plex Sans",
-      "weight": 400
+      "dark": "#101725"
     }
   },
   "navbar": {
@@ -369,7 +300,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://scrapegraphai.com/dashboard"
+      "href": "https://dashboard.scrapegraphai.com"
     }
   },
   "footer": {

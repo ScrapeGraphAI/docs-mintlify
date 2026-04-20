@@ -39,9 +39,9 @@ class CompanyContacts(BaseModel):
 client = Client(api_key="your-api-key")
 
 # Scrape company website
-response = client.extract(
-    url="https://company.com/about",
-    prompt="Extract all contact information for decision makers and leadership team",
+response = client.smartscraper(
+    website_url="https://company.com/about",
+    user_prompt="Extract all contact information for decision makers and leadership team",
     output_schema=CompanyContacts
 )
 
@@ -79,10 +79,11 @@ client = Client(api_key="your-api-key")
 
 try:
     # Search for businesses in a specific category
-    search_results = client.search(
-        query="Find software companies in San Francisco with their contact details",
+    search_results = client.searchscraper(
+        user_prompt="Find software companies in San Francisco with their contact details",
         output_schema=BusinessSearchResults,
-        num_results=10
+        num_results=10,  # Number of websites to search (3-20)
+        extraction_mode=True  # Use AI extraction mode for structured data
     )
 
     # Extract and validate leads
@@ -93,9 +94,9 @@ try:
             
         try:
             # Get more detailed information from company website
-            details = client.extract(
-                url=business.website,
-                prompt="Extract detailed company information including team size, tech stack, and all contact methods",
+            details = client.smartscraper(
+                website_url=business.website,
+                user_prompt="Extract detailed company information including team size, tech stack, and all contact methods",
                 output_schema=CompanyContacts  # Defined earlier in the file
             )
             
