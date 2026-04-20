@@ -103,7 +103,8 @@
               {
                 "group": "Frameworks",
                 "pages": [
-                  "integrations/agno"
+                  "integrations/agno",
+                  "integrations/llamaindex"
                 ]
               },
               {
