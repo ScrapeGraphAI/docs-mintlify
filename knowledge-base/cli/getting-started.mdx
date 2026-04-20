@@ -39,7 +39,7 @@ Package: [just-scrape](https://www.npmjs.com/package/just-scrape) on npm | [GitH
 
 ## Setting up your API key
 
-The CLI needs a ScrapeGraphAI API key. Get one from the [dashboard](https://scrapegraphai.com/dashboard). The CLI checks for it in this order:
+The CLI needs a ScrapeGraphAI API key. Get one from the [dashboard](https://dashboard.scrapegraphai.com). The CLI checks for it in this order:
 
 1. **Environment variable** — `export SGAI_API_KEY="sgai-..."`
 2. **`.env` file** — `SGAI_API_KEY=sgai-...` in the project root
@@ -53,14 +53,19 @@ The easiest approach for a new machine is to just run any command — the CLI wi
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraphAI API key | — |
-| `SGAI_API_URL` | Override the API base URL | `https://api.scrapegraphai.com` |
-| `SGAI_TIMEOUT_S` | Request timeout in seconds | `30` |
-
-Legacy variables (`JUST_SCRAPE_API_URL`, `JUST_SCRAPE_TIMEOUT_S`, `JUST_SCRAPE_DEBUG`) are still bridged.
+| `JUST_SCRAPE_API_URL` | Override the API base URL | `https://api.scrapegraphai.com/v1` |
+| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
+| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging to stderr | `0` |
 
 ## Verify your setup
 
-Check your credit balance to confirm the key is valid:
+Run a quick health check to confirm the key is valid:
+
+```bash
+just-scrape validate
+```
+
+Check your credit balance:
 
 ```bash
 just-scrape credits
@@ -69,7 +74,7 @@ just-scrape credits
 ## Your first scrape
 
 ```bash
-just-scrape extract https://news.ycombinator.com \
+just-scrape smart-scraper https://news.ycombinator.com \
   -p "Extract the top 5 story titles and their URLs"
 ```
 

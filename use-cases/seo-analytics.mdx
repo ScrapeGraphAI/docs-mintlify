@@ -63,9 +63,9 @@ target_keywords = [
 
 for keyword in target_keywords:
     # Analyze SERP data
-    response = client.extract(
-        url=f"https://www.google.com/search?q={keyword}",
-        prompt="Extract detailed search results including positions, titles, descriptions, and all rich results. Also analyze ad presence and total result counts.",
+    response = client.smartscraper(
+        website_url=f"https://www.google.com/search?q={keyword}",
+        user_prompt="Extract detailed search results including positions, titles, descriptions, and all rich results. Also analyze ad presence and total result counts.",
         output_schema=SERPAnalysis
     )
     
@@ -151,9 +151,9 @@ target_urls = [
 
 for url in target_urls:
     # Extract content metrics
-    response = client.extract(
-        url=url,
-        prompt="Perform comprehensive content analysis including meta tags, headings structure, internal/external links, and structured data. Calculate content quality score based on best practices.",
+    response = client.smartscraper(
+        website_url=url,
+        user_prompt="Perform comprehensive content analysis including meta tags, headings structure, internal/external links, and structured data. Calculate content quality score based on best practices.",
         output_schema=ContentMetrics
     )
     
