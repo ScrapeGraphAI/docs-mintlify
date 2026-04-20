@@ -3,43 +3,39 @@ title: 'Examples'
 description: 'Practical examples for every just-scrape command'
 ---
 
-## extract
+## smart-scraper
 
 ```bash
 # Extract product listings
-just-scrape extract https://store.example.com/shoes \
+just-scrape smart-scraper https://store.example.com/shoes \
   -p "Extract all product names, prices, and ratings"
 
 # Enforce output schema + scroll to load more content
-just-scrape extract https://news.example.com \
+just-scrape smart-scraper https://news.example.com \
   -p "Get all article headlines and dates" \
   --schema '{"type":"object","properties":{"articles":{"type":"array","items":{"type":"object","properties":{"title":{"type":"string"},"date":{"type":"string"}}}}}}' \
   --scrolls 5
 
 # Anti-bot bypass for JS-heavy SPAs
-just-scrape extract https://app.example.com/dashboard \
+just-scrape smart-scraper https://app.example.com/dashboard \
   -p "Extract user stats" \
   --stealth
 ```
 
-## search
+## search-scraper
 
 ```bash
 # Research across multiple sources
-just-scrape search "What are the best Python web frameworks in 2025?" \
+just-scrape search-scraper "What are the best Python web frameworks in 2025?" \
   --num-results 10
 
-# Recent news only, scoped to Germany
-just-scrape search "EU AI act latest news" \
-  --time-range past_week --country de
+# Get raw markdown only (cheaper — 2 credits vs 10)
+just-scrape search-scraper "React vs Vue comparison" \
+  --no-extraction --num-results 5
 
 # Structured output with schema
-just-scrape search "Top 5 cloud providers pricing" \
+just-scrape search-scraper "Top 5 cloud providers pricing" \
   --schema '{"type":"object","properties":{"providers":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"free_tier":{"type":"string"}}}}}}'
-
-# With extraction prompt
-just-scrape search "React vs Vue comparison" \
-  -p "Summarize the key differences"
 ```
 
 ## markdownify
@@ -50,94 +46,93 @@ just-scrape markdownify https://blog.example.com/my-article
 
 # Save to a file
 just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.markdown' > api-docs.md
+  --json | jq -r '.result' > api-docs.md
 
 # Bypass Cloudflare
-just-scrape markdownify https://protected.example.com -m js --stealth
-```
-
-## scrape
-
-```bash
-# Get markdown (default format)
-just-scrape scrape https://example.com
-
-# Get raw HTML with reader-mode extraction
-just-scrape scrape https://blog.example.com -f html --html-mode reader
-
-# Take a screenshot
-just-scrape scrape https://example.com -f screenshot
-
-# Extract branding info (logos, colors, fonts)
-just-scrape scrape https://example.com -f branding
-
-# Multi-format: markdown + links + images in a single call
-just-scrape scrape https://example.com -f markdown,links,images
-
-# Structured JSON output with a prompt
-just-scrape scrape https://store.example.com \
-  -f json -p "Extract product name and price"
-
-# Geo-targeted + anti-bot bypass
-just-scrape scrape https://store.example.com \
-  -m js --stealth --country DE
+just-scrape markdownify https://protected.example.com --stealth
 ```
 
 ## crawl
 
 ```bash
-# Crawl a docs site
+# Crawl a docs site and collect code examples
 just-scrape crawl https://docs.example.com \
-  --max-pages 20 --max-depth 3
+  -p "Extract all code snippets with their language" \
+  --max-pages 20 --depth 3
 
-# Crawl and get HTML instead of markdown
+# Crawl only blog pages, skip everything else
 just-scrape crawl https://example.com \
-  --max-pages 50 -f html
+  -p "Extract article titles and summaries" \
+  --rules '{"include_paths":["/blog/*"],"same_domain":true}' \
+  --max-pages 50
 
-# Allow external links
+# Raw markdown from all pages (no AI extraction, cheaper)
 just-scrape crawl https://example.com \
-  --max-pages 50 --allow-external
-
-# Anti-bot bypass for protected sites
-just-scrape crawl https://example.com -m js --stealth
+  --no-extraction --max-pages 10
 ```
 
-## monitor
+## scrape
 
 ```bash
-# Monitor a pricing page every hour
-just-scrape monitor create --url https://store.example.com/pricing --interval 1h
+# Get raw HTML
+just-scrape scrape https://example.com
 
-# Daily monitor tracking markdown + screenshots, with webhook
-just-scrape monitor create --url https://example.com \
-  --interval 1d -f markdown,screenshot \
-  --webhook-url https://hooks.example.com/notify \
-  --name "Daily check"
+# Geo-targeted + anti-bot bypass
+just-scrape scrape https://store.example.com \
+  --stealth --country-code DE
 
-# List, pause, resume, delete
-just-scrape monitor list
-just-scrape monitor pause --id abc123
-just-scrape monitor resume --id abc123
-just-scrape monitor delete --id abc123
+# Extract branding info (logos, colors, fonts)
+just-scrape scrape https://example.com --branding
+```
 
-# Browse the tick history (runs the monitor has already performed)
-just-scrape monitor activity --id abc123 --limit 20
+## sitemap
 
-# Only show ticks where a change was detected
-just-scrape monitor activity --id abc123 --json \
-  | jq '.ticks[] | select(.hasChanges == true)'
+```bash
+# List all pages on a site
+just-scrape sitemap https://example.com
+
+# Pipe URLs to another tool
+just-scrape sitemap https://example.com --json | jq -r '.urls[]'
+```
+
+## agentic-scraper
+
+```bash
+# Log in and extract dashboard data
+just-scrape agentic-scraper https://app.example.com/login \
+  -s "Fill email with user@test.com,Fill password with secret,Click Sign In" \
+  --ai-extraction -p "Extract all dashboard metrics"
+
+# Navigate a multi-step form
+just-scrape agentic-scraper https://example.com/wizard \
+  -s "Click Next,Select Premium plan,Fill name with John,Click Submit"
+
+# Persistent browser session across multiple runs
+just-scrape agentic-scraper https://app.example.com \
+  -s "Click Settings" --use-session
+```
+
+## generate-schema
+
+```bash
+# Generate a schema from a description
+just-scrape generate-schema "E-commerce product with name, price, ratings, and reviews array"
+
+# Refine an existing schema
+just-scrape generate-schema "Add an availability field" \
+  --existing-schema '{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"number"}}}'
 ```
 
 ## history
 
 ```bash
 # Interactive history browser
-just-scrape history extract
+just-scrape history smartscraper
 
-# Export last 100 extract jobs as JSON
-just-scrape history extract --json --page-size 100 \
-  | jq '.[] | {id: .request_id, status}'
+# Fetch a specific request by ID
+just-scrape history smartscraper abc123-def456-7890
 
-# Browse crawl history
-just-scrape history crawl --json
+# Export last 100 crawl jobs as JSON
+just-scrape history crawl --json --page-size 100 \
+  | jq '.requests[] | {id: .request_id, status}'
 ```

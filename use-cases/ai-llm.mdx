@@ -33,13 +33,13 @@ class ArticleSchema(BaseModel):
     summary: Optional[str] = Field(description="Article summary or description")
 
 # Initialize the client
-client = Client(api_key="your-api-key")
+client = Client()
 
 try:
     # Scrape relevant content
-    response = client.extract(
-        url="https://example.com/article",
-        prompt="Extract the main article content, title, author, and publication date",
+    response = client.smartscraper(
+        website_url="https://example.com/article",
+        user_prompt="Extract the main article content, title, author, and publication date",
         output_schema=ArticleSchema
     )
 
@@ -72,14 +72,15 @@ class ResearchResults(BaseModel):
     articles: List[ResearchData]
 
 # Initialize the client
-client = Client(api_key="your-api-key")
+client = Client()
 
 try:
     # Search and scrape multiple sources
-    search_results = client.search(
-        query="What are the latest developments in artificial intelligence?",
+    search_results = client.searchscraper(
+        user_prompt="What are the latest developments in artificial intelligence?",
         output_schema=ResearchResults,
-        num_results=5
+        num_results=5,  # Number of websites to search (3-20)
+        extraction_mode=True  # Use AI extraction mode for structured data
     )
 
     # Process with your AI model
