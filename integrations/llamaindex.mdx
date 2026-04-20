@@ -1,11 +1,13 @@
 ---
 title: '🦙 LlamaIndex'
-description: 'Integrate ScrapeGraphAI with LlamaIndex for powerful data ingestion'
+description: 'Use every ScrapeGraphAI endpoint as a LlamaIndex tool'
 ---
 
 ## Overview
 
-This tool integrates ScrapeGraph with LlamaIndex, providing intelligent web scraping capabilities with structured data extraction.
+This guide shows how to expose **every ScrapeGraphAI endpoint** as a LlamaIndex tool so your agents and RAG pipelines can scrape, search, crawl, and extract structured data on demand.
+
+Five endpoints are available out of the box via the official `llama-index-tools-scrapegraph` package. The remaining two (**SmartCrawler** and **Sitemap**) are wrapped as `FunctionTool`s around the [`scrapegraph-py`](https://github.com/ScrapeGraphAI/scrapegraph-py) SDK.
 
 <Card
   title="Official LlamaHub Documentation"
@@ -17,106 +19,233 @@ This tool integrates ScrapeGraph with LlamaIndex, providing intelligent web scra
 
 ## Installation
 
-Install the package using pip:
+```bash
+pip install llama-index llama-index-tools-scrapegraph scrapegraph-py
+```
+
+Set your API key once as an environment variable:
 
 ```bash
-pip install llama-index-tools-scrapegraphai
+export SGAI_API_KEY="sgai-***"
 ```
 
-## Usage
+## Endpoint coverage
 
-First, import and initialize the ScrapegraphToolSpec:
+| Endpoint | How to expose it in LlamaIndex |
+|---|---|
+| SmartScraper | `ScrapegraphToolSpec.scrapegraph_smartscraper` |
+| SearchScraper | `ScrapegraphToolSpec.scrapegraph_search` |
+| Markdownify | `ScrapegraphToolSpec.scrapegraph_markdownify` |
+| Scrape | `ScrapegraphToolSpec.scrapegraph_scrape` |
+| Agentic Scraper | `ScrapegraphToolSpec.scrapegraph_agentic_scraper` |
+| SmartCrawler | `FunctionTool` wrapping `scrapegraph_py.Client.crawl` |
+| Sitemap | `FunctionTool` wrapping `scrapegraph_py.Client.sitemap` |
+
+## Built-in tools (ScrapegraphToolSpec)
+
+Initialize the spec once and convert its methods into LlamaIndex tools:
 
 ```python
+import os
 from llama_index.tools.scrapegraph.base import ScrapegraphToolSpec
 
-scrapegraph_tool = ScrapegraphToolSpec()
+scrapegraph_spec = ScrapegraphToolSpec(api_key=os.getenv("SGAI_API_KEY"))
+builtin_tools = scrapegraph_spec.to_tool_list()
 ```
 
-## Available Functions
+`to_tool_list()` returns a list of `FunctionTool` objects ready to be passed to any LlamaIndex agent.
 
-### Smart Scraping (Sync)
+### SmartScraper
 
-Extract structured data using a schema:
+Extract structured data from a single page. Pass a Pydantic schema to get typed results.
 
 ```python
-from pydantic import BaseModel, Field 
- 
-class FounderSchema(BaseModel): 
-    name: str = Field(description="Name of the founder") 
-    role: str = Field(description="Role of the founder") 
-    social_media: str = Field(description="Social media URL of the founder") 
- 
-class ListFoundersSchema(BaseModel): 
-    founders: list[FounderSchema] = Field(description="List of founders") 
- 
-response = scrapegraph_tool.scrapegraph_smartscraper( 
-    prompt="Extract product information", 
-    url="https://scrapegraphai.com/", 
-    api_key="sgai-***", 
-    schema=ListFoundersSchema, 
-) 
- 
-result = response["result"] 
- 
-for founder in result["founders"]: 
+from pydantic import BaseModel, Field
+
+class Founder(BaseModel):
+    name: str = Field(description="Name of the founder")
+    role: str = Field(description="Role of the founder")
+    social_media: str = Field(description="Social media URL")
+
+class Founders(BaseModel):
+    founders: list[Founder]
+
+response = scrapegraph_spec.scrapegraph_smartscraper(
+    prompt="Extract the list of founders",
+    url="https://scrapegraphai.com/",
+    schema=Founders,
+)
+
+for founder in response["result"]["founders"]:
     print(founder)
 ```
 
-### Smart Scraping (Async)
+### SearchScraper
 
-Asynchronous version of the smart scraper:
+Run an intelligent web search that returns extracted content instead of links.
 
 ```python
-result = await scrapegraph_tool.scrapegraph_smartscraper_async(
-    prompt="Extract product information",
-    url="https://example.com/product",
-    api_key="your-api-key",
-    schema=schema,
+response = scrapegraph_spec.scrapegraph_search(
+    query="Best open-source web scraping libraries in 2026",
+    max_results=5,
 )
+
+print(response)
 ```
 
-### Submit Feedback
+### Markdownify
 
-Provide feedback on extraction results:
+Convert any page to clean markdown — ideal as a document loader for RAG.
 
 ```python
-response = scrapegraph_tool.scrapegraph_feedback(
-    request_id="request-id",
-    api_key="your-api-key",
-    rating=5,
-    feedback_text="Great results!",
+from llama_index.core.schema import Document
+
+markdown = scrapegraph_spec.scrapegraph_markdownify(
+    url="https://scrapegraphai.com/blog",
 )
+
+document = Document(text=markdown["result"], metadata={"source": "scrapegraphai.com/blog"})
 ```
 
-### Check Credits
+### Scrape
 
-Monitor your API credit usage:
+Get the raw HTML of a page, optionally with heavy-JS rendering and custom headers.
 
 ```python
-credits = scrapegraph_tool.scrapegraph_get_credits(api_key="your-api-key")
+response = scrapegraph_spec.scrapegraph_scrape(
+    url="https://scrapegraphai.com/",
+    render_heavy_js=True,
+    headers={"User-Agent": "Mozilla/5.0 (compatible; LlamaIndexAgent/1.0)"},
+)
+
+html = response["result"]
+```
+
+### Agentic Scraper
+
+Drive the browser through a sequence of steps (login, clicks, form fills) and optionally extract structured data.
+
+```python
+class DashboardInfo(BaseModel):
+    username: str
+    email: str
+    credits_remaining: int
+
+response = scrapegraph_spec.scrapegraph_agentic_scraper(
+    prompt="Extract the dashboard info after login",
+    url="https://dashboard.scrapegraphai.com/",
+    schema=DashboardInfo,
+    steps=[
+        "Type email@example.com in the email input",
+        "Type my-password in the password input",
+        "Click the login button",
+        "Wait for the dashboard to load",
+    ],
+    use_session=True,
+    ai_extraction=True,
+)
+
+print(response["result"])
+```
+
+## Custom FunctionTools (SmartCrawler & Sitemap)
+
+The two remaining endpoints aren't in `ScrapegraphToolSpec` yet. Wrap them yourself with `FunctionTool.from_defaults` so agents can call them like any other tool.
+
+```python
+from scrapegraph_py import Client
+from llama_index.core.tools import FunctionTool
+
+client = Client.from_env()
+```
+
+### SmartCrawler
+
+Crawl multiple pages of a site and extract structured data, or convert everything to markdown.
+
+```python
+def smartcrawler(
+    url: str,
+    prompt: str | None = None,
+    depth: int = 2,
+    max_pages: int = 10,
+    extraction_mode: bool = True,
+) -> dict:
+    """Crawl a website starting from `url` and extract data per `prompt`.
+
+    Set `extraction_mode=False` for cheap markdown-only conversion (no LLM).
+    """
+    return client.crawl(
+        url=url,
+        prompt=prompt,
+        depth=depth,
+        max_pages=max_pages,
+        extraction_mode=extraction_mode,
+        rules={"same_domain": True},
+    )
+
+smartcrawler_tool = FunctionTool.from_defaults(fn=smartcrawler)
+```
+
+### Sitemap
+
+Discover every URL listed in a website's sitemap.xml — perfect as the first step of a bulk pipeline.
+
+```python
+def sitemap(website_url: str) -> list[str]:
+    """Return every URL listed in the target website's sitemap."""
+    response = client.sitemap(website_url=website_url)
+    return response.get("urls", [])
+
+sitemap_tool = FunctionTool.from_defaults(fn=sitemap)
+```
+
+## Assemble a full ScrapeGraphAI agent
+
+Combine the built-in tools with the custom ones and hand them to an agent. The example uses `FunctionAgent`, but any LlamaIndex agent that accepts a tool list works.
+
+```python
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.llms.openai import OpenAI
+
+tools = builtin_tools + [smartcrawler_tool, sitemap_tool]
+
+agent = FunctionAgent(
+    tools=tools,
+    llm=OpenAI(model="gpt-4o"),
+    system_prompt=(
+        "You are a web research assistant powered by ScrapeGraphAI. "
+        "Pick the most specific tool for the job: sitemap to discover URLs, "
+        "smartscraper for a single page, smartcrawler for multi-page extraction, "
+        "searchscraper for open-web questions, markdownify/scrape for raw content, "
+        "and agentic_scraper when the site requires login or interaction."
+    ),
+)
+
+response = await agent.run(
+    "List every blog post on scrapegraphai.com and summarize the three most recent."
+)
+print(response)
 ```
 
 ## Use Cases
 
 <CardGroup cols={2}>
-  <Card title="RAG Applications" icon="database">
-    Build powerful retrieval-augmented generation systems
+  <Card title="RAG Pipelines" icon="database">
+    Feed fresh, structured web content into your vector store on demand
+  </Card>
+  <Card title="Research Agents" icon="magnifying-glass">
+    Let agents pick the right endpoint per step — search, crawl, or scrape
   </Card>
   <Card title="Knowledge Bases" icon="book">
-    Create and maintain up-to-date knowledge bases
+    Keep internal docs up to date by crawling source sites on a schedule
   </Card>
-  <Card title="Web Research" icon="magnifying-glass">
-    Automate web research and data collection
-  </Card>
-  <Card title="Content Indexing" icon="list">
-    Index and structure web content for search
+  <Card title="Lead Enrichment" icon="user-plus">
+    Extract contact info and company data with typed Pydantic schemas
   </Card>
 </CardGroup>
 
 ## Support
-
-Need help with the integration?
 
 <CardGroup cols={2}>
   <Card
