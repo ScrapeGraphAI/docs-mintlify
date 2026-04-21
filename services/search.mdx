@@ -6,10 +6,10 @@ icon: 'magnifying-glass'
 
 ## Overview
 
-Search enables you to search the web and extract structured results using AI. It combines web search capabilities with intelligent data extraction, returning clean, structured data from search results.
+Search runs a web query and returns the top results with their content already fetched. Optionally add a `prompt` and `schema` to have the results summarised into structured JSON.
 
 <Note>
-Try Search instantly in our [interactive playground](https://scrapegraphai.com/dashboard) 
+Try Search instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
 ## Getting Started
@@ -19,35 +19,47 @@ Try Search instantly in our [interactive playground](https://scrapegraphai.com/d
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
 
-client = Client(api_key="your-api-key")
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 
-response = client.search(
-    query="What are the key features of ChatGPT Plus?"
-)
+res = sgai.search(SearchRequest(
+    query="best programming languages 2024",
+    num_results=3,
+))
+
+if res.status == "success":
+    for r in res.data.results:
+        print(r.title, "-", r.url)
+else:
+    print("Failed:", res.error)
 ```
 
 ```javascript JavaScript
-import { search } from 'scrapegraph-js';
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await search('your-api-key', {
-  query: 'What are the key features of ChatGPT Plus?',
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.search({
+  query: "best programming languages 2024",
+  numResults: 3,
 });
 
-if (result.status === 'success') {
-  for (const r of result.data?.results ?? []) {
+if (res.status === "success") {
+  for (const r of res.data?.results ?? []) {
     console.log(`${r.title} - ${r.url}`);
   }
 }
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/api/v2/search \
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-api-key" \
   -d '{
-    "query": "What are the key features of ChatGPT Plus?"
+    "query": "best programming languages 2024",
+    "numResults": 3
   }'
 ```
 
@@ -57,80 +69,111 @@ curl -X POST https://api.scrapegraphai.com/api/v2/search \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| query | string | Yes | The search query to execute. |
-| num_results | int | No | Number of search results to return (1-20). Default: 5. |
-| prompt | string | No | Prompt used when extracting structured results. |
-| output_schema | object | No | Pydantic or Zod schema for structured response format (requires `prompt`). |
-| format | string | No | Output format: `"markdown"` (default) or `"html"`. |
-| mode | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"` (default). |
-| country | string | No | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`, `"gb"`). |
-| time_range | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
-| fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, etc.). |
+| `query` | string | Yes | The search query. |
+| `numResults` / `num_results` | int | No | Number of results (1–20). Default: `3`. |
+| `prompt` | string | No | Prompt used for AI extraction across the fetched results. |
+| `schema` | object | No | JSON schema for structured output (requires `prompt`). |
+| `format` | string | No | Output format for page content: `"markdown"` (default) or `"html"`. |
+| `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
+| `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`). |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
-## Custom Schema Example
+## Search + Extraction
 
-Define the structure of the output using Pydantic or Zod:
+Combine search with AI extraction to roll results into one structured output.
 
 <CodeGroup>
 
 ```python Python
-from pydantic import BaseModel, Field
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
 
-class SearchResult(BaseModel):
-    title: str = Field(description="The result title")
-    summary: str = Field(description="Brief summary of the result")
-    url: str = Field(description="Source URL")
+sgai = ScrapeGraphAI()
 
-client = Client(api_key="your-api-key")
+res = sgai.search(SearchRequest(
+    query="best programming languages 2024",
+    num_results=3,
+    prompt="Summarize the top languages and why they are recommended",
+    schema={
+        "type": "object",
+        "properties": {
+            "languages": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "reason": {"type": "string"},
+                    },
+                },
+            },
+        },
+    },
+))
 
-response = client.search(
-    query="Latest AI developments 2024",
-    num_results=10,
-    output_schema=SearchResult,
-)
+if res.status == "success":
+    print(res.data.json_data)
 ```
 
 ```javascript JavaScript
-import { search } from 'scrapegraph-js';
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await search('your-api-key', {
-  query: 'Latest AI developments 2024',
-  numResults: 10,
-  prompt: 'Extract the title, summary, and source URL',
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.search({
+  query: "typescript best practices",
+  numResults: 5,
+  prompt: "Extract the main tips and recommendations",
   schema: {
-    type: 'object',
+    type: "object",
     properties: {
-      title: { type: 'string' },
-      summary: { type: 'string' },
-      url: { type: 'string' },
+      tips: { type: "array", items: { type: "string" } },
     },
   },
 });
 
-if (result.status === 'success') {
-  console.log(result.data?.json);
+if (res.status === "success") {
+  console.log(res.data?.json);
 }
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "typescript best practices",
+    "numResults": 5,
+    "prompt": "Extract the main tips and recommendations",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "tips": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }'
 ```
 
 </CodeGroup>
 
-## Async Support
+## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import AsyncScrapeGraphAI, SearchRequest
 
 async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        response = await client.search(
-            query="Best practices for web scraping"
-        )
-        print(response)
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.search(SearchRequest(
+            query="Best practices for web scraping",
+            num_results=5,
+        ))
+        if res.status == "success":
+            for r in res.data.results:
+                print(r.title, "-", r.url)
 
 asyncio.run(main())
 ```
@@ -139,34 +182,34 @@ asyncio.run(main())
 
 <CardGroup cols={2}>
   <Card title="AI-Powered Search" icon="brain">
-    Intelligent extraction from search results
+    Search + content extraction in one call.
   </Card>
   <Card title="Structured Output" icon="table">
-    Returns clean, structured data in your preferred format
+    Add a prompt and schema for typed JSON.
   </Card>
-  <Card title="Schema Support" icon="code">
-    Define custom output schemas using Pydantic or Zod
+  <Card title="Localized Results" icon="globe">
+    Use `locationGeoCode` for country-specific results.
   </Card>
-  <Card title="Flexible Results" icon="sliders">
-    Control the number of search results returned
+  <Card title="Time Filters" icon="clock">
+    Narrow to the past hour, day, week, month, or year.
   </Card>
 </CardGroup>
 
 ## Integration Options
 
 ### Official SDKs
-- [Python SDK](/sdks/python) - Perfect for data science and backend applications
-- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (Node ≥ 22)
 
 ### AI Framework Integrations
-- [LangChain Integration](/integrations/langchain) - Use Search in your LLM workflows
-- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+- [LangChain Integration](/integrations/langchain)
+- [LlamaIndex Integration](/integrations/llamaindex)
 
 ## Support & Resources
 
 <CardGroup cols={2}>
   <Card title="Documentation" icon="book" href="/introduction">
-    Comprehensive guides and tutorials
+    Guides and tutorials
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference/introduction">
     Detailed API documentation

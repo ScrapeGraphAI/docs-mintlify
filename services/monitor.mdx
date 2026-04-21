@@ -1,15 +1,15 @@
 ---
 title: 'Monitor'
-description: 'Scheduled web monitoring with AI-powered extraction'
+description: 'Scheduled web monitoring with AI-powered extraction and change detection'
 icon: 'clock'
 ---
 
 ## Overview
 
-Monitor enables you to set up recurring web scraping jobs that automatically extract data on a schedule. Create monitors that run on a cron schedule and extract structured data from any webpage.
+Monitor watches a page on a cron schedule, fetches it in the formats you specify (markdown, JSON, screenshot…), and records change diffs between runs. Optionally push each tick to a webhook.
 
 <Note>
-Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard) 
+Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
 ## Getting Started
@@ -19,51 +19,51 @@ Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard)
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
 
-client = Client(api_key="your-api-key")
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 
-# Create a monitor
-monitor = client.monitor.create(
-    name="Price Tracker",
-    url="https://example.com/products",
-    prompt="Extract current product prices",
-    interval="0 9 * * *",  # Daily at 9 AM
-)
-print("Monitor created:", monitor)
+res = sgai.monitor.create(MonitorCreateRequest(
+    url="https://example.com",
+    name="Homepage watch",
+    interval="*/30 * * * *",   # every 30 minutes
+    formats=[MarkdownFormatConfig()],
+))
+
+if res.status == "success":
+    print("Monitor id:", res.data.cron_id)
+else:
+    print("Failed:", res.error)
 ```
 
 ```javascript JavaScript
-import { monitor } from 'scrapegraph-js';
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await monitor.create('your-api-key', {
-  name: 'Price Tracker',
-  url: 'https://example.com/products',
-  interval: '0 9 * * *',  // Daily at 9 AM
-  formats: [{ type: 'markdown' }],
-  webhookUrl: 'https://your-server.com/webhook',  // optional
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.monitor.create({
+  url: "https://example.com",
+  name: "Homepage watch",
+  interval: "*/30 * * * *",    // every 30 minutes
+  formats: [{ type: "markdown" }],
+  webhookUrl: "https://your-server.com/webhook", // optional
 });
 
-if (result.status === 'success') {
-  console.log('Monitor created:', result.data?.cronId);
-
-  // List / Get / Pause / Resume / Delete
-  const monitors = await monitor.list('your-api-key');
-  await monitor.pause('your-api-key', result.data?.cronId);
-  await monitor.resume('your-api-key', result.data?.cronId);
-  await monitor.delete('your-api-key', result.data?.cronId);
+if (res.status === "success") {
+  console.log("Monitor id:", res.data?.cronId);
 }
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
+curl -X POST https://v2-api.scrapegraphai.com/api/monitor \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-api-key" \
   -d '{
-    "name": "Price Tracker",
-    "url": "https://example.com/products",
-    "prompt": "Extract current product prices",
-    "interval": "0 9 * * *"
+    "url": "https://example.com",
+    "name": "Homepage watch",
+    "interval": "*/30 * * * *",
+    "formats": [{ "type": "markdown" }]
   }'
 ```
 
@@ -73,150 +73,162 @@ curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| name | string | Yes | A descriptive name for the monitor. |
-| url | string | Yes | The URL to monitor. |
-| prompt | string | Yes | What data to extract on each run. |
-| interval | string | Yes | Cron expression for the schedule (5 fields, e.g., `"0 9 * * *"` for daily at 9 AM). |
-| output_schema | object | No | JSON Schema (Python dict / JS object) for structured response format. |
-| fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, wait, etc.). |
+| `url` | string | Yes | The URL to monitor. |
+| `name` | string | Yes | Human-readable monitor name. |
+| `interval` | string | Yes | 5-field cron expression (e.g. `"*/10 * * * *"`). |
+| `formats` | array | No | Formats to capture each tick (see [Scrape formats](/services/scrape#output-formats)). |
+| `webhookUrl` / `webhook_url` | string | No | URL to receive tick payloads. |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
+
+<Accordion title="Example Response (create)" icon="terminal">
+```json
+{
+  "cronId": "d9a09a07-5052-4262-a0b4-606cbd942287",
+  "scheduleId": "scd_8752XzxtXmLmrvgGzwLVG42iGKaz",
+  "interval": "*/30 * * * *",
+  "status": "active",
+  "config": {
+    "url": "https://example.com",
+    "name": "Homepage watch",
+    "formats": [{ "mode": "normal", "type": "markdown" }],
+    "interval": "*/30 * * * *",
+    "fetchConfig": { "mode": "auto", "wait": 0, "scrolls": 0, "stealth": false, "timeout": 30000 }
+  },
+  "createdAt": "2026-04-19T14:51:02.203Z",
+  "updatedAt": "2026-04-19T14:51:02.203Z"
+}
+```
+</Accordion>
 
 ## Managing Monitors
 
-### List All Monitors
+<CodeGroup>
 
-```python
-monitors = client.monitor.list()
-print("All monitors:", monitors)
+```python Python
+# List all
+sgai.monitor.list()
+
+# Inspect one
+sgai.monitor.get(monitor_id)
+
+# Change schedule or formats
+from scrapegraph_py import MonitorUpdateRequest
+sgai.monitor.update(monitor_id, MonitorUpdateRequest(interval="0 */6 * * *"))
+
+# Pause / resume / delete
+sgai.monitor.pause(monitor_id)
+sgai.monitor.resume(monitor_id)
+sgai.monitor.delete(monitor_id)
+
+# Recent ticks + diffs
+activity = sgai.monitor.activity(monitor_id)
+for tick in activity.data.ticks:
+    print(tick.created_at, "changed" if tick.changed else "no change")
 ```
 
-### Get a Specific Monitor
+```javascript JavaScript
+await sgai.monitor.list();
+await sgai.monitor.get(monitorId);
+await sgai.monitor.update(monitorId, { interval: "0 */6 * * *" });
+await sgai.monitor.pause(monitorId);
+await sgai.monitor.resume(monitorId);
+await sgai.monitor.delete(monitorId);
 
-```python
-monitor = client.monitor.get(monitor_id)
-print("Monitor details:", monitor)
-```
-
-### Pause a Monitor
-
-```python
-client.monitor.pause(monitor_id)
-```
-
-### Resume a Monitor
-
-```python
-client.monitor.resume(monitor_id)
-```
-
-### Delete a Monitor
-
-```python
-client.monitor.delete(monitor_id)
-```
-
-## Advanced Usage
-
-### With Output Schema and Config
-
-```python
-from scrapegraph_py import Client, FetchConfig
-
-schema = {
-    "type": "object",
-    "properties": {
-        "products": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "price": {"type": "number"},
-                    "in_stock": {"type": "boolean"},
-                },
-                "required": ["name", "price"],
-            },
-        },
-    },
+const activity = await sgai.monitor.activity(monitorId);
+for (const tick of activity.data?.ticks ?? []) {
+  console.log(tick.createdAt, tick.changed ? "CHANGED" : "no change");
 }
-
-client = Client(api_key="your-api-key")
-
-monitor = client.monitor.create(
-    name="Product Price Monitor",
-    url="https://example.com/products",
-    prompt="Extract product names, prices, and stock status",
-    interval="0 */6 * * *",  # Every 6 hours
-    output_schema=schema,
-    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
-)
 ```
 
-### Async Support
+</CodeGroup>
+
+## Structured extraction on every tick
+
+Use the `json` format inside a monitor to extract the same typed payload on each run — then `activity` will include diffs between runs.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, JsonFormatConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.monitor.create(MonitorCreateRequest(
+    url="https://time.is/",
+    name="Time Monitor",
+    interval="*/10 * * * *",
+    formats=[JsonFormatConfig(
+        prompt="Extract the current time",
+        schema={
+            "type": "object",
+            "properties": {"time": {"type": "string"}},
+            "required": ["time"],
+        },
+    )],
+))
+```
+
+## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import AsyncScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
 
 async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        monitor = await client.monitor.create(
-            name="Tracker",
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.monitor.create(MonitorCreateRequest(
             url="https://example.com",
-            prompt="Extract prices",
-            interval="0 9 * * *",
-        )
-
-        monitors = await client.monitor.list()
-        print("All monitors:", monitors)
+            name="async watch",
+            interval="0 * * * *",
+            formats=[MarkdownFormatConfig()],
+        ))
+        if res.status == "success":
+            print(res.data.cron_id)
 
 asyncio.run(main())
 ```
-
-## Key Features
-
-<CardGroup cols={2}>
-  <Card title="Scheduled Extraction" icon="calendar">
-    Run extraction jobs on any cron schedule
-  </Card>
-  <Card title="AI-Powered" icon="brain">
-    Use natural language prompts to define what to extract
-  </Card>
-  <Card title="Full Control" icon="sliders">
-    Create, pause, resume, and delete monitors easily
-  </Card>
-  <Card title="Schema Support" icon="code">
-    Define structured output with Pydantic or Zod schemas
-  </Card>
-</CardGroup>
 
 ## Common Cron Expressions
 
 | Expression | Schedule |
 |-----------|----------|
-| `0 9 * * *` | Daily at 9 AM |
+| `*/10 * * * *` | Every 10 minutes |
+| `*/30 * * * *` | Every 30 minutes |
 | `0 */6 * * *` | Every 6 hours |
+| `0 9 * * *` | Daily at 9 AM |
 | `0 9 * * 1` | Every Monday at 9 AM |
 | `0 0 1 * *` | First day of every month |
-| `*/30 * * * *` | Every 30 minutes |
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Scheduled Extraction" icon="calendar">
+    Any cron schedule, down to per-minute granularity.
+  </Card>
+  <Card title="Change Detection" icon="diff">
+    Each tick records diffs vs. the previous run.
+  </Card>
+  <Card title="Webhooks" icon="bolt">
+    Push tick payloads to your own server via `webhookUrl`.
+  </Card>
+  <Card title="Structured Output" icon="code">
+    Combine with the `json` format for typed monitoring.
+  </Card>
+</CardGroup>
 
 ## Integration Options
 
 ### Official SDKs
-- [Python SDK](/sdks/python) - Perfect for data science and backend applications
-- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
-
-### AI Framework Integrations
-- [LangChain Integration](/integrations/langchain) - Use Monitor in your LLM workflows
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (Node ≥ 22)
 
 ## Support & Resources
 
 <CardGroup cols={2}>
   <Card title="Documentation" icon="book" href="/introduction">
-    Comprehensive guides and tutorials
+    Guides and tutorials
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference/introduction">
     Detailed API documentation

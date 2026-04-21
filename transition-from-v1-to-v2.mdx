@@ -39,27 +39,33 @@ Use this table to map old entry points to new ones. Details and examples follow 
 <CodeGroup>
 
 ```python Python (v2)
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
 
-client = Client(api_key="your-api-key")
-response = client.scrape(
-    "https://example.com",
-    format="markdown",
-)
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 
-print(response)
+res = sgai.scrape(ScrapeRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
+))
+
+if res.status == "success":
+    print(res.data.results["markdown"]["data"][0])
 ```
 
 ```javascript JavaScript (v2)
-import { scrape } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await scrape(apiKey, {
+// reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI({ apiKey: "..." })
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
   url: "https://example.com",
   formats: [{ type: "markdown" }],
 });
 
-if (result.status === "success") {
-  console.log(result.data?.results.markdown?.data);
+if (res.status === "success") {
+  console.log(res.data?.results.markdown?.data?.[0]);
 }
 ```
 
@@ -85,14 +91,17 @@ response = client.smartscraper(
 ```
 
 ```python Python (v2)
-from scrapegraph_py import Client, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
 
-client = Client(api_key="your-api-key")
-response = client.extract(
+sgai = ScrapeGraphAI()
+res = sgai.extract(ExtractRequest(
     url="https://example.com",
     prompt="Extract the title and price",
     fetch_config=FetchConfig(stealth=True),
-)
+))
+
+if res.status == "success":
+    print(res.data.json_data)
 ```
 
 ```javascript JavaScript (v1)
@@ -106,15 +115,17 @@ const response = await smartScraper(apiKey, {
 ```
 
 ```javascript JavaScript (v2)
-import { extract } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await extract(apiKey, {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
   url: "https://example.com",
   prompt: "Extract the title and price",
 });
 
-if (result.status === "success") {
-  console.log(result.data?.json);
+if (res.status === "success") {
+  console.log(res.data?.json);
 }
 ```
 
@@ -129,19 +140,32 @@ if (result.status === "success") {
 <CodeGroup>
 
 ```python Python (v2)
-response = client.search(
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
+
+sgai = ScrapeGraphAI()
+res = sgai.search(SearchRequest(
     query="Latest pricing for product X",
     num_results=5,
-)
+))
+
+if res.status == "success":
+    for r in res.data.results:
+        print(r.title, "-", r.url)
 ```
 
 ```javascript JavaScript (v2)
-import { search } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await search(apiKey, {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.search({
   query: "Latest pricing for product X",
   numResults: 5,
 });
+
+if (res.status === "success") {
+  for (const r of res.data?.results ?? []) console.log(r.title, "-", r.url);
+}
 ```
 
 </CodeGroup>
@@ -155,25 +179,33 @@ const result = await search(apiKey, {
 <CodeGroup>
 
 ```python Python (v2)
-job = client.crawl.start(
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest
+
+sgai = ScrapeGraphAI()
+
+start = sgai.crawl.start(CrawlRequest(
     url="https://example.com",
-    depth=2,
+    max_depth=2,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
-)
-status = client.crawl.status(job["id"])
+))
+
+status = sgai.crawl.get(start.data.id)
+print(status.data.status, status.data.finished, "/", status.data.total)
 ```
 
 ```javascript JavaScript (v2)
-import { crawl } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const job = await crawl.start(apiKey, {
+const sgai = ScrapeGraphAI();
+
+const start = await sgai.crawl.start({
   url: "https://example.com",
   maxDepth: 2,
   includePatterns: ["/blog/*"],
   excludePatterns: ["/admin/*"],
 });
-const status = await crawl.get(apiKey, job.data?.id);
+const status = await sgai.crawl.get(start.data.id);
 ```
 
 </CodeGroup>
@@ -182,9 +214,9 @@ const status = await crawl.get(apiKey, job.data?.id);
 
 If you call the API with `curl` or a generic HTTP client:
 
-- Use the v2 host and path pattern: **`https://api.scrapegraphai.com/api/v2/<endpoint>`** (e.g. `/api/v2/scrape`, `/api/v2/extract`, `/api/v2/search`, `/api/v2/crawl`, `/api/v2/monitor`).
-- Replace JSON fields to match v2 bodies (e.g. `url` and `prompt` instead of `website_url` and `user_prompt` on extract).
-- Keep using the **`SGAI-APIKEY`** header unless the endpoint docs specify otherwise.
+- Use the v2 host and path pattern: **`https://v2-api.scrapegraphai.com/api/<endpoint>`** (e.g. `/api/scrape`, `/api/extract`, `/api/search`, `/api/crawl`, `/api/monitor`).
+- Replace JSON fields to match v2 bodies (e.g. `url` and `prompt` instead of `website_url` and `user_prompt` on extract; `formats: [{ type: "markdown" }]` instead of `format: "markdown"`).
+- Authenticate with the **`SGAI-APIKEY`** header.
 
 Exact paths and payloads are listed under each service (for example [Scrape](/services/scrape)) and in the [API reference](/api-reference/introduction).
 
