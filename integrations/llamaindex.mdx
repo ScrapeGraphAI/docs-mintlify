@@ -5,7 +5,7 @@ description: 'Build LlamaIndex agents and RAG pipelines with ScrapeGraphAI'
 
 ## Overview
 
-[LlamaIndex](https://www.llamaindex.ai) is a data framework for building LLM-powered agents and RAG applications. This integration wires **scrapegraph-py 2.0.0** into LlamaIndex as a set of `FunctionTool`s so your agents can scrape pages, extract structured data, search the web, run asynchronous crawls, and manage scheduled monitors.
+[LlamaIndex](https://www.llamaindex.ai) is a data framework for building LLM-powered agents and RAG applications. This page shows how to wire **`scrapegraph-py` ≥ 2.0.1** into LlamaIndex as a set of `FunctionTool`s so your agents can scrape pages, extract structured data, search the web, run asynchronous crawls, and manage scheduled monitors.
 
 <Card
   title="Official LlamaIndex Documentation"
@@ -15,13 +15,15 @@ description: 'Build LlamaIndex agents and RAG pipelines with ScrapeGraphAI'
   Learn more about building agents and RAG pipelines with LlamaIndex
 </Card>
 
-## Installation
+<Note>
+**Which package?** LlamaIndex also ships a pre-built tool spec at [`llama-index-tools-scrapegraphai`](https://pypi.org/project/llama-index-tools-scrapegraphai/), but it currently depends on `scrapegraph-py<2` and targets the legacy v1 backend. New v2 API keys are rejected by that path. The recipes below use the v2 SDK directly — they work with the current dashboard and every v2 endpoint (scrape, extract, search, crawl, monitor).
+</Note>
 
-Install the required packages:
+## Installation
 
 ```bash
 pip install -U llama-index
-pip install "scrapegraph-py>=2.0.0"
+pip install "scrapegraph-py>=2.0.1"
 ```
 
 Set your API key:
@@ -47,7 +49,7 @@ def scrape(url: str) -> str:
     result = sgai.scrape(ScrapeRequest(url=url))
     if result.status == "error":
         raise RuntimeError(result.error)
-    return result.data.results["markdown"]["data"]
+    return result.data.results["markdown"]["data"][0]
 
 agent = FunctionAgent(
     tools=[FunctionTool.from_defaults(fn=scrape)],
@@ -55,11 +57,193 @@ agent = FunctionAgent(
 )
 ```
 
-## Usage Examples
+## Cookbook recipes
 
-### Example 1: Scrape
+The following recipes are ported from the official [`scrapegraph-py` cookbook notebooks](https://github.com/ScrapeGraphAI/scrapegraph-py/tree/main/cookbook), swapped to call the v2 `extract` endpoint so they run against the current dashboard API key.
 
-Fetch a page in one or more formats (markdown, html, screenshot, JSON, links, images, summary, branding):
+### 1. Extract company info
+
+Pull founders, pricing plans, and social links off a company homepage. Based on `cookbook/company-info/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class FounderSchema(BaseModel):
+    name: str = Field(description="Name of the founder")
+    role: str = Field(description="Role of the founder in the company")
+    linkedin: str = Field(description="LinkedIn profile of the founder")
+
+class PricingPlanSchema(BaseModel):
+    tier: str = Field(description="Name of the pricing tier")
+    price: str = Field(description="Price of the plan")
+    credits: int = Field(description="Number of credits included in the plan")
+
+class SocialLinksSchema(BaseModel):
+    linkedin: str
+    twitter: str
+    github: str
+
+class CompanyInfoSchema(BaseModel):
+    company_name: str
+    description: str
+    founders: List[FounderSchema] = Field(default_factory=list)
+    pricing_plans: List[PricingPlanSchema] = Field(default_factory=list)
+    social_links: SocialLinksSchema
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://scrapegraphai.com/",
+    prompt="Extract info about the company",
+    schema=CompanyInfoSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    print(res.data.json_data)
+```
+
+### 2. Extract GitHub trending repos
+
+Pull a ranked list of trending repositories. Based on `cookbook/github-trending/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class RepositorySchema(BaseModel):
+    name: str = Field(description="Name of the repository (e.g. 'owner/repo')")
+    description: str = Field(description="Description of the repository")
+    stars: int = Field(description="Star count")
+    forks: int = Field(description="Fork count")
+    today_stars: int = Field(description="Stars gained today")
+    language: str = Field(description="Programming language used")
+
+class ListRepositoriesSchema(BaseModel):
+    repositories: List[RepositorySchema]
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://github.com/trending",
+    prompt="Extract only the first ten trending repositories",
+    schema=ListRepositoriesSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    for repo in res.data.json_data["repositories"]:
+        print(f"{repo['name']} — {repo['stars']} ★")
+```
+
+### 3. Extract a news feed
+
+Pull headlines from a news section. Based on `cookbook/wired-news/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class NewsItemSchema(BaseModel):
+    category: str = Field(description="Category of the news (e.g. 'Health', 'Environment')")
+    title: str = Field(description="Title of the news article")
+    link: str = Field(description="URL to the news article")
+    author: str = Field(description="Author of the news article")
+
+class ListNewsSchema(BaseModel):
+    news: List[NewsItemSchema]
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://www.wired.com/category/science/",
+    prompt="Extract the first 10 news articles on the page",
+    schema=ListNewsSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    for item in res.data.json_data["news"]:
+        print(f"[{item['category']}] {item['title']}")
+```
+
+### 4. Extract real-estate listings
+
+Pull house listings with price, address, and tags. Based on `cookbook/homes-forsale/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+
+class HouseListingSchema(BaseModel):
+    price: int = Field(description="Price of the house in USD")
+    bedrooms: int
+    bathrooms: int
+    square_feet: int = Field(description="Total square footage of the house")
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    tags: List[str] = Field(description="Tags like 'New construction' or 'Large garage'")
+    agent_name: str
+    agency: str
+
+class HousesListingsSchema(BaseModel):
+    houses: List[HouseListingSchema]
+
+sgai = ScrapeGraphAI()
+
+# Anti-bot heavy sites need stealth + JS rendering
+res = sgai.extract(ExtractRequest(
+    url="https://www.zillow.com/san-francisco-ca/",
+    prompt="Extract information about houses for sale",
+    schema=HousesListingsSchema.model_json_schema(),
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
+))
+```
+
+### 5. Research agent with `ReActAgent`
+
+Combine scrape + extract into a LlamaIndex `ReActAgent` so the LLM decides which tool to call per step. Based on `cookbook/research-agent/`.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, ExtractRequest, MarkdownFormatConfig
+from llama_index.core.tools import FunctionTool
+from llama_index.core.agent import ReActAgent
+from llama_index.llms.openai import OpenAI
+
+sgai = ScrapeGraphAI()
+
+def scrape(url: str) -> str:
+    """Fetch a page and return its markdown content."""
+    res = sgai.scrape(ScrapeRequest(url=url, formats=[MarkdownFormatConfig()]))
+    return res.data.results["markdown"]["data"][0] if res.status == "success" else res.error
+
+def extract(url: str, prompt: str) -> dict:
+    """Extract structured data from a URL using the given prompt."""
+    res = sgai.extract(ExtractRequest(url=url, prompt=prompt))
+    return res.data.json_data if res.status == "success" else {"error": res.error}
+
+tools = [FunctionTool.from_defaults(fn=f) for f in (scrape, extract)]
+
+agent = ReActAgent.from_tools(
+    tools,
+    llm=OpenAI(model="gpt-4o"),
+    verbose=True,
+)
+
+response = agent.chat(
+    "Extract all the keyboard names and prices from "
+    "https://www.ebay.com/sch/i.html?_nkw=keyboards"
+)
+print(response)
+```
+
+## Usage Reference
+
+### Scrape tool
 
 ```python
 from scrapegraph_py import (
@@ -88,9 +272,7 @@ def scrape(url: str, format: str = "markdown") -> dict:
 scrape_tool = FunctionTool.from_defaults(fn=scrape)
 ```
 
-### Example 2: Extract
-
-Run structured extraction against a URL using a JSON schema:
+### Extract tool
 
 ```python
 from scrapegraph_py import ScrapeGraphAI, ExtractRequest
@@ -106,32 +288,9 @@ def extract(url: str, prompt: str, schema: dict | None = None) -> dict:
     return result.data.json_data
 
 extract_tool = FunctionTool.from_defaults(fn=extract)
-
-# Example call
-extract(
-    url="https://example.com",
-    prompt="Extract product names and prices",
-    schema={
-        "type": "object",
-        "properties": {
-            "products": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {"type": "string"},
-                        "price": {"type": "string"},
-                    },
-                },
-            },
-        },
-    },
-)
 ```
 
-### Example 3: Search
-
-Run a web search and optionally extract structured data from the results:
+### Search tool
 
 ```python
 from scrapegraph_py import ScrapeGraphAI, SearchRequest
@@ -148,8 +307,8 @@ def search(
 ) -> dict:
     """Search the web and return structured results.
 
-    `time_range`: "past_hour", "past_24_hours", "past_week", "past_month", "past_year".
-    `country`: two-letter ISO country code (e.g. "us", "it").
+    time_range: "past_hour", "past_24_hours", "past_week", "past_month", "past_year".
+    country: two-letter ISO country code (e.g. "us", "it").
     """
     result = sgai.search(SearchRequest(
         query=query,
@@ -168,9 +327,9 @@ def search(
 search_tool = FunctionTool.from_defaults(fn=search)
 ```
 
-### Example 4: Crawl
+### Crawl tool
 
-Crawl a site asynchronously, then poll until the job finishes:
+Crawls are asynchronous — poll `sgai.crawl.get(id)` until `status in ("completed", "failed", "stopped")`.
 
 ```python
 import time
@@ -208,14 +367,10 @@ def crawl(
 crawl_tool = FunctionTool.from_defaults(fn=crawl)
 ```
 
-### Example 5: Monitor
-
-Create a scheduled monitor that runs on a cron interval and optionally hits a webhook when content changes:
+### Monitor tool
 
 ```python
-from scrapegraph_py import (
-    ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig,
-)
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
 from llama_index.core.tools import FunctionTool
 
 sgai = ScrapeGraphAI()
@@ -243,12 +398,12 @@ monitor_tool = FunctionTool.from_defaults(fn=create_monitor)
 
 ## Configuration Options
 
-The v2 `ScrapeGraphAI` client accepts the following:
+The v2 `ScrapeGraphAI` client accepts:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `api_key` | `str \| None` | `None` | ScrapeGraphAI API key. Falls back to `SGAI_API_KEY`. |
-| `base_url` | `str` | `https://api.scrapegraphai.com/api/v2` | Override via `SGAI_API_URL`. |
+| `api_key` | `str \| None` | `None` | Falls back to `SGAI_API_KEY`. |
+| `base_url` | `str` | `https://v2-api.scrapegraphai.com/api` | Override via `SGAI_API_URL`. |
 | `timeout` | `int` | `120` | Request timeout in seconds. Override via `SGAI_TIMEOUT`. |
 
 Each v2 resource maps 1:1 to a LlamaIndex tool:
@@ -265,7 +420,7 @@ Every call returns an `ApiResult[T]` with `status`, `data`, `error`, and `elapse
 
 ## Advanced Usage
 
-### Combining Every Endpoint in One Agent
+### Combining every endpoint in one agent
 
 Hand the full tool list to an agent and let it pick the right tool per step:
 
@@ -282,7 +437,7 @@ sgai = ScrapeGraphAI()
 
 def scrape(url: str) -> str:
     res = sgai.scrape(ScrapeRequest(url=url))
-    return res.data.results["markdown"]["data"] if res.status == "success" else res.error
+    return res.data.results["markdown"]["data"][0] if res.status == "success" else res.error
 
 def extract(url: str, prompt: str) -> dict:
     res = sgai.extract(ExtractRequest(url=url, prompt=prompt))
@@ -327,7 +482,7 @@ response = await agent.run(
 print(response)
 ```
 
-### Async Client
+### Async client
 
 Every resource has an async twin via `AsyncScrapeGraphAI`:
 
@@ -340,12 +495,12 @@ async def scrape(url: str) -> str:
         res = await sgai.scrape(ScrapeRequest(url=url))
         if res.status == "error":
             raise RuntimeError(res.error)
-        return res.data.results["markdown"]["data"]
+        return res.data.results["markdown"]["data"][0]
 
 scrape_tool = FunctionTool.from_defaults(async_fn=scrape)
 ```
 
-### Custom Agent Configuration
+### Custom agent configuration
 
 Plug the tools into any LlamaIndex agent — `ReActAgent`, workflow-based, or third-party:
 
@@ -392,11 +547,11 @@ agent = ReActAgent(
 ## Best Practices
 
 - **Tool selection** — pass only the tools the agent actually needs; a shorter tool list keeps prompts tighter and routing more accurate.
-- **Schema design** — when calling `extract` or `search`, pass a concrete JSON schema so the extractor has a clear target.
+- **Schema design** — when calling `extract` or `search`, pass a concrete JSON schema (`YourSchema.model_json_schema()`) so the extractor has a clear target.
 - **Format entries** — `scrape` accepts a list of format entries; combine `MarkdownFormatConfig`, `ScreenshotFormatConfig`, and `JsonFormatConfig` in one call to avoid multiple round-trips.
 - **Async crawls** — `sgai.crawl.start` returns immediately; always poll `sgai.crawl.get(id)` until `status in ("completed", "failed", "stopped")`.
 - **ApiResult** — branch on `result.status` instead of wrapping calls in `try/except`; the SDK never raises on API-level errors.
-- **Rate limits** — respect target-site limits and ScrapeGraphAI's concurrency caps when running crawls or monitors in parallel.
+- **Hard pages** — stealth mode + `mode="js"` fetch config handles most anti-bot sites (see the Zillow recipe above).
 
 ## Support
 
@@ -409,11 +564,11 @@ agent = ReActAgent(
     Join the LlamaIndex community for support and discussions
   </Card>
   <Card
-    title="scrapegraph-py on GitHub"
+    title="scrapegraph-py cookbook"
     icon="github"
-    href="https://github.com/ScrapeGraphAI/scrapegraph-py"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py/tree/main/cookbook"
   >
-    Check out the SDK source code and examples
+    Browse the full set of notebook examples
   </Card>
   <Card
     title="ScrapeGraphAI Discord"
