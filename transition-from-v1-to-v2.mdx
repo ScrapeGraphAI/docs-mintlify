@@ -24,9 +24,9 @@ Use this table to map old entry points to new ones. Details and examples follow 
 | `searchscraper` / `searchScraper` | **`search`** | Web search + extraction; use `query` (or positional string in JS). |
 | `smartcrawler` / `smartCrawler` | **`crawl.start`**, then **`crawl.get`**, **`crawl.stop`**, **`crawl.resume`**, **`crawl.delete`** | SmartCrawler is now the `crawl` namespace and is explicitly async: start a job, then poll or track by job id. |
 | `sitemap` | **Removed from v2 SDKs** | Discover URLs with **`crawl.start`** and URL patterns, or call the REST sitemap endpoint if your integration still requires it—see [Sitemap](/services/sitemap) and SDK release notes. |
-| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `mode="js"`, `stealth=True`, `wait=2000`) for hard pages, or **`crawl.start`** for multi-page flows. |
 | `healthz` / `checkHealth` | **`health()`** (Python) / **`healthy()`** (JS) | Renamed, not removed. Returns `{ status, uptime }` and per-service status. See `examples/utilities/health.*` in each SDK repo. |
 | `feedback`, built-in mock helpers | **Removed** | Use **`credits`**, **`history`**, and dashboard features instead. |
+| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `mode="js"`, `stealth=True`, `wait=2000`) for hard pages, or **`crawl.start`** for multi-page flows. |
 
 ## Code-level transition
 
