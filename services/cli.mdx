@@ -6,10 +6,10 @@ icon: 'terminal'
 
 ## Overview
 
-`just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal. Uses the **v2 API**.
+`just-scrape` is the official CLI for [ScrapeGraph AI](https://scrapegraphai.com) — AI-powered web scraping, data extraction, search, and crawling, straight from your terminal.
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
 </Note>
 
 ## Installation
@@ -58,144 +58,110 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com` |
-| `SGAI_TIMEOUT_S` | Request timeout in seconds | `30` |
-
-Legacy variables (`JUST_SCRAPE_API_URL`, `JUST_SCRAPE_TIMEOUT_S`, `JUST_SCRAPE_DEBUG`) are still bridged.
+| `JUST_SCRAPE_API_URL` | Override API base URL | `https://api.scrapegraphai.com/v1` |
+| `JUST_SCRAPE_TIMEOUT_S` | Request/polling timeout in seconds | `120` |
+| `JUST_SCRAPE_DEBUG` | Set to `1` to enable debug logging | `0` |
 
 ## JSON Mode
 
 All commands support `--json` for machine-readable output. Banner, spinners, and interactive prompts are suppressed — only minified JSON on stdout. Saves tokens when piped to AI agents.
 
 ```bash
-just-scrape credits --json | jq '.remainingCredits'
-just-scrape extract https://example.com -p "Extract data" --json > result.json
+just-scrape credits --json | jq '.remaining_credits'
+just-scrape smart-scraper https://example.com -p "Extract data" --json > result.json
 ```
 
 ## Commands
 
-### Extract
+### SmartScraper
 
-Extract structured data from any URL using AI (replaces `smart-scraper`). [Full docs →](/api-reference/extract)
-
-```bash
-just-scrape extract <url> -p <prompt>
-just-scrape extract <url> -p <prompt> --schema <json>
-just-scrape extract <url> -p <prompt> --scrolls <n>
-just-scrape extract <url> -p <prompt> --mode reader          # HTML mode: normal, reader, prune
-just-scrape extract <url> -p <prompt> --stealth
-just-scrape extract <url> -p <prompt> --cookies <json> --headers <json>
-just-scrape extract <url> -p <prompt> --country <iso>
-```
-
-### Search
-
-Search the web and extract structured data from results (replaces `search-scraper`). [Full docs →](/api-reference/search)
+Extract structured data from any URL using AI. [Full docs →](/services/smartscraper)
 
 ```bash
-just-scrape search <query>
-just-scrape search <query> --num-results <n>
-just-scrape search <query> -p <prompt>
-just-scrape search <query> --schema <json>
-just-scrape search <query> --format markdown            # or html
-just-scrape search <query> --country <iso>              # e.g. us, de, jp
-just-scrape search <query> --time-range past_week       # past_hour|past_24_hours|past_week|past_month|past_year
-just-scrape search <query> --headers <json>
+just-scrape smart-scraper <url> -p <prompt>
+just-scrape smart-scraper <url> -p <prompt> --schema <json>
+just-scrape smart-scraper <url> -p <prompt> --scrolls <n>
+just-scrape smart-scraper <url> -p <prompt> --pages <n>
+just-scrape smart-scraper <url> -p <prompt> --stealth
+just-scrape smart-scraper <url> -p <prompt> --cookies <json> --headers <json>
+just-scrape smart-scraper <url> -p <prompt> --plain-text
 ```
 
-### Scrape
+### SearchScraper
 
-Scrape a URL into one or more of 8 output formats. Multi-format is supported via comma-separated `-f`. [Full docs →](/api-reference/scrape)
+Search the web and extract structured data from results. [Full docs →](/services/searchscraper)
 
 ```bash
-just-scrape scrape <url>                                   # markdown (default)
-just-scrape scrape <url> -f html
-just-scrape scrape <url> -f screenshot
-just-scrape scrape <url> -f markdown,links,images          # multi-format
-just-scrape scrape <url> -f json -p "Extract the title"    # json format requires --prompt
-just-scrape scrape <url> -f json -p <prompt> --schema <json>
-just-scrape scrape <url> --html-mode reader                # normal | reader | prune
-just-scrape scrape <url> --scrolls 3
-just-scrape scrape <url> -m js --stealth
-just-scrape scrape <url> --country <iso>
+just-scrape search-scraper <prompt>
+just-scrape search-scraper <prompt> --num-results <n>
+just-scrape search-scraper <prompt> --no-extraction
+just-scrape search-scraper <prompt> --schema <json>
+just-scrape search-scraper <prompt> --stealth --headers <json>
 ```
-
-#### Formats
-
-| Format | Description |
-|---|---|
-| `markdown` | Clean markdown conversion (default). Respects `--html-mode`. |
-| `html` | Raw / processed HTML. Respects `--html-mode`. |
-| `screenshot` | Page screenshot (PNG). |
-| `branding` | Extracted brand assets (logos, colors, fonts). |
-| `links` | All links on the page. |
-| `images` | All images on the page. |
-| `summary` | AI-generated page summary. |
-| `json` | Structured JSON via `--prompt` (+ optional `--schema`). |
 
 ### Markdownify
 
-Convert any webpage to clean markdown (convenience wrapper for `scrape --format markdown`). [Full docs →](/api-reference/scrape)
+Convert any webpage to clean markdown. [Full docs →](/services/markdownify)
 
 ```bash
 just-scrape markdownify <url>
-just-scrape markdownify <url> -m js --stealth
+just-scrape markdownify <url> --stealth
 just-scrape markdownify <url> --headers <json>
 ```
 
 ### Crawl
 
-Crawl multiple pages. The CLI starts the crawl and polls until completion. [Full docs →](/api-reference/crawl)
+Crawl multiple pages and extract data from each. [Full docs →](/services/smartcrawler)
 
 ```bash
-just-scrape crawl <url>
-just-scrape crawl <url> --max-pages <n>
-just-scrape crawl <url> --max-depth <n>
-just-scrape crawl <url> --max-links-per-page <n>
-just-scrape crawl <url> --allow-external
-just-scrape crawl <url> -f markdown        # or html, json, etc.
-just-scrape crawl <url> -m js --stealth
+just-scrape crawl <url> -p <prompt>
+just-scrape crawl <url> -p <prompt> --max-pages <n>
+just-scrape crawl <url> -p <prompt> --depth <n>
+just-scrape crawl <url> --no-extraction --max-pages <n>
+just-scrape crawl <url> -p <prompt> --schema <json>
+just-scrape crawl <url> -p <prompt> --rules <json>
+just-scrape crawl <url> -p <prompt> --no-sitemap
+just-scrape crawl <url> -p <prompt> --stealth
 ```
 
-### Fetch Modes
+### Scrape
 
-Use `-m / --mode` on `scrape`, `markdownify`, and `crawl` to choose how pages are fetched. Add `--stealth` to enable anti-bot bypass.
-
-| Mode | Description |
-|---|---|
-| `auto` | Automatic selection (default) |
-| `fast` | Fastest, no JS rendering |
-| `js` | Full JS rendering |
-
-<Note>
-On `extract`, `--mode` sets the **HTML processing mode** (`normal`, `reader`, `prune`) instead. Use `--stealth` separately for anti-bot bypass.
-</Note>
-
-### Monitor
-
-Create and manage page-change monitors that track changes on a URL at a set interval.
+Get raw HTML content from a URL. [Full docs →](/services/scrape)
 
 ```bash
-# Create a monitor
-just-scrape monitor create --url <url> --interval <interval>
-just-scrape monitor create --url <url> --interval 1h --name "My Monitor"
-just-scrape monitor create --url <url> --interval 30m -f markdown,links --webhook-url <url>
-just-scrape monitor create --url <url> --interval 1d -m js --stealth
+just-scrape scrape <url>
+just-scrape scrape <url> --stealth
+just-scrape scrape <url> --branding
+just-scrape scrape <url> --country-code <iso>
+```
 
-# List all monitors
-just-scrape monitor list
+### Sitemap
 
-# Get a specific monitor
-just-scrape monitor get --id <monitor-id>
+Get all URLs from a website's sitemap. [Full docs →](/services/sitemap)
 
-# Update a monitor
-just-scrape monitor update --id <monitor-id> --interval 2h
-just-scrape monitor update --id <monitor-id> --name "New Name" -f html,screenshot
+```bash
+just-scrape sitemap <url>
+just-scrape sitemap <url> --json | jq -r '.urls[]'
+```
 
-# Pause / resume / delete
-just-scrape monitor pause --id <monitor-id>
-just-scrape monitor resume --id <monitor-id>
-just-scrape monitor delete --id <monitor-id>
+### Agentic Scraper
+
+Browser automation with AI — login, click, navigate, fill forms. [Full docs →](/services/agenticscraper)
+
+```bash
+just-scrape agentic-scraper <url> -s <steps>
+just-scrape agentic-scraper <url> -s <steps> --ai-extraction -p <prompt>
+just-scrape agentic-scraper <url> -s <steps> --schema <json>
+just-scrape agentic-scraper <url> -s <steps> --use-session
+```
+
+### Generate Schema
+
+Generate a JSON schema from a natural language description.
+
+```bash
+just-scrape generate-schema <prompt>
+just-scrape generate-schema <prompt> --existing-schema <json>
 ```
 
 ### History
@@ -210,7 +176,7 @@ just-scrape history <service> --page-size <n>
 just-scrape history <service> --json
 ```
 
-Services: `scrape`, `extract`, `schema`, `search`, `monitor`, `crawl`
+Services: `markdownify`, `smartscraper`, `searchscraper`, `scrape`, `crawl`, `agentic-scraper`, `sitemap`
 
 ### Credits
 
@@ -218,7 +184,14 @@ Check your credit balance.
 
 ```bash
 just-scrape credits
-just-scrape credits --json | jq '.remainingCredits'
+```
+
+### Validate
+
+Validate your API key.
+
+```bash
+just-scrape validate
 ```
 
 ## AI Agent Integration
@@ -241,7 +214,7 @@ bunx skills add https://github.com/ScrapeGraphAI/just-scrape
   <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
     Join our Discord community
   </Card>
-  <Card title="Dashboard" icon="gauge" href="https://scrapegraphai.com/dashboard">
+  <Card title="Dashboard" icon="gauge" href="https://dashboard.scrapegraphai.com">
     Get your API key
   </Card>
 </CardGroup>
