@@ -14,22 +14,22 @@ icon: 'python'
 </CardGroup>
 
 <Note>
-These docs cover **`scrapegraph-py` ≥ 2.0.1**. Earlier `1.x` releases expose the deprecated v1 API and point to a different backend — none of the snippets on this page work there.
+These docs cover **`scrapegraph-py` ≥ 2.1.0** and require **Python ≥ 3.12**. Earlier `1.x` releases expose the deprecated v1 API and point to a different backend — none of the snippets on this page work there. The `2.0.x` series used typed request wrappers (`ScrapeRequest`, `ExtractRequest`, …); **2.1.0 removed those wrappers** in favour of direct positional/keyword arguments, so upgrade if you are pinned to `2.0.x`.
 </Note>
 
 ## Installation
 
 ```bash
-pip install "scrapegraph-py>=2.0.1"
+pip install "scrapegraph-py>=2.1.0"
 # or
-uv add "scrapegraph-py>=2.0.1"
+uv add "scrapegraph-py>=2.1.0"
 ```
 
 ## What's New in v2
 
 - **Complete rewrite** built on [Pydantic v2](https://docs.pydantic.dev) + [httpx](https://www.python-httpx.org).
 - **Client rename**: `Client` → `ScrapeGraphAI`, `AsyncClient` → `AsyncScrapeGraphAI`.
-- **Typed request models**: every method takes a Pydantic request (`ScrapeRequest`, `ExtractRequest`, `SearchRequest`, `CrawlRequest`, `MonitorCreateRequest`, …).
+- **Direct arguments** (v2.1.0): every method accepts positional/keyword args — no more `ScrapeRequest`/`ExtractRequest`/… wrappers.
 - **`ApiResult[T]` wrapper**: no exceptions on API errors — every call returns `status: "success" | "error"`, `data`, `error`, and `elapsed_ms`.
 - **Nested resources**: `sgai.crawl.*`, `sgai.monitor.*`, `sgai.history.*`.
 - **camelCase on the wire, snake_case in Python**: automatic via Pydantic's `alias_generator`.
@@ -42,13 +42,13 @@ v2 is a breaking release. See the [Migration Guide](/transition-from-v1-to-v2) i
 ## Quick Start
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest
+from scrapegraph_py import ScrapeGraphAI
 
 # reads SGAI_API_KEY from env, or pass it explicitly:
 # sgai = ScrapeGraphAI(api_key="sgai-...")
 sgai = ScrapeGraphAI()
 
-result = sgai.scrape(ScrapeRequest(url="https://example.com"))
+result = sgai.scrape("https://example.com")
 
 if result.status == "success":
     print(result.data.results["markdown"]["data"])
@@ -86,7 +86,7 @@ The client supports context managers for automatic session cleanup:
 
 ```python
 with ScrapeGraphAI() as sgai:
-    result = sgai.scrape(ScrapeRequest(url="https://example.com"))
+    result = sgai.scrape("https://example.com")
 ```
 
 ## Services
@@ -97,14 +97,14 @@ Fetch a page in one or more formats (markdown, html, screenshot, json, links, im
 
 ```python
 from scrapegraph_py import (
-    ScrapeGraphAI, ScrapeRequest, FetchConfig,
+    ScrapeGraphAI, FetchConfig,
     MarkdownFormatConfig, ScreenshotFormatConfig, JsonFormatConfig,
 )
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[
         MarkdownFormatConfig(mode="reader"),
         ScreenshotFormatConfig(full_page=True, width=1440, height=900),
@@ -118,18 +118,18 @@ res = sgai.scrape(ScrapeRequest(
         wait=2000,
         scrolls=3,
     ),
-))
+)
 
 if res.status == "success":
     markdown = res.data.results["markdown"]["data"]
 ```
 
-#### `ScrapeRequest` fields
+#### `scrape()` parameters
 
-| Field          | Type                     | Required | Description                                                                 |
+| Parameter      | Type                     | Required | Description                                                                 |
 | -------------- | ------------------------ | -------- | --------------------------------------------------------------------------- |
-| `url`          | `HttpUrl`                | Yes      | URL to scrape                                                               |
-| `formats`      | `list[ScrapeFormatEntry]`| No       | Defaults to `[MarkdownFormatConfig()]`                                      |
+| `url`          | `str`                    | Yes      | URL to scrape (positional)                                                  |
+| `formats`      | `list[FormatConfig]`     | No       | Defaults to `[MarkdownFormatConfig()]`                                      |
 | `content_type` | `str`                    | No       | Override detected content type (e.g. `"application/pdf"`, `"text/html"`)    |
 | `fetch_config` | `FetchConfig`            | No       | Fetch configuration (mode, stealth, timeout, cookies, country, …)           |
 
@@ -155,13 +155,13 @@ Duplicate `type` entries in `formats` are rejected by a Pydantic validator.
 Run structured extraction against a URL, HTML, or markdown using AI.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract product names and prices",
     url="https://example.com",
-    prompt="Extract product names and prices",
     schema={
         "type": "object",
         "properties": {
@@ -177,28 +177,28 @@ res = sgai.extract(ExtractRequest(
             },
         },
     },
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
     print(f"Tokens: {res.data.usage.prompt_tokens} / {res.data.usage.completion_tokens}")
 ```
 
-#### `ExtractRequest` fields
+#### `extract()` parameters
 
-| Field          | Type          | Required | Description                                                                       |
+| Parameter      | Type          | Required | Description                                                                       |
 | -------------- | ------------- | -------- | --------------------------------------------------------------------------------- |
-| `url`          | `HttpUrl`     | Yes\*    | Page URL                                                                          |
+| `prompt`       | `str`         | Yes      | 1–10,000 chars (positional)                                                       |
+| `url`          | `str`         | Yes\*    | Page URL                                                                          |
 | `html`         | `str`         | Yes\*    | Raw HTML (alternative to `url`)                                                   |
 | `markdown`     | `str`         | Yes\*    | Raw markdown (alternative to `url`)                                               |
-| `prompt`       | `str`         | Yes      | 1–10,000 chars                                                                    |
 | `schema`       | `dict`        | No       | JSON Schema for the structured output                                             |
 | `mode`         | `str`         | No       | `"normal"` (default), `"reader"`, `"prune"`                                       |
 | `content_type` | `str`         | No       | Override detected content type                                                    |
 | `fetch_config` | `FetchConfig` | No       | Fetch configuration                                                               |
 
 <Note>
-\*At least one of `url`, `html`, or `markdown` is required — enforced by a Pydantic validator.
+\*At least one of `url`, `html`, or `markdown` is required.
 </Note>
 
 ### Search
@@ -206,17 +206,17 @@ if res.status == "success":
 Run a web search and optionally extract structured data from the results.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, SearchRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.search(SearchRequest(
-    query="best programming languages 2024",
+res = sgai.search(
+    "best programming languages 2024",
     num_results=5,
     prompt="Summarize the top languages and reasons",
     time_range="past_week",
     location_geo_code="us",
-))
+)
 
 if res.status == "success":
     for hit in res.data.results:
@@ -224,11 +224,11 @@ if res.status == "success":
     print(res.data.json_data)  # when prompt/schema are set
 ```
 
-#### `SearchRequest` fields
+#### `search()` parameters
 
-| Field               | Type          | Required | Description                                                               |
+| Parameter           | Type          | Required | Description                                                               |
 | ------------------- | ------------- | -------- | ------------------------------------------------------------------------- |
-| `query`             | `str`         | Yes      | 1–500 chars                                                               |
+| `query`             | `str`         | Yes      | 1–500 chars (positional)                                                  |
 | `num_results`       | `int`         | No       | 1–20, default `3`                                                         |
 | `format`            | `str`         | No       | `"markdown"` (default) or `"html"`                                        |
 | `mode`              | `str`         | No       | HTML processing: `"prune"` (default), `"normal"`, `"reader"`              |
@@ -243,20 +243,20 @@ if res.status == "success":
 Crawl a site and its linked pages asynchronously. Access via the `sgai.crawl` resource.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 sgai = ScrapeGraphAI()
 
 # Start
-start = sgai.crawl.start(CrawlRequest(
-    url="https://example.com",
+start = sgai.crawl.start(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
     max_depth=2,
     max_pages=50,
     max_links_per_page=10,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
-))
+)
 
 crawl_id = start.data.id
 
@@ -270,12 +270,12 @@ sgai.crawl.resume(crawl_id)
 sgai.crawl.delete(crawl_id)
 ```
 
-#### `CrawlRequest` fields
+#### `crawl.start()` parameters
 
-| Field                | Type                      | Required | Description                                              |
+| Parameter            | Type                      | Required | Description                                              |
 | -------------------- | ------------------------- | -------- | -------------------------------------------------------- |
-| `url`                | `HttpUrl`                 | Yes      | Starting URL                                             |
-| `formats`            | `list[ScrapeFormatEntry]` | No       | Defaults to `[MarkdownFormatConfig()]`                   |
+| `url`                | `str`                     | Yes      | Starting URL (positional)                                |
+| `formats`            | `list[FormatConfig]`      | No       | Defaults to `[MarkdownFormatConfig()]`                   |
 | `max_depth`          | `int`                     | No       | `≥ 0`, default `2`                                       |
 | `max_pages`          | `int`                     | No       | `1–1000`, default `50`                                   |
 | `max_links_per_page` | `int`                     | No       | `≥ 1`, default `10`                                      |
@@ -290,25 +290,23 @@ sgai.crawl.delete(crawl_id)
 Scheduled extraction jobs. Access via the `sgai.monitor` resource.
 
 ```python
-from scrapegraph_py import (
-    ScrapeGraphAI, MonitorCreateRequest, MonitorUpdateRequest, MarkdownFormatConfig,
-)
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 sgai = ScrapeGraphAI()
 
-mon = sgai.monitor.create(MonitorCreateRequest(
-    url="https://example.com",
+mon = sgai.monitor.create(
+    "https://example.com",
+    "0 * * * *",                 # cron expression (positional)
     name="Price Monitor",
-    interval="0 * * * *",       # cron expression
     formats=[MarkdownFormatConfig()],
     webhook_url="https://example.com/webhook",
-))
+)
 
 cron_id = mon.data.cron_id
 
 sgai.monitor.list()
 sgai.monitor.get(cron_id)
-sgai.monitor.update(cron_id, MonitorUpdateRequest(interval="0 */6 * * *"))
+sgai.monitor.update(cron_id, interval="0 */6 * * *")
 sgai.monitor.pause(cron_id)
 sgai.monitor.resume(cron_id)
 sgai.monitor.delete(cron_id)
@@ -319,9 +317,7 @@ sgai.monitor.delete(cron_id)
 Paginate through the per-run ticks a monitor has produced (what changed on each scheduled run).
 
 ```python
-from scrapegraph_py import MonitorActivityRequest
-
-act = sgai.monitor.activity(cron_id, MonitorActivityRequest(limit=20))
+act = sgai.monitor.activity(cron_id, limit=20)
 
 if act.status == "success":
     for tick in act.data.ticks:
@@ -329,22 +325,20 @@ if act.status == "success":
         print(f"[{tick.created_at}] {tick.status} - {status} ({tick.elapsed_ms}ms)")
 
     if act.data.next_cursor:
-        more = sgai.monitor.activity(
-            cron_id, MonitorActivityRequest(limit=20, cursor=act.data.next_cursor),
-        )
+        more = sgai.monitor.activity(cron_id, limit=20, cursor=act.data.next_cursor)
 ```
 
-`MonitorActivityRequest` fields: `limit` (1–100, default `20`) and optional `cursor` for pagination. Each `MonitorTickEntry` exposes `id`, `created_at`, `status`, `changed`, `elapsed_ms`, and a `diffs` model with per-format deltas.
+`monitor.activity()` accepts `limit` (1–100, default `20`) and optional `cursor` for pagination. Each `MonitorTickEntry` exposes `id`, `created_at`, `status`, `changed`, `elapsed_ms`, and a `diffs` model with per-format deltas.
 
-#### `MonitorCreateRequest` fields
+#### `monitor.create()` parameters
 
-| Field          | Type                      | Required | Description                                    |
+| Parameter      | Type                      | Required | Description                                    |
 | -------------- | ------------------------- | -------- | ---------------------------------------------- |
-| `url`          | `HttpUrl`                 | Yes      | URL to monitor                                 |
-| `interval`     | `str`                     | Yes      | Cron expression (1–100 chars)                  |
+| `url`          | `str`                     | Yes      | URL to monitor (positional)                    |
+| `interval`     | `str`                     | Yes      | Cron expression, 1–100 chars (positional)      |
 | `name`         | `str`                     | No       | ≤ 200 chars                                    |
-| `formats`      | `list[ScrapeFormatEntry]` | No       | Defaults to `[MarkdownFormatConfig()]`         |
-| `webhook_url`  | `HttpUrl`                 | No       | Webhook invoked on change detection            |
+| `formats`      | `list[FormatConfig]`      | No       | Defaults to `[MarkdownFormatConfig()]`         |
+| `webhook_url`  | `str`                     | No       | Webhook invoked on change detection            |
 | `fetch_config` | `FetchConfig`             | No       | Fetch configuration                            |
 
 ### History
@@ -352,11 +346,11 @@ if act.status == "success":
 Fetch recent request history. Access via the `sgai.history` resource.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, HistoryFilter
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-page = sgai.history.list(HistoryFilter(service="scrape", page=1, limit=20))
+page = sgai.history.list(service="scrape", page=1, limit=20)
 for entry in page.data.data:
     print(entry.id, entry.service, entry.status, entry.elapsed_ms)
 
@@ -401,17 +395,15 @@ Every sync method has an async equivalent on `AsyncScrapeGraphAI`:
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest, CrawlRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.scrape(ScrapeRequest(url="https://example.com"))
+        res = await sgai.scrape("https://example.com")
         if res.status == "success":
             print(res.data.results["markdown"]["data"])
 
-        start = await sgai.crawl.start(CrawlRequest(
-            url="https://example.com", max_pages=25,
-        ))
+        start = await sgai.crawl.start("https://example.com", max_pages=25)
         status = await sgai.crawl.get(start.data.id)
         print(status.data.status)
 
