@@ -349,21 +349,16 @@ if __name__ == "__main__":
 ## JavaScript SDK Example
 
 ```javascript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import 'dotenv/config';
 
-const apiKey = process.env.SGAI_APIKEY;
-
-const response = await smartScraper(apiKey, {
-  website_url: 'https://www.amazon.in/s?k=tv&crid=1TEF1ZFVLU8R8&sprefix=t%2Caps%2C390&ref=nb_sb_noss_2',
-  user_prompt: 'Extract all product info including name, price, rating, and image_url',
-  total_pages: 3,
+const result = await extract(process.env.SGAI_APIKEY, {
+  url: 'https://www.amazon.in/s?k=tv&crid=1TEF1ZFVLU8R8&sprefix=t%2Caps%2C390&ref=nb_sb_noss_2',
+  prompt: 'Extract all product info including name, price, rating, and image_url',
 });
 
-if (response.status === 'error') {
-  console.error('Error:', response.error);
-} else {
-  console.log('Response:', JSON.stringify(response.data, null, 2));
+if (result.status === 'success') {
+  console.log('Response:', JSON.stringify(result.data?.json, null, 2));
 }
 ```
 

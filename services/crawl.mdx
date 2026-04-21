@@ -1,0 +1,255 @@
+---
+title: 'Crawl'
+description: 'Multi-page website crawling with flexible output formats'
+icon: 'spider'
+---
+
+## Overview
+
+Crawl traverses a site starting from a URL, follows links up to a depth you set, and returns each page in the formats you request. Crawls are async — you start a job, then poll (or get notified via webhook) until it completes.
+
+<Note>
+Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+import time
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+
+start = sgai.crawl.start(CrawlRequest(
+    url="https://scrapegraphai.com/",
+    formats=[MarkdownFormatConfig()],
+    max_pages=5,
+    max_depth=2,
+))
+
+if start.status != "success":
+    print("Failed:", start.error)
+else:
+    crawl_id = start.data.id
+    print("Crawl started:", crawl_id)
+
+    while True:
+        time.sleep(2)
+        status = sgai.crawl.get(crawl_id)
+        if status.status != "success":
+            break
+        print(f"{status.data.finished}/{status.data.total} - {status.data.status}")
+        if status.data.status in ("completed", "failed"):
+            for page in status.data.pages:
+                print(f"  {page.url} - {page.status}")
+            break
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const start = await sgai.crawl.start({
+  url: "https://scrapegraphai.com/",
+  formats: [{ type: "markdown" }],
+  maxPages: 5,
+  maxDepth: 2,
+});
+
+if (start.status !== "success" || !start.data) {
+  console.error("Failed:", start.error);
+} else {
+  const crawlId = start.data.id;
+  console.log("Crawl started:", crawlId);
+
+  while (true) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const status = await sgai.crawl.get(crawlId);
+    if (status.status !== "success" || !status.data) break;
+    console.log(`${status.data.finished}/${status.data.total} - ${status.data.status}`);
+    if (status.data.status === "completed" || status.data.status === "failed") {
+      for (const p of status.data.pages) console.log(`  ${p.url} - ${p.status}`);
+      break;
+    }
+  }
+}
+```
+
+```bash cURL
+# Start a crawl
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com/",
+    "formats": [{ "type": "markdown" }],
+    "maxPages": 5,
+    "maxDepth": 2
+  }'
+
+# Check status (replace :id with the crawl id returned above)
+curl -X GET https://v2-api.scrapegraphai.com/api/crawl/:id \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | Starting URL to crawl. |
+| `formats` | array | No | Output formats per page (see [Scrape formats](/services/scrape#output-formats)). |
+| `maxPages` / `max_pages` | int | No | Maximum number of pages to crawl. |
+| `maxDepth` / `max_depth` | int | No | How many levels deep to follow links. |
+| `maxLinksPerPage` / `max_links_per_page` | int | No | Cap on links expanded per page. |
+| `includePatterns` / `include_patterns` | array | No | URL patterns to include (e.g. `["/blog/*"]`). |
+| `excludePatterns` / `exclude_patterns` | array | No | URL patterns to exclude (e.g. `["/admin/*"]`). |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+<Accordion title="Example Response (start)" icon="terminal">
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "running",
+  "total": 3,
+  "finished": 0,
+  "pages": []
+}
+```
+</Accordion>
+
+<Accordion title="Example Response (get)" icon="terminal">
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "completed",
+  "total": 3,
+  "finished": 1,
+  "pages": [
+    {
+      "url": "https://example.com",
+      "depth": 0,
+      "title": "",
+      "status": "completed",
+      "parentUrl": null,
+      "contentType": "text/html",
+      "links": ["https://iana.org/domains/example"],
+      "scrapeRefId": "83a911ed-c0bc-4a8c-ad62-8efeeb93f33a"
+    }
+  ]
+}
+```
+</Accordion>
+
+## Managing Crawl Jobs
+
+```python
+# Check status
+status = sgai.crawl.get(crawl_id)
+
+# Stop / resume / delete
+sgai.crawl.stop(crawl_id)
+sgai.crawl.resume(crawl_id)
+sgai.crawl.delete(crawl_id)
+```
+
+```javascript
+await sgai.crawl.get(crawlId);
+await sgai.crawl.stop(crawlId);
+await sgai.crawl.resume(crawlId);
+await sgai.crawl.delete(crawlId);
+```
+
+## Advanced Usage
+
+### URL patterns and fetch config
+
+```python
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig, FetchConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.crawl.start(CrawlRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
+    max_depth=2,
+    max_pages=10,
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/admin/*"],
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=1000),
+))
+```
+
+### Async Support (Python)
+
+```python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI, CrawlRequest
+
+async def main():
+    async with AsyncScrapeGraphAI() as sgai:
+        start = await sgai.crawl.start(CrawlRequest(
+            url="https://example.com",
+            max_pages=5,
+            max_depth=2,
+        ))
+        status = await sgai.crawl.get(start.data.id)
+        print("Status:", status.data.status)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Page Crawling" icon="sitemap">
+    Traverse entire sites, following links automatically.
+  </Card>
+  <Card title="Flexible Formats" icon="file-lines">
+    Request markdown, HTML, links, images, and more per page.
+  </Card>
+  <Card title="Job Control" icon="sliders">
+    Start, stop, resume, and delete crawl jobs.
+  </Card>
+  <Card title="URL Filtering" icon="filter">
+    Include or exclude by URL pattern.
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain)
+- [LlamaIndex Integration](/integrations/llamaindex)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

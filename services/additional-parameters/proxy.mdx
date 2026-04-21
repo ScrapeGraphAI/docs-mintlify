@@ -1,6 +1,6 @@
 ---
 title: 'Proxy Configuration'
-description: 'Configure proxy settings and geotargeting for web scraping requests'
+description: 'Configure proxy settings, fetch modes, and geotargeting for web scraping requests'
 icon: 'globe'
 ---
 
@@ -10,9 +10,11 @@ icon: 'globe'
 
 ## Overview
 
-The ScrapeGraphAI API uses an intelligent proxy system that automatically handles web scraping requests through multiple proxy providers. The system uses a fallback strategy to ensure maximum reliability - if one provider fails, it automatically tries the next one.
+The ScrapeGraphAI API uses an intelligent proxy system that automatically handles web scraping requests through multiple proxy providers. The system uses a fallback strategy to ensure maximum reliability — if one provider fails, it automatically tries the next one.
 
 **No configuration required**: The proxy system is fully automatic and transparent to API users. You don't need to configure proxy credentials or settings yourself.
+
+In v2, all proxy and fetch behaviour is controlled through the `FetchConfig` object, which you can pass to any service method (`extract`, `scrape`, `search`, `crawl`, etc.).
 
 ## How It Works
 
@@ -21,11 +23,59 @@ The API automatically routes your scraping requests through multiple proxy provi
 1. The system tries different proxy providers automatically
 2. If one provider fails, it automatically falls back to the next one
 3. Successful providers are cached for each domain to improve performance
-4. Everything happens transparently - you just make your API request as normal
+4. Everything happens transparently — you just make your API request as normal
+
+## Fetch Modes
+
+The `mode` parameter inside `FetchConfig` controls how pages are retrieved and which proxy strategy is used:
+
+| Mode | Description | JS Rendering | Best For |
+|------|-------------|:------------:|----------|
+| `auto` | Automatically selects the best provider chain | Adaptive | General use (default) |
+| `fast` | Direct HTTP fetch via impit | No | Static pages, maximum speed |
+| `js` | Headless browser rendering | Yes | JavaScript-heavy SPAs |
+
+To enable stealth mode (residential proxy with anti-bot headers), set the separate `stealth` boolean to `true` alongside any mode. For example, `mode: "js"` with `stealth: true` provides JS rendering through a residential proxy — equivalent to the old `js+stealth` mode.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+# Use stealth mode with JS rendering
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product information",
+    fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
+        wait=2000,
+    ),
+)
+```
+
+```javascript JavaScript
+import { extract } from 'scrapegraph-js';
+
+// Use stealth mode with JS rendering
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
+  fetchConfig: {
+    mode: 'js',
+    stealth: true,
+    wait: 2000,
+  },
+});
+```
+
+</CodeGroup>
 
 ## Country Selection (Geotargeting)
 
-You can optionally specify a country code to route requests through proxies in a specific country. This is useful for:
+You can optionally specify a two-letter country code via `FetchConfig.country` to route requests through proxies in a specific country. This is useful for:
 
 - Accessing geo-restricted content
 - Getting localized versions of websites
@@ -34,46 +84,45 @@ You can optionally specify a country code to route requests through proxies in a
 
 ### Using Country Code
 
-Include the `country_code` parameter in your API request:
-
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import Client, FetchConfig
 
 client = Client(api_key="your-api-key")
 
-# Request with country code
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product information",
-    country_code="us"  # Route through US proxies
+# Route through US proxies
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product information",
+    fetch_config=FetchConfig(country="us"),
 )
 ```
 
 ```javascript JavaScript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
-
-// Request with country code
-const response = await smartScraper(apiKey, {
-  website_url: 'https://example.com',
-  user_prompt: 'Extract product information',
-  country_code: 'us',
+// Route through US proxies
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
+  fetchConfig: { country: 'us' },
 });
 ```
 
 ```bash cURL
 curl -X 'POST' \
-  'https://api.scrapegraphai.com/v1/smartscraper' \
+  'https://api.scrapegraphai.com/api/v2/extract' \
   -H 'accept: application/json' \
+  -H 'Authorization: Bearer your-api-key' \
   -H 'SGAI-APIKEY: your-api-key' \
   -H 'Content-Type: application/json' \
   -d '{
-  "website_url": "https://example.com",
-  "user_prompt": "Extract product information",
-  "country_code": "us"
+  "url": "https://example.com",
+  "prompt": "Extract product information",
+  "fetchConfig": {
+    "country": "us"
+  }
 }'
 ```
 
@@ -106,16 +155,55 @@ And many more! The API supports over 100 countries. Use standard ISO 3166-1 alph
 
 </Accordion>
 
-## Available Parameters
+## FetchConfig Reference
 
-The following parameters in API requests can affect proxy behavior:
+All proxy and fetch behaviour is configured through the `FetchConfig` object:
 
-### `country_code` (optional)
-- **Type**: String
-- **Description**: Two-letter ISO country code to route requests through proxies in a specific country
-- **Example**: `"us"`, `"uk"`, `"de"`, `"it"`, `"fr"`
-- **Default**: No specific country (uses optimal routing)
-- **Format**: ISO 3166-1 alpha-2 (e.g., `us`, `gb`, `de`)
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `mode` | string | `"auto"` | Fetch mode: `auto`, `fast`, `js` |
+| `stealth` | bool | `false` | Enable stealth mode with residential proxy and anti-bot headers |
+| `timeout` | int | `30000` | Request timeout in milliseconds (1000–60000) |
+| `wait` | int | `0` | Milliseconds to wait after page load before scraping (0–30000) |
+| `scrolls` | int | `0` | Number of page scrolls to perform (0–100) |
+| `country` | string | — | Two-letter ISO country code for geo-located proxy routing (e.g. `"us"`) |
+| `headers` | object | — | Custom HTTP headers to send with the request |
+| `cookies` | object | — | Cookies to send with the request |
+| `mock` | bool | `false` | Enable mock mode for testing (no real request is made) |
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import FetchConfig
+
+config = FetchConfig(
+    mode="js",             # Fetch mode
+    stealth=True,          # Stealth proxy
+    timeout=15000,         # 15s timeout
+    wait=2000,             # Wait 2s after page load
+    scrolls=3,             # Scroll 3 times
+    country="us",          # Route through US proxies
+    headers={"Accept-Language": "en-US"},
+    cookies={"session": "abc123"},
+    mock=False,
+)
+```
+
+```javascript JavaScript
+const fetchConfig = {
+  mode: 'js',                    // Fetch mode
+  stealth: true,                 // Stealth proxy
+  timeout: 15000,                // 15s timeout
+  wait: 2000,                 // Wait 2s after page load
+  scrolls: 3,                 // Scroll 3 times
+  country: 'us',              // Route through US proxies
+  headers: { 'Accept-Language': 'en-US' },
+  cookies: { session: 'abc123' },
+  mock: false,
+};
+```
+
+</CodeGroup>
 
 ## Usage Examples
 
@@ -128,22 +216,20 @@ from scrapegraph_py import Client
 
 client = Client(api_key="your-api-key")
 
-# Automatic proxy selection - no configuration needed
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product information"
+# Automatic proxy selection — no configuration needed
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product information",
 )
 ```
 
 ```javascript JavaScript
-import { smartScraper } from 'scrapegraph-js';
-
-const apiKey = 'your-api-key';
+import { extract } from 'scrapegraph-js';
 
 // Automatic proxy selection
-const response = await smartScraper(apiKey, {
-  website_url: 'https://example.com',
-  user_prompt: 'Extract product information',
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
 });
 ```
 
@@ -154,35 +240,80 @@ const response = await smartScraper(apiKey, {
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import Client, FetchConfig
 
 client = Client(api_key="your-api-key")
 
 # Route through US proxies
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product information",
-    country_code="us"
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product information",
+    fetch_config=FetchConfig(country="us"),
 )
 
 # Route through UK proxies
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product information",
-    country_code="uk"
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product information",
+    fetch_config=FetchConfig(country="gb"),
 )
 ```
 
 ```javascript JavaScript
-import { smartScraper } from 'scrapegraph-js';
-
-const apiKey = 'your-api-key';
+import { extract } from 'scrapegraph-js';
 
 // Route through US proxies
-const response = await smartScraper(apiKey, {
-  website_url: 'https://example.com',
-  user_prompt: 'Extract product information',
-  country_code: 'us',
+const result = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
+  fetchConfig: { country: 'us' },
+});
+
+// Route through UK proxies
+const ukResult = await extract('your-api-key', {
+  url: 'https://example.com',
+  prompt: 'Extract product information',
+  fetchConfig: { country: 'gb' },
+});
+```
+
+</CodeGroup>
+
+### Stealth Mode with JS Rendering
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+response = client.scrape(
+    url="https://heavily-protected-site.com",
+    format="markdown",
+    fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
+        wait=3000,
+        scrolls=5,
+        country="us",
+    ),
+)
+```
+
+```javascript JavaScript
+import { scrape } from 'scrapegraph-js';
+
+const result = await scrape('your-api-key', {
+  url: 'https://heavily-protected-site.com',
+  formats: [{ type: 'markdown' }],
+  fetchConfig: {
+    mode: 'js',
+    stealth: true,
+    wait: 3000,
+    scrolls: 5,
+    country: 'us',
+  },
 });
 ```
 
@@ -192,75 +323,107 @@ const response = await smartScraper(apiKey, {
 
 #### Accessing Geo-Restricted Content
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
 
 client = Client(api_key="your-api-key")
 
 # Access US-only content
-response = client.smartscraper(
-    website_url="https://us-only-service.com",
-    user_prompt="Extract available services",
-    country_code="us"
+response = client.extract(
+    url="https://us-only-service.com",
+    prompt="Extract available services",
+    fetch_config=FetchConfig(country="us"),
 )
 ```
+
+```javascript JavaScript
+import { extract } from 'scrapegraph-js';
+
+const result = await extract('your-api-key', {
+  url: 'https://us-only-service.com',
+  prompt: 'Extract available services',
+  fetchConfig: { country: 'us' },
+});
+```
+
+</CodeGroup>
 
 #### Getting Localized Content
 
 ```python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
 # Get German version of a website
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product prices in local currency",
-    country_code="de"
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product prices in local currency",
+    fetch_config=FetchConfig(country="de"),
 )
 
 # Get French version
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract product prices in local currency",
-    country_code="fr"
+response = client.extract(
+    url="https://example.com",
+    prompt="Extract product prices in local currency",
+    fetch_config=FetchConfig(country="fr"),
 )
 ```
 
 #### E-commerce Price Comparison
 
 ```python
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
 # Compare prices from different regions
-countries = ["us", "uk", "de", "fr"]
+countries = ["us", "gb", "de", "fr"]
 
 for country in countries:
-    response = client.smartscraper(
-        website_url="https://ecommerce-site.com/product/123",
-        user_prompt="Extract product price and availability",
-        country_code=country
+    response = client.extract(
+        url="https://ecommerce-site.com/product/123",
+        prompt="Extract product price and availability",
+        fetch_config=FetchConfig(country=country),
     )
-    print(f"{country}: {response['result']}")
+    print(f"{country}: {response['data']}")
 ```
 
 ## Best Practices
 
-### 1. Use Country Code When Needed
+### 1. Choose the Right Fetch Mode
+
+Pick the mode that matches your target site:
+- **`auto`** (default) — let the system decide; works for most sites
+- **`fast`** — use for simple, static HTML pages
+- **`js`** — use for SPAs and JavaScript-rendered content
+- Add **`stealth: true`** for anti-bot sites — combine with any mode (e.g., `mode: "js"` + `stealth: true` for dynamic anti-bot sites)
+
+### 2. Use Country Code When Needed
 
 Only specify a country code if you have a specific requirement:
-- ✅ Accessing geo-restricted content
-- ✅ Getting localized versions of websites
-- ✅ Complying with regional requirements
-- ❌ Don't specify if you don't need it - let the system optimize automatically
+- Accessing geo-restricted content
+- Getting localized versions of websites
+- Complying with regional requirements
+- Don't specify if you don't need it — let the system optimize automatically
 
-### 2. Let the System Handle Routing
+### 3. Let the System Handle Routing
 
 The API automatically selects the best proxy provider for each request:
 - No manual proxy selection needed
 - Automatic failover ensures reliability
 - Performance is optimized automatically
 
-### 3. Handle Errors Gracefully
+### 4. Handle Errors Gracefully
 
 If a request fails, the system has already tried multiple providers:
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client, FetchConfig
 import time
 
 client = Client(api_key="your-api-key")
@@ -268,10 +431,10 @@ client = Client(api_key="your-api-key")
 def scrape_with_retry(url, prompt, max_retries=3):
     for attempt in range(max_retries):
         try:
-            response = client.smartscraper(
-                website_url=url,
-                user_prompt=prompt,
-                country_code="us"
+            response = client.extract(
+                url=url,
+                prompt=prompt,
+                fetch_config=FetchConfig(country="us"),
             )
             return response
         except Exception as e:
@@ -282,7 +445,29 @@ def scrape_with_retry(url, prompt, max_retries=3):
                 raise e
 ```
 
-### 4. Monitor Rate Limits
+```javascript JavaScript
+import { extract } from 'scrapegraph-js';
+
+async function scrapeWithRetry(apiKey, url, prompt, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const result = await extract(apiKey, {
+      url,
+      prompt,
+      fetchConfig: { country: 'us' },
+    });
+    if (result.status === 'success') return result;
+    if (attempt < maxRetries - 1) {
+      console.log(`Attempt ${attempt + 1} failed: ${result.error}`);
+      await new Promise((r) => setTimeout(r, 2 ** attempt * 1000));
+    }
+  }
+  throw new Error('All retries failed');
+}
+```
+
+</CodeGroup>
+
+### 5. Monitor Rate Limits
 
 Be aware of your API rate limits:
 - The proxy system respects these limits automatically
@@ -298,8 +483,9 @@ If your scraping request fails:
 
 1. **Verify the URL**: Make sure the URL is correct and accessible
 2. **Check the website**: Some websites may block automated access regardless of proxy
-3. **Retry the request**: The system uses automatic retries, but you can manually retry after a delay
-4. **Try a different country**: If geo-restriction is the issue, try a different `country_code`
+3. **Try a different mode**: Use `mode: "js"` with `stealth: true` for heavily-protected sites
+4. **Retry the request**: The system uses automatic retries, but you can manually retry after a delay
+5. **Try a different country**: If geo-restriction is the issue, try a different `country`
 </Accordion>
 
 ### Rate Limiting
@@ -318,21 +504,21 @@ If you receive rate limit errors (HTTP 429):
 <Accordion title="Geo-Restricted Content" icon="globe">
 If you're trying to access geo-restricted content:
 
-- Use the `country_code` parameter to specify the required country
+- Use the `country` parameter inside `FetchConfig` to specify the required country
 - Make sure the content is available in that country
 - Some content may still be restricted regardless of proxy location
 - Try multiple country codes if one doesn't work
 </Accordion>
 
-### Proxy Selection Issues
+### Anti-Bot Protection
 
-<Accordion title="Proxy Selection Issues" icon="network">
-If you're experiencing proxy-related issues:
+<Accordion title="Anti-Bot Protection" icon="shield">
+If a website is blocking your requests:
 
-- The system automatically tries multiple providers
-- No manual configuration is needed
-- If issues persist, contact support with your request ID
-- Check if the issue is specific to certain websites or domains
+- Set `stealth: true` in `FetchConfig` (combine with `mode: "js"` for dynamic sites)
+- Add a `wait` time to let the page fully load
+- Use `scrolls` to trigger lazy-loaded content
+- Add custom `headers` if the site expects specific ones
 </Accordion>
 
 ## FAQ
@@ -341,41 +527,29 @@ If you're experiencing proxy-related issues:
 **A**: No, the proxy system is fully managed and automatic. You don't need to provide any proxy credentials or configuration.
 </Accordion>
 
+<Accordion title="How do I control the proxy strategy?" icon="question">
+**A**: Use the `mode` parameter in `FetchConfig` (`auto`, `fast`, or `js`) and set `stealth: true` when you need residential proxy with anti-bot headers.
+</Accordion>
+
 <Accordion title="Can I choose which proxy provider to use?" icon="question">
-**A**: No, the system automatically selects the best proxy provider for each request. This ensures optimal performance and reliability.
-</Accordion>
-
-<Accordion title="How do I know which proxy was used?" icon="question">
-**A**: The proxy selection is handled automatically and transparently. You don't need to know which proxy was used - just use the API as normal.
-</Accordion>
-
-<Accordion title="Can I use my own proxies?" icon="question">
-**A**: The API uses managed proxy services. If you have specific proxy requirements, please contact support.
+**A**: No, the system automatically selects the best proxy provider for each request. You can influence the strategy by setting the `mode` parameter.
 </Accordion>
 
 <Accordion title="What happens if all proxies fail?" icon="question">
 **A**: The API will return an error. The system tries multiple providers with automatic fallback, so this is rare. If it happens, verify the URL and try again.
 </Accordion>
 
-<Accordion title="Does using country_code cost more?" icon="question">
-**A**: No, the `country_code` parameter doesn't affect pricing. Credits are charged the same regardless of proxy location.
+<Accordion title="Does using country cost more?" icon="question">
+**A**: No, the `country` parameter doesn't affect pricing. Credits are charged the same regardless of proxy location.
 </Accordion>
 
-<Accordion title="Can I use country_code with all services?" icon="question">
-**A**: Yes, `country_code` is available for all scraping services including SmartScraper, SearchScraper, SmartCrawler, and Markdownify.
+<Accordion title="Can I use FetchConfig with all services?" icon="question">
+**A**: Yes, `FetchConfig` is available for all services including `extract`, `scrape`, `search`, `crawl`, and `monitor`.
 </Accordion>
 
 <Accordion title="What's the difference between 'uk' and 'gb' country codes?" icon="question">
 **A**: Both `uk` and `gb` refer to the United Kingdom. The API accepts both codes for compatibility.
 </Accordion>
-
-## API Reference
-
-For detailed API documentation, see:
-- [SmartScraper Start Job](/api-reference/endpoint/smartscraper/start)
-- [SearchScraper Start Job](/api-reference/endpoint/searchscraper/start)
-- [SmartCrawler Start Job](/api-reference/endpoint/smartcrawler/start)
-- [Markdownify Start Job](/api-reference/endpoint/markdownify/start)
 
 ## Support & Resources
 

@@ -1,136 +1,587 @@
 ---
 title: '🦙 LlamaIndex'
-description: 'Integrate ScrapeGraphAI with LlamaIndex for powerful data ingestion'
+description: 'Build LlamaIndex agents and RAG pipelines with ScrapeGraphAI'
 ---
 
 ## Overview
 
-This tool integrates ScrapeGraph with LlamaIndex, providing intelligent web scraping capabilities with structured data extraction.
+[LlamaIndex](https://www.llamaindex.ai) is a data framework for building LLM-powered agents and RAG applications. This page shows how to wire **`scrapegraph-py` ≥ 2.0.1** into LlamaIndex as a set of `FunctionTool`s so your agents can scrape pages, extract structured data, search the web, run asynchronous crawls, and manage scheduled monitors.
 
 <Card
-  title="Official LlamaHub Documentation"
+  title="Official LlamaIndex Documentation"
   icon="book"
-  href="https://docs.llamaindex.ai/en/stable/api_reference/tools/scrapegraph/"
+  href="https://docs.llamaindex.ai"
 >
-  View the integration on LlamaHub
+  Learn more about building agents and RAG pipelines with LlamaIndex
 </Card>
+
+<Note>
+**Which package?** LlamaIndex also ships a pre-built tool spec at [`llama-index-tools-scrapegraphai`](https://pypi.org/project/llama-index-tools-scrapegraphai/), but it currently depends on `scrapegraph-py<2` and targets the legacy v1 backend. New v2 API keys are rejected by that path. The recipes below use the v2 SDK directly — they work with the current dashboard and every v2 endpoint (scrape, extract, search, crawl, monitor).
+</Note>
 
 ## Installation
 
-Install the package using pip:
+```bash
+pip install -U llama-index
+pip install "scrapegraph-py>=2.0.1"
+```
+
+Set your API key:
 
 ```bash
-pip install llama-index-tools-scrapegraphai
+export SGAI_API_KEY="your-api-key"
 ```
 
-## Usage
+## Quick Start
 
-First, import and initialize the ScrapegraphToolSpec:
-
-```python
-from llama_index.tools.scrapegraph.base import ScrapegraphToolSpec
-
-scrapegraph_tool = ScrapegraphToolSpec()
-```
-
-## Available Functions
-
-### Smart Scraping (Sync)
-
-Extract structured data using a schema:
+Initialize the v2 client and expose a tool to any LlamaIndex agent:
 
 ```python
-from pydantic import BaseModel, Field 
- 
-class FounderSchema(BaseModel): 
-    name: str = Field(description="Name of the founder") 
-    role: str = Field(description="Role of the founder") 
-    social_media: str = Field(description="Social media URL of the founder") 
- 
-class ListFoundersSchema(BaseModel): 
-    founders: list[FounderSchema] = Field(description="List of founders") 
- 
-response = scrapegraph_tool.scrapegraph_smartscraper( 
-    prompt="Extract product information", 
-    url="https://scrapegraphai.com/", 
-    api_key="sgai-***", 
-    schema=ListFoundersSchema, 
-) 
- 
-result = response["result"] 
- 
-for founder in result["founders"]: 
-    print(founder)
-```
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest
+from llama_index.core.tools import FunctionTool
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.llms.openai import OpenAI
 
-### Smart Scraping (Async)
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY
 
-Asynchronous version of the smart scraper:
+def scrape(url: str) -> str:
+    """Fetch a page and return its markdown content."""
+    result = sgai.scrape(ScrapeRequest(url=url))
+    if result.status == "error":
+        raise RuntimeError(result.error)
+    return result.data.results["markdown"]["data"][0]
 
-```python
-result = await scrapegraph_tool.scrapegraph_smartscraper_async(
-    prompt="Extract product information",
-    url="https://example.com/product",
-    api_key="your-api-key",
-    schema=schema,
+agent = FunctionAgent(
+    tools=[FunctionTool.from_defaults(fn=scrape)],
+    llm=OpenAI(model="gpt-4o"),
 )
 ```
 
-### Submit Feedback
+## Cookbook recipes
 
-Provide feedback on extraction results:
+The following recipes are ported from the official [`scrapegraph-py` cookbook notebooks](https://github.com/ScrapeGraphAI/scrapegraph-py/tree/main/cookbook), swapped to call the v2 `extract` endpoint so they run against the current dashboard API key.
+
+### 1. Extract company info
+
+Pull founders, pricing plans, and social links off a company homepage. Based on `cookbook/company-info/`.
 
 ```python
-response = scrapegraph_tool.scrapegraph_feedback(
-    request_id="request-id",
-    api_key="your-api-key",
-    rating=5,
-    feedback_text="Great results!",
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class FounderSchema(BaseModel):
+    name: str = Field(description="Name of the founder")
+    role: str = Field(description="Role of the founder in the company")
+    linkedin: str = Field(description="LinkedIn profile of the founder")
+
+class PricingPlanSchema(BaseModel):
+    tier: str = Field(description="Name of the pricing tier")
+    price: str = Field(description="Price of the plan")
+    credits: int = Field(description="Number of credits included in the plan")
+
+class SocialLinksSchema(BaseModel):
+    linkedin: str
+    twitter: str
+    github: str
+
+class CompanyInfoSchema(BaseModel):
+    company_name: str
+    description: str
+    founders: List[FounderSchema] = Field(default_factory=list)
+    pricing_plans: List[PricingPlanSchema] = Field(default_factory=list)
+    social_links: SocialLinksSchema
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://scrapegraphai.com/",
+    prompt="Extract info about the company",
+    schema=CompanyInfoSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    print(res.data.json_data)
+```
+
+### 2. Extract GitHub trending repos
+
+Pull a ranked list of trending repositories. Based on `cookbook/github-trending/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class RepositorySchema(BaseModel):
+    name: str = Field(description="Name of the repository (e.g. 'owner/repo')")
+    description: str = Field(description="Description of the repository")
+    stars: int = Field(description="Star count")
+    forks: int = Field(description="Fork count")
+    today_stars: int = Field(description="Stars gained today")
+    language: str = Field(description="Programming language used")
+
+class ListRepositoriesSchema(BaseModel):
+    repositories: List[RepositorySchema]
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://github.com/trending",
+    prompt="Extract only the first ten trending repositories",
+    schema=ListRepositoriesSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    for repo in res.data.json_data["repositories"]:
+        print(f"{repo['name']} — {repo['stars']} ★")
+```
+
+### 3. Extract a news feed
+
+Pull headlines from a news section. Based on `cookbook/wired-news/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+class NewsItemSchema(BaseModel):
+    category: str = Field(description="Category of the news (e.g. 'Health', 'Environment')")
+    title: str = Field(description="Title of the news article")
+    link: str = Field(description="URL to the news article")
+    author: str = Field(description="Author of the news article")
+
+class ListNewsSchema(BaseModel):
+    news: List[NewsItemSchema]
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://www.wired.com/category/science/",
+    prompt="Extract the first 10 news articles on the page",
+    schema=ListNewsSchema.model_json_schema(),
+))
+
+if res.status == "success":
+    for item in res.data.json_data["news"]:
+        print(f"[{item['category']}] {item['title']}")
+```
+
+### 4. Extract real-estate listings
+
+Pull house listings with price, address, and tags. Based on `cookbook/homes-forsale/`.
+
+```python
+from pydantic import BaseModel, Field
+from typing import List
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+
+class HouseListingSchema(BaseModel):
+    price: int = Field(description="Price of the house in USD")
+    bedrooms: int
+    bathrooms: int
+    square_feet: int = Field(description="Total square footage of the house")
+    address: str
+    city: str
+    state: str
+    zip_code: str
+    tags: List[str] = Field(description="Tags like 'New construction' or 'Large garage'")
+    agent_name: str
+    agency: str
+
+class HousesListingsSchema(BaseModel):
+    houses: List[HouseListingSchema]
+
+sgai = ScrapeGraphAI()
+
+# Anti-bot heavy sites need stealth + JS rendering
+res = sgai.extract(ExtractRequest(
+    url="https://www.zillow.com/san-francisco-ca/",
+    prompt="Extract information about houses for sale",
+    schema=HousesListingsSchema.model_json_schema(),
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
+))
+```
+
+### 5. Research agent with `ReActAgent`
+
+Combine scrape + extract into a LlamaIndex `ReActAgent` so the LLM decides which tool to call per step. Based on `cookbook/research-agent/`.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, ExtractRequest, MarkdownFormatConfig
+from llama_index.core.tools import FunctionTool
+from llama_index.core.agent import ReActAgent
+from llama_index.llms.openai import OpenAI
+
+sgai = ScrapeGraphAI()
+
+def scrape(url: str) -> str:
+    """Fetch a page and return its markdown content."""
+    res = sgai.scrape(ScrapeRequest(url=url, formats=[MarkdownFormatConfig()]))
+    return res.data.results["markdown"]["data"][0] if res.status == "success" else res.error
+
+def extract(url: str, prompt: str) -> dict:
+    """Extract structured data from a URL using the given prompt."""
+    res = sgai.extract(ExtractRequest(url=url, prompt=prompt))
+    return res.data.json_data if res.status == "success" else {"error": res.error}
+
+tools = [FunctionTool.from_defaults(fn=f) for f in (scrape, extract)]
+
+agent = ReActAgent.from_tools(
+    tools,
+    llm=OpenAI(model="gpt-4o"),
+    verbose=True,
+)
+
+response = agent.chat(
+    "Extract all the keyboard names and prices from "
+    "https://www.ebay.com/sch/i.html?_nkw=keyboards"
+)
+print(response)
+```
+
+## Usage Reference
+
+### Scrape tool
+
+```python
+from scrapegraph_py import (
+    ScrapeGraphAI, ScrapeRequest,
+    MarkdownFormatConfig, HtmlFormatConfig, JsonFormatConfig,
+)
+from llama_index.core.tools import FunctionTool
+
+sgai = ScrapeGraphAI()
+
+def scrape(url: str, format: str = "markdown") -> dict:
+    """Fetch `url` and return the requested format.
+
+    format: one of "markdown", "html", "json".
+    """
+    entries = {
+        "markdown": MarkdownFormatConfig(mode="reader"),
+        "html": HtmlFormatConfig(),
+        "json": JsonFormatConfig(prompt="Extract the main content"),
+    }
+    result = sgai.scrape(ScrapeRequest(url=url, formats=[entries[format]]))
+    if result.status == "error":
+        return {"error": result.error}
+    return result.data.results
+
+scrape_tool = FunctionTool.from_defaults(fn=scrape)
+```
+
+### Extract tool
+
+```python
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from llama_index.core.tools import FunctionTool
+
+sgai = ScrapeGraphAI()
+
+def extract(url: str, prompt: str, schema: dict | None = None) -> dict:
+    """Extract structured data from `url` per `prompt`."""
+    result = sgai.extract(ExtractRequest(url=url, prompt=prompt, schema=schema))
+    if result.status == "error":
+        return {"error": result.error}
+    return result.data.json_data
+
+extract_tool = FunctionTool.from_defaults(fn=extract)
+```
+
+### Search tool
+
+```python
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
+from llama_index.core.tools import FunctionTool
+
+sgai = ScrapeGraphAI()
+
+def search(
+    query: str,
+    num_results: int = 5,
+    prompt: str | None = None,
+    time_range: str | None = None,
+    country: str | None = None,
+) -> dict:
+    """Search the web and return structured results.
+
+    time_range: "past_hour", "past_24_hours", "past_week", "past_month", "past_year".
+    country: two-letter ISO country code (e.g. "us", "it").
+    """
+    result = sgai.search(SearchRequest(
+        query=query,
+        num_results=num_results,
+        prompt=prompt,
+        time_range=time_range,
+        location_geo_code=country,
+    ))
+    if result.status == "error":
+        return {"error": result.error}
+    return {
+        "results": [{"title": r.title, "url": r.url} for r in result.data.results],
+        "json_data": result.data.json_data,
+    }
+
+search_tool = FunctionTool.from_defaults(fn=search)
+```
+
+### Crawl tool
+
+Crawls are asynchronous — poll `sgai.crawl.get(id)` until `status in ("completed", "failed", "stopped")`.
+
+```python
+import time
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+from llama_index.core.tools import FunctionTool
+
+sgai = ScrapeGraphAI()
+
+def crawl(
+    url: str,
+    max_depth: int = 2,
+    max_pages: int = 50,
+    include_patterns: list[str] | None = None,
+    exclude_patterns: list[str] | None = None,
+) -> dict:
+    """Crawl a site and return pages as markdown once the job completes."""
+    start = sgai.crawl.start(CrawlRequest(
+        url=url,
+        formats=[MarkdownFormatConfig()],
+        max_depth=max_depth,
+        max_pages=max_pages,
+        include_patterns=include_patterns or [],
+        exclude_patterns=exclude_patterns or [],
+    ))
+    if start.status == "error":
+        return {"error": start.error}
+
+    crawl_id = start.data.id
+    while True:
+        status = sgai.crawl.get(crawl_id)
+        if status.data.status in ("completed", "failed", "stopped"):
+            return status.data.model_dump()
+        time.sleep(2)
+
+crawl_tool = FunctionTool.from_defaults(fn=crawl)
+```
+
+### Monitor tool
+
+```python
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
+from llama_index.core.tools import FunctionTool
+
+sgai = ScrapeGraphAI()
+
+def create_monitor(
+    url: str,
+    name: str,
+    interval: str,
+    webhook_url: str | None = None,
+) -> dict:
+    """Create a recurring monitor (cron `interval`) that tracks changes on `url`."""
+    result = sgai.monitor.create(MonitorCreateRequest(
+        url=url,
+        name=name,
+        interval=interval,
+        formats=[MarkdownFormatConfig()],
+        webhook_url=webhook_url,
+    ))
+    if result.status == "error":
+        return {"error": result.error}
+    return {"cron_id": result.data.cron_id}
+
+monitor_tool = FunctionTool.from_defaults(fn=create_monitor)
+```
+
+## Configuration Options
+
+The v2 `ScrapeGraphAI` client accepts:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `api_key` | `str \| None` | `None` | Falls back to `SGAI_API_KEY`. |
+| `base_url` | `str` | `https://v2-api.scrapegraphai.com/api` | Override via `SGAI_API_URL`. |
+| `timeout` | `int` | `120` | Request timeout in seconds. Override via `SGAI_TIMEOUT`. |
+
+Each v2 resource maps 1:1 to a LlamaIndex tool:
+
+| SDK call | Endpoint | Request model |
+|----------|----------|---------------|
+| `sgai.scrape(...)` | Scrape | `ScrapeRequest` |
+| `sgai.extract(...)` | Extract | `ExtractRequest` |
+| `sgai.search(...)` | Search | `SearchRequest` |
+| `sgai.crawl.start/get/stop/resume/delete(...)` | Crawl | `CrawlRequest` |
+| `sgai.monitor.create/list/get/update/pause/resume/delete(...)` | Monitor | `MonitorCreateRequest` |
+
+Every call returns an `ApiResult[T]` with `status`, `data`, `error`, and `elapsed_ms` — so tools can surface errors without exceptions.
+
+## Advanced Usage
+
+### Combining every endpoint in one agent
+
+Hand the full tool list to an agent and let it pick the right tool per step:
+
+```python
+from scrapegraph_py import (
+    ScrapeGraphAI, ScrapeRequest, ExtractRequest, SearchRequest,
+    CrawlRequest, MonitorCreateRequest, MarkdownFormatConfig,
+)
+from llama_index.core.tools import FunctionTool
+from llama_index.core.agent.workflow import FunctionAgent
+from llama_index.llms.openai import OpenAI
+
+sgai = ScrapeGraphAI()
+
+def scrape(url: str) -> str:
+    res = sgai.scrape(ScrapeRequest(url=url))
+    return res.data.results["markdown"]["data"][0] if res.status == "success" else res.error
+
+def extract(url: str, prompt: str) -> dict:
+    res = sgai.extract(ExtractRequest(url=url, prompt=prompt))
+    return res.data.json_data if res.status == "success" else {"error": res.error}
+
+def search(query: str, num_results: int = 5) -> list[dict]:
+    res = sgai.search(SearchRequest(query=query, num_results=num_results))
+    if res.status == "error":
+        return [{"error": res.error}]
+    return [{"title": r.title, "url": r.url} for r in res.data.results]
+
+def crawl(url: str, max_pages: int = 20) -> dict:
+    res = sgai.crawl.start(CrawlRequest(
+        url=url, formats=[MarkdownFormatConfig()], max_pages=max_pages,
+    ))
+    return {"crawl_id": res.data.id} if res.status == "success" else {"error": res.error}
+
+def create_monitor(url: str, name: str, interval: str) -> dict:
+    res = sgai.monitor.create(MonitorCreateRequest(
+        url=url, name=name, interval=interval, formats=[MarkdownFormatConfig()],
+    ))
+    return {"cron_id": res.data.cron_id} if res.status == "success" else {"error": res.error}
+
+tools = [FunctionTool.from_defaults(fn=f) for f in (
+    scrape, extract, search, crawl, create_monitor,
+)]
+
+agent = FunctionAgent(
+    tools=tools,
+    llm=OpenAI(model="gpt-4o"),
+    system_prompt=(
+        "You are a web research assistant powered by ScrapeGraphAI v2. "
+        "Pick the most specific tool for the job: scrape for a single page, "
+        "extract for structured data, search for open-web questions, "
+        "crawl for multi-page jobs, and create_monitor for recurring jobs."
+    ),
+)
+
+response = await agent.run(
+    "Research the latest blog posts on scrapegraphai.com and summarize them."
+)
+print(response)
+```
+
+### Async client
+
+Every resource has an async twin via `AsyncScrapeGraphAI`:
+
+```python
+from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest
+from llama_index.core.tools import FunctionTool
+
+async def scrape(url: str) -> str:
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.scrape(ScrapeRequest(url=url))
+        if res.status == "error":
+            raise RuntimeError(res.error)
+        return res.data.results["markdown"]["data"][0]
+
+scrape_tool = FunctionTool.from_defaults(async_fn=scrape)
+```
+
+### Custom agent configuration
+
+Plug the tools into any LlamaIndex agent — `ReActAgent`, workflow-based, or third-party:
+
+```python
+from llama_index.core.agent.workflow import ReActAgent
+from llama_index.llms.anthropic import Anthropic
+
+agent = ReActAgent(
+    tools=tools,
+    llm=Anthropic(model="claude-sonnet-4-6"),
+    verbose=True,
 )
 ```
 
-### Check Credits
-
-Monitor your API credit usage:
-
-```python
-credits = scrapegraph_tool.scrapegraph_get_credits(api_key="your-api-key")
-```
-
-## Use Cases
+## Features
 
 <CardGroup cols={2}>
-  <Card title="RAG Applications" icon="database">
-    Build powerful retrieval-augmented generation systems
+  <Card title="Scrape" icon="file-code">
+    Fetch pages as markdown, HTML, screenshots, JSON, links, images, summary, or branding
   </Card>
-  <Card title="Knowledge Bases" icon="book">
-    Create and maintain up-to-date knowledge bases
+  <Card title="Extract" icon="robot">
+    Structured extraction with a prompt and a JSON schema
   </Card>
-  <Card title="Web Research" icon="magnifying-glass">
-    Automate web research and data collection
+  <Card title="Search" icon="magnifying-glass">
+    AI-powered web search with optional structured output
   </Card>
-  <Card title="Content Indexing" icon="list">
-    Index and structure web content for search
+  <Card title="Crawl" icon="spider">
+    Asynchronous multi-page crawls with start / stop / resume controls
+  </Card>
+  <Card title="Monitor" icon="clock">
+    Cron-scheduled jobs with webhook notifications on change
+  </Card>
+  <Card title="Typed Requests" icon="shield-check">
+    Pydantic request models and `ApiResult[T]` responses — no surprises
+  </Card>
+  <Card title="Async-Ready" icon="rotate">
+    `AsyncScrapeGraphAI` mirrors every resource for parallel pipelines
+  </Card>
+  <Card title="Agent-Ready" icon="puzzle-piece">
+    Every endpoint exposed as a drop-in LlamaIndex FunctionTool
   </Card>
 </CardGroup>
 
-## Support
+## Best Practices
 
-Need help with the integration?
+- **Tool selection** — pass only the tools the agent actually needs; a shorter tool list keeps prompts tighter and routing more accurate.
+- **Schema design** — when calling `extract` or `search`, pass a concrete JSON schema (`YourSchema.model_json_schema()`) so the extractor has a clear target.
+- **Format entries** — `scrape` accepts a list of format entries; combine `MarkdownFormatConfig`, `ScreenshotFormatConfig`, and `JsonFormatConfig` in one call to avoid multiple round-trips.
+- **Async crawls** — `sgai.crawl.start` returns immediately; always poll `sgai.crawl.get(id)` until `status in ("completed", "failed", "stopped")`.
+- **ApiResult** — branch on `result.status` instead of wrapping calls in `try/except`; the SDK never raises on API-level errors.
+- **Hard pages** — stealth mode + `mode="js"` fetch config handles most anti-bot sites (see the Zillow recipe above).
+
+## Support
 
 <CardGroup cols={2}>
   <Card
-    title="GitHub Issues"
-    icon="github"
-    href="https://github.com/ScrapeGraphAI/llama-index-tools-scrapegraph/issues"
+    title="LlamaIndex Discord"
+    icon="discord"
+    href="https://discord.gg/dGcwcsnxhU"
   >
-    Report bugs and request features
+    Join the LlamaIndex community for support and discussions
   </Card>
   <Card
-    title="Discord Community"
+    title="scrapegraph-py cookbook"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py/tree/main/cookbook"
+  >
+    Browse the full set of notebook examples
+  </Card>
+  <Card
+    title="ScrapeGraphAI Discord"
     icon="discord"
     href="https://discord.gg/uJN7TYcpNa"
   >
-    Get help from our community
+    Get help with ScrapeGraphAI features
+  </Card>
+  <Card
+    title="Documentation"
+    icon="book"
+    href="/api-reference/introduction"
+  >
+    Explore the full API reference
   </Card>
 </CardGroup>

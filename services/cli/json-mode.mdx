@@ -23,7 +23,7 @@ just-scrape <command> [args] --json
 ### Save results to a file
 
 ```bash
-just-scrape smart-scraper https://store.example.com \
+just-scrape extract https://store.example.com \
   -p "Extract all product names and prices" \
   --json > products.json
 ```
@@ -31,18 +31,16 @@ just-scrape smart-scraper https://store.example.com \
 ### Extract a specific field with jq
 
 ```bash
-just-scrape credits --json | jq '.remaining_credits'
+just-scrape credits --json | jq '.remainingCredits'
 
-just-scrape sitemap https://example.com --json | jq -r '.urls[]'
-
-just-scrape history smartscraper --json | jq '.requests[] | {id: .request_id, status}'
+just-scrape history extract --json | jq '.[].status'
 ```
 
 ### Convert a page to markdown and save it
 
 ```bash
 just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.result' > api-docs.md
+  --json | jq -r '.markdown' > api-docs.md
 ```
 
 ### Chain commands in a shell script
@@ -50,7 +48,7 @@ just-scrape markdownify https://docs.example.com/api \
 ```bash
 #!/bin/bash
 while IFS= read -r url; do
-  just-scrape smart-scraper "$url" \
+  just-scrape extract "$url" \
     -p "Extract the page title and main content" \
     --json >> results.jsonl
 done < urls.txt
@@ -69,8 +67,8 @@ Credits response:
 
 ```json
 {
-  "remaining_credits": 4820,
-  "total_credits": 5000
+  "remainingCredits": 4820,
+  "totalCredits": 5000
 }
 ```
 

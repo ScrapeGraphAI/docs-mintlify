@@ -1,0 +1,223 @@
+---
+title: 'Search'
+description: 'AI-powered web search with structured data extraction'
+icon: 'magnifying-glass'
+---
+
+## Overview
+
+Search runs a web query and returns the top results with their content already fetched. Optionally add a `prompt` and `schema` to have the results summarised into structured JSON.
+
+<Note>
+Try Search instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
+
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+
+res = sgai.search(SearchRequest(
+    query="best programming languages 2024",
+    num_results=3,
+))
+
+if res.status == "success":
+    for r in res.data.results:
+        print(r.title, "-", r.url)
+else:
+    print("Failed:", res.error)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.search({
+  query: "best programming languages 2024",
+  numResults: 3,
+});
+
+if (res.status === "success") {
+  for (const r of res.data?.results ?? []) {
+    console.log(`${r.title} - ${r.url}`);
+  }
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "best programming languages 2024",
+    "numResults": 3
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `query` | string | Yes | The search query. |
+| `numResults` / `num_results` | int | No | Number of results (1–20). Default: `3`. |
+| `prompt` | string | No | Prompt used for AI extraction across the fetched results. |
+| `schema` | object | No | JSON schema for structured output (requires `prompt`). |
+| `format` | string | No | Output format for page content: `"markdown"` (default) or `"html"`. |
+| `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
+| `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`). |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Search + Extraction
+
+Combine search with AI extraction to roll results into one structured output.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, SearchRequest
+
+sgai = ScrapeGraphAI()
+
+res = sgai.search(SearchRequest(
+    query="best programming languages 2024",
+    num_results=3,
+    prompt="Summarize the top languages and why they are recommended",
+    schema={
+        "type": "object",
+        "properties": {
+            "languages": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "reason": {"type": "string"},
+                    },
+                },
+            },
+        },
+    },
+))
+
+if res.status == "success":
+    print(res.data.json_data)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.search({
+  query: "typescript best practices",
+  numResults: 5,
+  prompt: "Extract the main tips and recommendations",
+  schema: {
+    type: "object",
+    properties: {
+      tips: { type: "array", items: { type: "string" } },
+    },
+  },
+});
+
+if (res.status === "success") {
+  console.log(res.data?.json);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "typescript best practices",
+    "numResults": 5,
+    "prompt": "Extract the main tips and recommendations",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "tips": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Async Support (Python)
+
+```python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI, SearchRequest
+
+async def main():
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.search(SearchRequest(
+            query="Best practices for web scraping",
+            num_results=5,
+        ))
+        if res.status == "success":
+            for r in res.data.results:
+                print(r.title, "-", r.url)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="AI-Powered Search" icon="brain">
+    Search + content extraction in one call.
+  </Card>
+  <Card title="Structured Output" icon="table">
+    Add a prompt and schema for typed JSON.
+  </Card>
+  <Card title="Localized Results" icon="globe">
+    Use `locationGeoCode` for country-specific results.
+  </Card>
+  <Card title="Time Filters" icon="clock">
+    Narrow to the past hour, day, week, month, or year.
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain)
+- [LlamaIndex Integration](/integrations/llamaindex)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

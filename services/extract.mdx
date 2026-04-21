@@ -1,0 +1,268 @@
+---
+title: 'Extract'
+description: 'AI-powered structured data extraction from any webpage'
+icon: 'robot'
+---
+
+## Overview
+
+Extract uses an LLM to pull structured data from a URL, HTML, or markdown. Provide a prompt (and optionally a JSON schema) and it returns typed JSON — no selectors or post-processing required.
+
+<Note>
+Try Extract instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://scrapegraphai.com",
+    prompt="What does the company do? Extract name and description.",
+))
+
+if res.status == "success":
+    print(res.data.json_data)
+else:
+    print("Failed:", res.error)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
+  url: "https://scrapegraphai.com",
+  prompt: "What does the company do? Extract name and description.",
+});
+
+if (res.status === "success") {
+  console.log(res.data?.json);
+  console.log("Tokens used:", res.data?.usage);
+} else {
+  console.error(res.error);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com",
+    "prompt": "What does the company do? Extract name and description."
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Cond. | URL of the page to extract from. One of `url`, `html`, or `markdown` is required. |
+| `html` | string | Cond. | Raw HTML to extract from. |
+| `markdown` | string | Cond. | Markdown content to extract from. |
+| `prompt` | string | Yes | Natural-language description of what to extract. |
+| `schema` | object | No | JSON schema describing the desired output shape. |
+| `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"`. |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+<Accordion title="Example Response" icon="terminal">
+```json
+{
+  "id": "9a2178b6-2525-4f98-85e6-9f8c7da17541",
+  "raw": null,
+  "json": {
+    "name": "ScrapeGraphAI",
+    "description": "ScrapeGraphAI is an AI-powered web scraping platform that uses natural language prompts to turn any webpage into structured data via a simple API."
+  },
+  "usage": {
+    "promptTokens": 10002,
+    "completionTokens": 509
+  },
+  "metadata": {
+    "chunker": { "chunks": [{ "size": 5000 }, { "size": 2535 }] },
+    "fetch": {}
+  }
+}
+```
+</Accordion>
+
+## With a JSON Schema
+
+Pass a JSON schema to pin down the exact output shape.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://example.com",
+    prompt="Extract structured information about this page",
+    schema={
+        "type": "object",
+        "properties": {
+            "title": {"type": "string"},
+            "description": {"type": "string"},
+            "links": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["title"],
+    },
+))
+
+if res.status == "success":
+    print(res.data.json_data)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
+  url: "https://example.com",
+  prompt: "Extract the page title and description",
+  schema: {
+    type: "object",
+    properties: {
+      title: { type: "string" },
+      description: { type: "string" },
+    },
+    required: ["title"],
+  },
+});
+
+if (res.status === "success") {
+  console.log(res.data?.json);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "prompt": "Extract the page title and description",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "description": {"type": "string"}
+      },
+      "required": ["title"]
+    }
+  }'
+```
+
+</CodeGroup>
+
+## Extract from HTML or Markdown
+
+Skip the fetch and extract from content you already have.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    html="<html><body><h1>Widget</h1><p>$9.99</p></body></html>",
+    prompt="Extract product name and price",
+))
+```
+
+## FetchConfig
+
+Control how the page is fetched before extraction (JS rendering, stealth, headers, etc). See the full options in [Scrape · FetchConfig](/services/scrape#fetchconfig).
+
+```python
+from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(ExtractRequest(
+    url="https://example.com",
+    prompt="Extract the main content",
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
+))
+```
+
+## Async Support (Python)
+
+```python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI, ExtractRequest
+
+async def main():
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.extract(ExtractRequest(
+            url="https://scrapegraphai.com",
+            prompt="Summarize what this product does",
+        ))
+        if res.status == "success":
+            print(res.data.json_data)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Universal Compatibility" icon="globe">
+    Works with any URL, raw HTML, or markdown input.
+  </Card>
+  <Card title="AI Understanding" icon="brain">
+    Contextual extraction — no XPath or brittle selectors.
+  </Card>
+  <Card title="Structured Output" icon="table">
+    JSON schema support for typed, predictable results.
+  </Card>
+  <Card title="Token Accounting" icon="coins">
+    Response includes prompt/completion token usage.
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain)
+- [LlamaIndex Integration](/integrations/llamaindex)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

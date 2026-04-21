@@ -47,8 +47,8 @@ class ResearchCollectionResult(BaseModel):
 client = Client()
 
 # Search and collect research papers
-response = client.searchscraper(
-    user_prompt="Find recent research papers on machine learning applications in healthcare, focusing on papers published in the last year. Extract complete paper details including abstract, citations, and DOI.",
+response = client.search(
+    query="Find recent research papers on machine learning applications in healthcare, focusing on papers published in the last year. Extract complete paper details including abstract, citations, and DOI.",
     num_results=15,  # Number of papers to collect
     output_schema=ResearchCollectionResult
 )
@@ -115,9 +115,9 @@ class IndustryAnalysis(BaseModel):
 client = Client()
 
 # Collect industry analysis data
-response = client.smartscraper(
-    website_url="https://industry-research-site.com/sector-analysis",
-    user_prompt="Extract comprehensive industry analysis including detailed market metrics, company profiles, trends, and regulatory factors. Focus on quantitative data where available.",
+response = client.extract(
+    url="https://industry-research-site.com/sector-analysis",
+    prompt="Extract comprehensive industry analysis including detailed market metrics, company profiles, trends, and regulatory factors. Focus on quantitative data where available.",
     output_schema=IndustryAnalysis
 )
 

@@ -7,14 +7,29 @@ ScrapeGraphAI uses a credit system to measure API usage. Each successful API cal
 
 ## Credit costs per service
 
-| Service | Credits per request |
+| Service | Credits per request | Details |
+|---|---|---|
+| **Scrape** (markdown) | 1 | Basic page scrape returning markdown |
+| **Scrape** (screenshot) | 2 | Page scrape with a screenshot |
+| **Scrape** (branding analysis) | 25 | Full branding analysis of a page |
+| **Extract** | 5 | Structured data extraction |
+| **Search** (no prompt) | 2 per result | Search results without LLM processing |
+| **Search** (with prompt) | 5 per result | Search results processed by an LLM |
+| **Crawl** | 2 startup + per-page scrape cost | Startup fee plus scrape cost for each page |
+| **Monitor** | +5 | Additional credits when a change is detected |
+
+### Proxy modifiers
+
+Using a proxy adds extra credits on top of the base service cost:
+
+| Proxy mode | Additional credits |
 |---|---|
-| SmartScraper | 1 |
-| SearchScraper | 5 |
-| Markdownify | 1 |
-| SmartCrawler | 1 per page crawled |
-| Sitemap | 1 |
-| AgenticScraper | Variable |
+| Fast / JS rendering | +0 |
+| Stealth | +4 |
+| JS + Stealth | +5 |
+| Auto (worst case) | +9 |
+
+For a full breakdown of plans and monthly credit allowances, see [Plans & Pricing](/knowledge-base/account/pricing).
 
 <Note>
   Failed requests and requests that return an error are not charged.
@@ -22,7 +37,7 @@ ScrapeGraphAI uses a credit system to measure API usage. Each successful API cal
 
 ## Checking your credit balance
 
-Log in to the [dashboard](https://dashboard.scrapegraphai.com) to see:
+Log in to the [dashboard](https://scrapegraphai.com/dashboard) to see:
 - **Remaining credits** for your current billing period
 - **Usage history** broken down by service and date
 
@@ -54,7 +69,7 @@ When your credits are exhausted, the API returns an HTTP `402 Payment Required` 
 }
 ```
 
-Upgrade your plan or purchase additional credits from the [dashboard](https://dashboard.scrapegraphai.com).
+Upgrade your plan or purchase additional credits from the [dashboard](https://scrapegraphai.com/dashboard).
 
 ## Tips to reduce credit usage
 

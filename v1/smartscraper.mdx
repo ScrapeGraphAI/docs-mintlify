@@ -1,0 +1,52 @@
+---
+title: 'SmartScraper'
+description: 'AI-powered web scraping for any website (v1)'
+icon: 'robot'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. In v2, SmartScraper has been renamed to `extract()`. See the [v2 documentation](/services/smartscraper).
+</Warning>
+
+## Overview
+
+SmartScraper is our flagship LLM-powered web scraping service that intelligently extracts structured data from any website.
+
+## Usage
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.smartscraper(
+    website_url="https://example.com",
+    user_prompt="Extract the main heading and description"
+)
+```
+
+```javascript JavaScript
+import { smartScraper } from "scrapegraph-js";
+
+const response = await smartScraper(apiKey, {
+  website_url: "https://example.com",
+  user_prompt: "Extract the main content",
+});
+```
+
+</CodeGroup>
+
+### Parameters
+
+| Parameter     | Type    | Required | Description                                                                 |
+| ------------- | ------- | -------- | --------------------------------------------------------------------------- |
+| website_url   | string  | Yes      | The URL of the webpage to scrape                                            |
+| user_prompt   | string  | Yes      | A textual description of what you want to extract                           |
+| output_schema | object  | No       | Pydantic/Zod schema for structured response                                |
+| stealth       | boolean | No       | Enable anti-detection mode                                                  |
+| headers       | object  | No       | Custom HTTP headers                                                         |
+| mock          | boolean | No       | Enable mock mode for testing                                                |
+| wait_ms       | number  | No       | Page load wait time in ms                                                   |
+| country_code  | string  | No       | Proxy routing country code                                                  |

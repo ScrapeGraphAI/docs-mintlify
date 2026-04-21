@@ -1,0 +1,46 @@
+---
+title: 'Markdownify'
+description: 'Convert web content to clean markdown (v1)'
+icon: 'markdown'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. In v2, Markdownify has been replaced by `scrape()` with `output_format="markdown"`. See the [v2 documentation](/services/markdownify).
+</Warning>
+
+## Overview
+
+Markdownify converts any webpage into clean, formatted markdown.
+
+## Usage
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.markdownify(
+    website_url="https://example.com"
+)
+```
+
+```javascript JavaScript
+import { markdownify } from "scrapegraph-js";
+
+const response = await markdownify(apiKey, {
+  website_url: "https://example.com",
+});
+```
+
+</CodeGroup>
+
+### Parameters
+
+| Parameter    | Type    | Required | Description                              |
+| ------------ | ------- | -------- | ---------------------------------------- |
+| website_url  | string  | Yes      | The URL of the webpage to convert        |
+| wait_ms      | number  | No       | Page load wait time in ms                |
+| stealth      | boolean | No       | Enable anti-detection mode               |
+| country_code | string  | No       | Proxy routing country code               |

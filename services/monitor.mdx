@@ -1,0 +1,242 @@
+---
+title: 'Monitor'
+description: 'Scheduled web monitoring with AI-powered extraction and change detection'
+icon: 'clock'
+---
+
+## Overview
+
+Monitor watches a page on a cron schedule, fetches it in the formats you specify (markdown, JSON, screenshot…), and records change diffs between runs. Optionally push each tick to a webhook.
+
+<Note>
+Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
+
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+
+res = sgai.monitor.create(MonitorCreateRequest(
+    url="https://example.com",
+    name="Homepage watch",
+    interval="*/30 * * * *",   # every 30 minutes
+    formats=[MarkdownFormatConfig()],
+))
+
+if res.status == "success":
+    print("Monitor id:", res.data.cron_id)
+else:
+    print("Failed:", res.error)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.monitor.create({
+  url: "https://example.com",
+  name: "Homepage watch",
+  interval: "*/30 * * * *",    // every 30 minutes
+  formats: [{ type: "markdown" }],
+  webhookUrl: "https://your-server.com/webhook", // optional
+});
+
+if (res.status === "success") {
+  console.log("Monitor id:", res.data?.cronId);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/monitor \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "name": "Homepage watch",
+    "interval": "*/30 * * * *",
+    "formats": [{ "type": "markdown" }]
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `url` | string | Yes | The URL to monitor. |
+| `name` | string | Yes | Human-readable monitor name. |
+| `interval` | string | Yes | 5-field cron expression (e.g. `"*/10 * * * *"`). |
+| `formats` | array | No | Formats to capture each tick (see [Scrape formats](/services/scrape#output-formats)). |
+| `webhookUrl` / `webhook_url` | string | No | URL to receive tick payloads. |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+<Accordion title="Example Response (create)" icon="terminal">
+```json
+{
+  "cronId": "d9a09a07-5052-4262-a0b4-606cbd942287",
+  "scheduleId": "scd_8752XzxtXmLmrvgGzwLVG42iGKaz",
+  "interval": "*/30 * * * *",
+  "status": "active",
+  "config": {
+    "url": "https://example.com",
+    "name": "Homepage watch",
+    "formats": [{ "mode": "normal", "type": "markdown" }],
+    "interval": "*/30 * * * *",
+    "fetchConfig": { "mode": "auto", "wait": 0, "scrolls": 0, "stealth": false, "timeout": 30000 }
+  },
+  "createdAt": "2026-04-19T14:51:02.203Z",
+  "updatedAt": "2026-04-19T14:51:02.203Z"
+}
+```
+</Accordion>
+
+## Managing Monitors
+
+<CodeGroup>
+
+```python Python
+# List all
+sgai.monitor.list()
+
+# Inspect one
+sgai.monitor.get(monitor_id)
+
+# Change schedule or formats
+from scrapegraph_py import MonitorUpdateRequest
+sgai.monitor.update(monitor_id, MonitorUpdateRequest(interval="0 */6 * * *"))
+
+# Pause / resume / delete
+sgai.monitor.pause(monitor_id)
+sgai.monitor.resume(monitor_id)
+sgai.monitor.delete(monitor_id)
+
+# Recent ticks + diffs
+activity = sgai.monitor.activity(monitor_id)
+for tick in activity.data.ticks:
+    print(tick.created_at, "changed" if tick.changed else "no change")
+```
+
+```javascript JavaScript
+await sgai.monitor.list();
+await sgai.monitor.get(monitorId);
+await sgai.monitor.update(monitorId, { interval: "0 */6 * * *" });
+await sgai.monitor.pause(monitorId);
+await sgai.monitor.resume(monitorId);
+await sgai.monitor.delete(monitorId);
+
+const activity = await sgai.monitor.activity(monitorId);
+for (const tick of activity.data?.ticks ?? []) {
+  console.log(tick.createdAt, tick.changed ? "CHANGED" : "no change");
+}
+```
+
+</CodeGroup>
+
+## Structured extraction on every tick
+
+Use the `json` format inside a monitor to extract the same typed payload on each run — then `activity` will include diffs between runs.
+
+```python
+from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, JsonFormatConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.monitor.create(MonitorCreateRequest(
+    url="https://time.is/",
+    name="Time Monitor",
+    interval="*/10 * * * *",
+    formats=[JsonFormatConfig(
+        prompt="Extract the current time",
+        schema={
+            "type": "object",
+            "properties": {"time": {"type": "string"}},
+            "required": ["time"],
+        },
+    )],
+))
+```
+
+## Async Support (Python)
+
+```python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
+
+async def main():
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.monitor.create(MonitorCreateRequest(
+            url="https://example.com",
+            name="async watch",
+            interval="0 * * * *",
+            formats=[MarkdownFormatConfig()],
+        ))
+        if res.status == "success":
+            print(res.data.cron_id)
+
+asyncio.run(main())
+```
+
+## Common Cron Expressions
+
+| Expression | Schedule |
+|-----------|----------|
+| `*/10 * * * *` | Every 10 minutes |
+| `*/30 * * * *` | Every 30 minutes |
+| `0 */6 * * *` | Every 6 hours |
+| `0 9 * * *` | Daily at 9 AM |
+| `0 9 * * 1` | Every Monday at 9 AM |
+| `0 0 1 * *` | First day of every month |
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Scheduled Extraction" icon="calendar">
+    Any cron schedule, down to per-minute granularity.
+  </Card>
+  <Card title="Change Detection" icon="diff">
+    Each tick records diffs vs. the previous run.
+  </Card>
+  <Card title="Webhooks" icon="bolt">
+    Push tick payloads to your own server via `webhookUrl`.
+  </Card>
+  <Card title="Structured Output" icon="code">
+    Combine with the `json` format for typed monitoring.
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>
