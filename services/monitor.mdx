@@ -1,0 +1,230 @@
+---
+title: 'Monitor'
+description: 'Scheduled web monitoring with AI-powered extraction'
+icon: 'clock'
+---
+
+## Overview
+
+Monitor enables you to set up recurring web scraping jobs that automatically extract data on a schedule. Create monitors that run on a cron schedule and extract structured data from any webpage.
+
+<Note>
+Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard) 
+</Note>
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+# Create a monitor
+monitor = client.monitor.create(
+    name="Price Tracker",
+    url="https://example.com/products",
+    prompt="Extract current product prices",
+    interval="0 9 * * *",  # Daily at 9 AM
+)
+print("Monitor created:", monitor)
+```
+
+```javascript JavaScript
+import { monitor } from 'scrapegraph-js';
+
+const result = await monitor.create('your-api-key', {
+  name: 'Price Tracker',
+  url: 'https://example.com/products',
+  interval: '0 9 * * *',  // Daily at 9 AM
+  formats: [{ type: 'markdown' }],
+  webhookUrl: 'https://your-server.com/webhook',  // optional
+});
+
+if (result.status === 'success') {
+  console.log('Monitor created:', result.data?.cronId);
+
+  // List / Get / Pause / Resume / Delete
+  const monitors = await monitor.list('your-api-key');
+  await monitor.pause('your-api-key', result.data?.cronId);
+  await monitor.resume('your-api-key', result.data?.cronId);
+  await monitor.delete('your-api-key', result.data?.cronId);
+}
+```
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/api/v2/monitor \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-api-key" \
+  -d '{
+    "name": "Price Tracker",
+    "url": "https://example.com/products",
+    "prompt": "Extract current product prices",
+    "interval": "0 9 * * *"
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| name | string | Yes | A descriptive name for the monitor. |
+| url | string | Yes | The URL to monitor. |
+| prompt | string | Yes | What data to extract on each run. |
+| interval | string | Yes | Cron expression for the schedule (5 fields, e.g., `"0 9 * * *"` for daily at 9 AM). |
+| output_schema | object | No | JSON Schema (Python dict / JS object) for structured response format. |
+| fetch_config | FetchConfig | No | Configuration for page fetching (mode, stealth, headers, wait, etc.). |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+</Note>
+
+## Managing Monitors
+
+### List All Monitors
+
+```python
+monitors = client.monitor.list()
+print("All monitors:", monitors)
+```
+
+### Get a Specific Monitor
+
+```python
+monitor = client.monitor.get(monitor_id)
+print("Monitor details:", monitor)
+```
+
+### Pause a Monitor
+
+```python
+client.monitor.pause(monitor_id)
+```
+
+### Resume a Monitor
+
+```python
+client.monitor.resume(monitor_id)
+```
+
+### Delete a Monitor
+
+```python
+client.monitor.delete(monitor_id)
+```
+
+## Advanced Usage
+
+### With Output Schema and Config
+
+```python
+from scrapegraph_py import Client, FetchConfig
+
+schema = {
+    "type": "object",
+    "properties": {
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "price": {"type": "number"},
+                    "in_stock": {"type": "boolean"},
+                },
+                "required": ["name", "price"],
+            },
+        },
+    },
+}
+
+client = Client(api_key="your-api-key")
+
+monitor = client.monitor.create(
+    name="Product Price Monitor",
+    url="https://example.com/products",
+    prompt="Extract product names, prices, and stock status",
+    interval="0 */6 * * *",  # Every 6 hours
+    output_schema=schema,
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
+)
+```
+
+### Async Support
+
+```python
+import asyncio
+from scrapegraph_py import AsyncClient
+
+async def main():
+    async with AsyncClient(api_key="your-api-key") as client:
+        monitor = await client.monitor.create(
+            name="Tracker",
+            url="https://example.com",
+            prompt="Extract prices",
+            interval="0 9 * * *",
+        )
+
+        monitors = await client.monitor.list()
+        print("All monitors:", monitors)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Scheduled Extraction" icon="calendar">
+    Run extraction jobs on any cron schedule
+  </Card>
+  <Card title="AI-Powered" icon="brain">
+    Use natural language prompts to define what to extract
+  </Card>
+  <Card title="Full Control" icon="sliders">
+    Create, pause, resume, and delete monitors easily
+  </Card>
+  <Card title="Schema Support" icon="code">
+    Define structured output with Pydantic or Zod schemas
+  </Card>
+</CardGroup>
+
+## Common Cron Expressions
+
+| Expression | Schedule |
+|-----------|----------|
+| `0 9 * * *` | Daily at 9 AM |
+| `0 */6 * * *` | Every 6 hours |
+| `0 9 * * 1` | Every Monday at 9 AM |
+| `0 0 1 * *` | First day of every month |
+| `*/30 * * * *` | Every 30 minutes |
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python) - Perfect for data science and backend applications
+- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+
+### AI Framework Integrations
+- [LangChain Integration](/integrations/langchain) - Use Monitor in your LLM workflows
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="Documentation" icon="book" href="/introduction">
+    Comprehensive guides and tutorials
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Detailed API documentation
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

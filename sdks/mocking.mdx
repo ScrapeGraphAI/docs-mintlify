@@ -1,594 +1,264 @@
 ---
 title: 'Mocking & Testing'
-description: 'Test ScrapeGraphAI functionality in an isolated environment without consuming API credits'
+description: 'Test ScrapeGraphAI v2 functionality without consuming API credits'
 icon: 'test-tube'
 ---
 
-<img
-  style={{ borderRadius: '0.5rem' }}
-  src="https://raw.githubusercontent.com/VinciGit00/Scrapegraph-ai/main/docs/assets/api-banner.png"
-  alt="ScrapeGraph API Banner"
-/>
-
 <CardGroup cols={2}>
-  <Card title="Mock Mode" icon="test-tube">
-    Test your code without making real API calls
+  <Card title="Standard Libraries" icon="test-tube">
+    Use familiar testing tools for mocking
   </Card>
-  <Card title="Custom Responses" icon="code">
-    Override responses for specific endpoints
+  <Card title="No Credit Usage" icon="shield">
+    Test without consuming API credits
   </Card>
 </CardGroup>
 
 ## Overview
 
-A mock environment is an isolated test environment. You can use mock mode to test ScrapeGraphAI functionality in your application, and experiment with new features without affecting your live integration or consuming API credits. For example, when testing in mock mode, the scraping requests you create aren't processed by our servers or counted against your credit usage.
+In v2, the built-in mock mode (`mock=True`, `mock_handler`, `mock_responses`) has been removed from the SDKs. Instead, use standard mocking libraries for your language to test ScrapeGraphAI integrations without making real API calls or consuming credits.
 
-## Use cases
+<Warning>
+If you're migrating from v1, replace `Client(mock=True)` with standard mocking patterns shown below.
+</Warning>
 
-Mock mode provides an environment for testing various functionalities and scenarios without the implications of real API calls. Below are some common use cases for mocking in your ScrapeGraphAI integrations:
+## Python SDK Testing
 
-| Scenario | Description |
-|----------|-------------|
-| **Simulate scraping responses to test without real API calls** | Use mock mode to test scraping functionality without real API calls. Create mock responses in your application to test data processing logic or use custom handlers to simulate various response scenarios. |
-| **Scale isolated testing for teams** | Your team can test in separate mock environments to make sure that data and actions are completely isolated from other tests. Changes made in one mock configuration don't interfere with changes in another. |
-| **Test without API key requirements** | You can test your integration without providing real API keys, making it easier for external developers, implementation partners, or design agencies to work with your code without access to your live API credentials. |
-| **Test in development or CI/CD pipelines** | Access mock mode from your development environment or continuous integration pipelines. Test ScrapeGraphAI functionality directly in your code or use familiar testing frameworks and fixtures. |
-
-## Test in mock mode
-
-You can simulate scraping responses and use mock data to test your integration without consuming API credits. Learn more about using mock responses to confirm that your integration works correctly.
-
-## Basic Mock Usage
-
-Enable mock mode by setting `mock=True` when initializing the client:
+### Using `unittest.mock`
 
 ```python
+from unittest.mock import patch, MagicMock
 from scrapegraph_py import Client
-from scrapegraph_py.logger import sgai_logger
 
-# Set logging level for better visibility
-sgai_logger.set_logging(level="INFO")
+def test_extract():
+    client = Client(api_key="test-key")
 
-def basic_mock_usage():
-    # Initialize the client with mock mode enabled
-    client = Client.from_env(mock=True)
-
-    print("\n-- get_credits (mock) --")
-    print(client.get_credits())
-
-    print("\n-- markdownify (mock) --")
-    md = client.markdownify(website_url="https://example.com")
-    print(md)
-
-    print("\n-- get_markdownify (mock) --")
-    md_status = client.get_markdownify("00000000-0000-0000-0000-000000000123")
-    print(md_status)
-
-    print("\n-- smartscraper (mock) --")
-    ss = client.smartscraper(user_prompt="Extract title", website_url="https://example.com")
-    print(ss)
-
-if __name__ == "__main__":
-    basic_mock_usage()
-```
-
-<Note>
-When mock mode is enabled, all API calls return predefined mock responses instead of making real HTTP requests. This ensures your tests run quickly and don't consume API credits.
-</Note>
-
-## Custom Response Overrides
-
-You can override specific endpoint responses using the `mock_responses` parameter:
-
-```python
-def mock_with_path_overrides():
-    # Initialize the client with mock mode and custom responses
-    client = Client.from_env(
-        mock=True,
-        mock_responses={
-            "/v1/credits": {"remaining_credits": 42, "total_credits_used": 58, "mock": true}
+    mock_response = {
+        "data": {
+            "title": "Test Page",
+            "content": "This is test content"
         },
-    )
-
-    print("\n-- get_credits with override (mock) --")
-    print(client.get_credits())
-```
-
-<Accordion title="Available Endpoint Overrides" icon="list">
-You can override responses for any endpoint by providing the path and expected response:
-
-```python
-client = Client.from_env(
-    mock=True,
-    mock_responses={
-        "/v1/credits": {
-            "remaining_credits": 100,
-            "total_credits_used": 0,
-            "mock": true
-        },
-        "/v1/smartscraper/start": {
-            "job_id": "mock-job-123",
-            "status": "processing",
-            "mock": true
-        },
-        "/v1/smartscraper/status/mock-job-123": {
-            "job_id": "mock-job-123",
-            "status": "completed",
-            "result": {
-                "title": "Mock Title",
-                "content": "Mock content from the webpage",
-                "mock": true
-            }
-        },
-        "/v1/markdownify/start": {
-            "job_id": "mock-markdown-456",
-            "status": "processing",
-            "mock": true
-        },
-        "/v1/markdownify/status/mock-markdown-456": {
-            "job_id": "mock-markdown-456",
-            "status": "completed",
-            "result": "# Mock Markdown\n\nThis is mock markdown content.",
-            "mock": true
-        }
+        "request_id": "test-request-123"
     }
-)
-```
-</Accordion>
 
-## Custom Handler Functions
+    with patch.object(client, "extract", return_value=mock_response):
+        response = client.extract(
+            url="https://example.com",
+            prompt="Extract title and content"
+        )
 
-For more complex mocking scenarios, you can provide a custom handler function:
-
-```python
-def mock_with_custom_handler():
-    def handler(method, url, kwargs):
-        return {"handled_by": "custom_handler", "method": method, "url": url}
-
-    # Initialize the client with mock mode and custom handler
-    client = Client.from_env(mock=True, mock_handler=handler)
-
-    print("\n-- searchscraper via custom handler (mock) --")
-    resp = client.searchscraper(user_prompt="Search something")
-    print(resp)
+        assert response["data"]["title"] == "Test Page"
+        assert response["request_id"] == "test-request-123"
 ```
 
-<Accordion title="Advanced Custom Handler" icon="code">
-Create sophisticated mock responses based on request parameters:
+### Using `responses` Library
+
+Mock HTTP requests at the transport layer:
 
 ```python
-def advanced_custom_handler():
-    def smart_handler(method, url, kwargs):
-        # Handle different endpoints with custom logic
-        if "/v1/credits" in url:
-            return {
-                "remaining_credits": 50,
-                "total_credits_used": 50,
-                "mock": true
-            }
-        elif "/v1/smartscraper" in url:
-            # Extract user_prompt from kwargs to create contextual responses
-            user_prompt = kwargs.get("user_prompt", "")
-            if "title" in user_prompt.lower():
-                return {
-                    "job_id": "mock-title-job",
-                    "status": "completed",
-                    "result": {
-                        "title": "Extracted Title",
-                        "content": "This is the extracted content",
-                        "mock": true
-                    }
-                }
-            else:
-                return {
-                    "job_id": "mock-generic-job",
-                    "status": "completed",
-                    "result": {
-                        "data": "Generic extracted data",
-                        "mock": true
-                    }
-                }
-        else:
-            return {"error": "Unknown endpoint", "url": url}
-
-    client = Client.from_env(mock=True, mock_handler=smart_handler)
-    
-    # Test different scenarios
-    print("Credits:", client.get_credits())
-    print("Title extraction:", client.smartscraper(
-        website_url="https://example.com",
-        user_prompt="Extract the title"
-    ))
-    print("Generic extraction:", client.smartscraper(
-        website_url="https://example.com",
-        user_prompt="Extract some data"
-    ))
-```
-</Accordion>
-
-## Testing Best Practices
-
-### Unit Testing with Mocks
-
-```python
-import unittest
-from unittest.mock import patch
+import responses
 from scrapegraph_py import Client
 
-class TestScrapeGraphAI(unittest.TestCase):
-    def setUp(self):
-        self.client = Client.from_env(mock=True)
-    
-    def test_get_credits(self):
-        credits = self.client.get_credits()
-        self.assertIn("remaining_credits", credits)
-        self.assertIn("total_credits_used", credits)
-    
-    def test_smartscraper_with_schema(self):
-        from pydantic import BaseModel, Field
-        
-        class TestSchema(BaseModel):
-            title: str = Field(description="Page title")
-            content: str = Field(description="Page content")
-        
-        response = self.client.smartscraper(
-            website_url="https://example.com",
-            user_prompt="Extract title and content",
-            output_schema=TestSchema
-        )
-        
-        self.assertIsInstance(response, TestSchema)
-        self.assertIsNotNone(response.title)
-        self.assertIsNotNone(response.content)
-
-if __name__ == "__main__":
-    unittest.main()
-```
-
-### Integration Testing
-
-```python
-def test_integration_flow():
-    """Test a complete workflow using mocks"""
-    client = Client.from_env(
-        mock=True,
-        mock_responses={
-            "/v1/credits": {"remaining_credits": 10, "total_credits_used": 90, "mock": true},
-            "/v1/smartscraper/start": {
-                "job_id": "test-job-123",
-                "status": "processing",
-                "mock": true
-            },
-            "/v1/smartscraper/status/test-job-123": {
-                "job_id": "test-job-123",
-                "status": "completed",
-                "result": {
-                    "title": "Test Page",
-                    "content": "Test content",
-                    "mock": true
-                }
-            }
-        }
+@responses.activate
+def test_extract_http():
+    responses.post(
+        "https://api.scrapegraphai.com/api/v2/extract",
+        json={
+            "data": {"title": "Mock Title"},
+            "request_id": "mock-123"
+        },
+        status=200,
     )
-    
-    # Test the complete flow
-    credits = client.get_credits()
-    assert credits["remaining_credits"] == 10
-    
-    # Start a scraping job
-    job = client.smartscraper(
-        website_url="https://example.com",
-        user_prompt="Extract title and content"
+
+    client = Client(api_key="test-key")
+    response = client.extract(
+        url="https://example.com",
+        prompt="Extract the title"
     )
-    
-    # Check job status
-    status = client.get_smartscraper("test-job-123")
-    assert status["status"] == "completed"
-    assert "title" in status["result"]
+
+    assert response["data"]["title"] == "Mock Title"
 ```
 
-## Environment Variables
-
-You can also control mocking through environment variables:
-
-```bash
-# Enable mock mode via environment variable
-export SGAI_MOCK=true
-
-# Set custom mock responses (JSON format)
-export SGAI_MOCK_RESPONSES='{"\/v1\/credits": {"remaining_credits": 100, "mock": true}}'
-```
+### Using `pytest` Fixtures
 
 ```python
-# The client will automatically detect mock mode from environment
-client = Client.from_env()  # Will use mock mode if SGAI_MOCK=true
+import pytest
+from unittest.mock import MagicMock
+from scrapegraph_py import Client
+
+@pytest.fixture
+def mock_client():
+    client = Client(api_key="test-key")
+    client.extract = MagicMock(return_value={
+        "data": {"title": "Mock Title"},
+        "request_id": "mock-123"
+    })
+    client.search = MagicMock(return_value={
+        "data": {"results": []},
+        "request_id": "mock-456"
+    })
+    client.credits = MagicMock(return_value={
+        "remaining_credits": 100,
+        "total_credits_used": 0
+    })
+    return client
+
+def test_extract(mock_client):
+    response = mock_client.extract(
+        url="https://example.com",
+        prompt="Extract the title"
+    )
+    assert response["data"]["title"] == "Mock Title"
+
+def test_credits(mock_client):
+    credits = mock_client.credits()
+    assert credits["remaining_credits"] == 100
 ```
 
-## Async Mocking
-
-Mocking works seamlessly with async clients:
+### Async Testing with `aioresponses`
 
 ```python
+import pytest
 import asyncio
+from aioresponses import aioresponses
 from scrapegraph_py import AsyncClient
 
-async def async_mock_example():
-    async with AsyncClient(mock=True) as client:
-        # All async methods work with mocks
-        credits = await client.get_credits()
-        print(f"Mock credits: {credits}")
-        
-        response = await client.smartscraper(
-            website_url="https://example.com",
-            user_prompt="Extract data"
+@pytest.mark.asyncio
+async def test_async_extract():
+    with aioresponses() as mocked:
+        mocked.post(
+            "https://api.scrapegraphai.com/api/v2/extract",
+            payload={
+                "data": {"title": "Async Mock"},
+                "request_id": "async-123"
+            },
         )
-        print(f"Mock response: {response}")
 
-# Run the async example
-asyncio.run(async_mock_example())
+        async with AsyncClient(api_key="test-key") as client:
+            response = await client.extract(
+                url="https://example.com",
+                prompt="Extract data"
+            )
+
+            assert response["data"]["title"] == "Async Mock"
 ```
 
-## HTTP Method Mocking with cURL
+## JavaScript SDK Testing
 
-You can also test ScrapeGraphAI endpoints directly using cURL with mock responses. This is useful for testing API integrations without using SDKs.
-
-### Basic cURL Mock Usage
-
-```bash
-# Enable mock mode via environment variable
-export SGAI_MOCK=true
-
-# Test credits endpoint with mock
-curl -X GET "https://api.scrapegraph.ai/v1/credits" \
-  -H "Authorization: Bearer $SGAI_API_KEY" \
-  -H "Content-Type: application/json"
-```
-
-### Custom Mock Responses with cURL
-
-```bash
-# Set custom mock responses via environment variable
-export SGAI_MOCK_RESPONSES='{
-  "/v1/credits": {
-    "remaining_credits": 100,
-    "total_credits_used": 0,
-    "mock": true
-  },
-}'
-
-# Test smartscraper endpoint
-curl -X POST "https://api.scrapegraph.ai/v1/smartscraper/" \
-  -H "Authorization: Bearer $SGAI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "website_url": "https://example.com",
-    "user_prompt": "Extract title and content"
-    "mock": true
-  }'
-```
-
-### Testing Different HTTP Methods
-
-```bash
-# POST request - to smartscraper
-curl --location 'https://api.scrapegraphai.com/v1/smartscraper' \
---data '{
-    "website_url": "https://www.scrapegraphai.com//",
-    "user_prompt": "Extract founder info ",
-    "mock":true
-}'
-```
-
-```bash
-# POST request - to Markdownify
-curl --location 'https://api.scrapegraphai.com/v1/markdownify' \
---data '{
-    "website_url": "https://www.scrapegraphai.com//",
-    "mock":true
-}'
-```
-
-```bash
-# POST request - to SearchScraper
-curl --location 'https://api.scrapegraphai.com/v1/searchscraper' \
---data '{
-    "website_url": "https://www.scrapegraphai.com//",
-    "mock":true
-    "output_schema":{},
-    "num_results":3, 
-}'
-```
-
-
-## JavaScript SDK Mocking
-
-The JavaScript SDK supports per-request mocking via the `mock` parameter. Pass `mock: true` in the params object of any function to receive mock data instead of making a real API call.
-
-### Per-Request Mock Mode
+### Using Jest / Vitest
 
 ```javascript
-import { smartScraper, scrape, searchScraper, getCredits } from 'scrapegraph-js';
+import { describe, it, expect, vi } from "vitest";
+import { extract, getCredits, search } from "scrapegraph-js";
 
-const API_KEY = 'your-api-key';
+// Mock the module
+vi.mock("scrapegraph-js", () => ({
+  extract: vi.fn().mockResolvedValue({
+    status: "success",
+    data: { raw: null, json: { title: "Mock Title" }, usage: {}, metadata: {} },
+    elapsedMs: 100,
+  }),
+    search: vi.fn().mockResolvedValue({
+      status: "success",
+      data: { results: [] },
+      elapsedMs: 100,
+    }),
+    getCredits: vi.fn().mockResolvedValue({
+      status: "success",
+      data: { remaining: 100, used: 50, plan: "pro" },
+      elapsedMs: 50,
+    }),
+  };
+}));
 
-// SmartScraper with mock
-const smartResult = await smartScraper(API_KEY, {
-  website_url: 'https://example.com',
-  user_prompt: 'Extract the title',
-  mock: true,
+describe("ScrapeGraphAI", () => {
+  it("should extract data", async () => {
+    const result = await extract("test-key", {
+      url: "https://example.com",
+      prompt: "Extract the title",
+    });
+    expect(result.data?.json?.title).toBe("Mock Title");
+  });
+
+  it("should check credits", async () => {
+    const result = await getCredits("test-key");
+    expect(result.data?.remaining).toBe(100);
+  });
 });
-console.log('SmartScraper mock:', smartResult.data);
-
-// Scrape with mock
-const scrapeResult = await scrape(API_KEY, {
-  website_url: 'https://example.com',
-  mock: true,
-});
-console.log('Scrape mock:', scrapeResult.data);
-
-// SearchScraper with mock
-const searchResult = await searchScraper(API_KEY, {
-  user_prompt: 'Find AI news',
-  mock: true,
-});
-console.log('SearchScraper mock:', searchResult.data);
 ```
 
-<Note>
-The JavaScript SDK does not have global mock functions like `enableMock()` or `setMockResponses()`. Mock mode is controlled per-request via the `mock: true` parameter. All functions return `ApiResult<T>` — errors are never thrown.
-</Note>
+### Using MSW (Mock Service Worker)
+
+Mock at the network level for more realistic testing:
+
+```javascript
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import { extract } from "scrapegraph-js";
+
+const server = setupServer(
+  http.post("https://api.scrapegraphai.com/v2/extract", () => {
+    return HttpResponse.json({
+      raw: null,
+      json: { title: "MSW Mock Title" },
+      usage: { promptTokens: 100, completionTokens: 50 },
+      metadata: { chunker: { chunks: [] } },
+    });
+  })
+);
+
+beforeAll(() => server.listen());
+afterAll(() => server.close());
+afterEach(() => server.resetHandlers());
+
+test("extract returns mocked data", async () => {
+  const result = await extract("test-key", {
+    url: "https://example.com",
+    prompt: "Extract the title",
+  });
+  expect(result.data?.json?.title).toBe("MSW Mock Title");
+});
+```
+
+## Testing with cURL
+
+Test API endpoints directly using cURL against a local mock server or staging environment:
+
+```bash
+# Test extract endpoint
+curl -X POST "https://api.scrapegraphai.com/api/v2/extract" \
+  -H "Authorization: Bearer your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "prompt": "Extract the title"
+  }'
+
+# Test credits endpoint
+curl -X GET "https://api.scrapegraphai.com/api/v2/credits" \
+  -H "Authorization: Bearer your-api-key"
+```
 
 ## SDK Comparison
 
-<CardGroup cols={3}>
-  <Card title="Python SDK" icon="python">
-    - `Client(mock=True)` initialization
-    - `mock_responses` parameter for overrides
-    - `mock_handler` for custom logic
-    - Environment variable: `SGAI_MOCK=true`
-  </Card>
-  <Card title="JavaScript SDK" icon="javascript">
-    - `mock: true` in per-request params
-    - All functions support mock parameter
-    - Native async/await
-  </Card>
-  <Card title="cURL/HTTP" icon="terminal">
-    - Environment variable: `SGAI_MOCK=true`
-    - `SGAI_MOCK_RESPONSES` for custom responses
-    - Direct HTTP method testing
-    - No SDK dependencies required
-  </Card>
-</CardGroup>
+| Feature | Python | JavaScript |
+|---------|--------|------------|
+| **Mock library** | `unittest.mock`, `responses` | Jest/Vitest mocks, MSW |
+| **HTTP-level mocking** | `responses`, `aioresponses` | MSW (Mock Service Worker) |
+| **Async mocking** | `aioresponses`, `unittest.mock` | Native async/await |
+| **Fixture support** | pytest fixtures | beforeEach/afterEach |
 
-### Feature Comparison
+## Best Practices
 
-| Feature | Python SDK | JavaScript SDK | cURL/HTTP |
-|---------|------------|----------------|-----------|
-| **Global Mock Mode** | `Client(mock=True)` | N/A | `SGAI_MOCK=true` |
-| **Per-Request Mock** | `{mock: True}` in params | `mock: true` in params | N/A |
-| **Custom Responses** | `mock_responses` dict | N/A | `SGAI_MOCK_RESPONSES` |
-| **Custom Handler** | `mock_handler` function | N/A | N/A |
-| **Environment Variable** | `SGAI_MOCK=true` | N/A | `SGAI_MOCK=true` |
-| **Async Support** | `AsyncClient(mock=True)` | Native async/await | N/A |
-| **Dependencies** | Python SDK required | JavaScript SDK required | None |
-
-## Limitations
-
-* You can't test real-time scraping performance in mock mode.
-* Mock responses don't reflect actual website changes or dynamic content.
-* Rate limiting and credit consumption are not simulated in mock mode.
-* Some advanced features may behave differently in mock mode compared to live mode.
-
-## Troubleshooting
-
-<Accordion title="Common Issues" icon="exclamation-triangle">
-
-### Mock responses not working
-- Ensure `mock=True` is set when initializing the client
-- Check that your mock response paths match the actual API endpoints
-- Verify the response format matches the expected schema
-
-### Custom handler not being called
-- Make sure you're passing the `mock_handler` parameter correctly
-- Check that your handler function accepts the correct parameters: `(method, url, kwargs)`
-- Ensure the handler returns a valid response object
-
-### Schema validation errors
-- Mock responses must match the expected Pydantic schema structure
-- Use the same field names and types as defined in your schema
-- Test your mock responses with the actual schema classes
-
-</Accordion>
-
-## Examples
-
-<Accordion title="Complete Mock Example" icon="play">
-Here's a complete example showing all mocking features:
-
-```python
-from scrapegraph_py import Client
-from scrapegraph_py.logger import sgai_logger
-from pydantic import BaseModel, Field
-from typing import List
-
-# Set up logging
-sgai_logger.set_logging(level="INFO")
-
-class ProductInfo(BaseModel):
-    name: str = Field(description="Product name")
-    price: str = Field(description="Product price")
-    features: List[str] = Field(description="Product features")
-
-def complete_mock_demo():
-    # Initialize with comprehensive mock responses
-    client = Client.from_env(
-        mock=True,
-        mock_responses={
-            "/v1/credits": {
-                "remaining_credits": 25,
-                "total_credits_used": 75,
-                "mock": true
-            },
-            "/v1/smartscraper/start": {
-                "job_id": "demo-job-789",
-                "status": "processing",
-                "mock": true
-            },
-            "/v1/smartscraper/status/demo-job-789": {
-                "job_id": "demo-job-789",
-                "status": "completed",
-                "result": {
-                    "name": "iPhone 15 Pro",
-                    "price": "$999",
-                    "features": [
-                        "A17 Pro chip",
-                        "48MP camera system",
-                        "Titanium design",
-                        "Action Button"
-                    ],
-                    "mock": true
-                }
-            }
-        }
-    )
-    
-    print("=== ScrapeGraphAI Mock Demo ===\n")
-    
-    # Test credits endpoint
-    print("1. Checking credits:")
-    credits = client.get_credits()
-    print(f"   Remaining: {credits['remaining_credits']}")
-    print(f"   Used: {credits['total_credits_used']}\n")
-    
-    # Test smartscraper with schema
-    print("2. Extracting product information:")
-    product = client.smartscraper(
-        website_url="https://apple.com/iphone-15-pro",
-        user_prompt="Extract product name, price, and key features",
-        output_schema=ProductInfo
-    )
-    
-    print(f"   Product: {product.name}")
-    print(f"   Price: {product.price}")
-    print("   Features:")
-    for feature in product.features:
-        print(f"     - {feature}")
-    
-    print("\n3. Testing markdownify:")
-    markdown = client.markdownify(website_url="https://example.com")
-    print(f"   Markdown length: {len(markdown)} characters")
-    
-    print("\n=== Demo Complete ===")
-
-if __name__ == "__main__":
-    complete_mock_demo()
-```
-</Accordion>
+- Mock at the **client method level** for unit tests (fastest, simplest)
+- Mock at the **HTTP level** for integration tests (validates request/response shapes)
+- Use **fixtures** to share mock configurations across tests
+- Keep mock responses **realistic** - match the actual API response structure
+- Test both **success and error** scenarios
 
 ## Support
 
 <CardGroup cols={2}>
-  <Card title="GitHub Issues" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-sdk/issues">
+  <Card title="GitHub Issues" icon="github" href="https://github.com/ScrapeGraphAI/scrapegraph-py/issues">
     Report bugs or request features
   </Card>
   <Card title="Documentation" icon="book" href="/sdks/python">
@@ -596,4 +266,4 @@ if __name__ == "__main__":
   </Card>
 </CardGroup>
 
-Need help with mocking? Check out our [Python SDK documentation](/sdks/python) or join our [Discord community](https://discord.gg/uJN7TYcpNa) for support.
+Need help with testing? Join our [Discord community](https://discord.gg/uJN7TYcpNa) for support.

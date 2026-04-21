@@ -1,19 +1,15 @@
 ---
 title: 'Scrape'
-description: 'Extract raw HTML content from web pages with JavaScript rendering support'
+description: 'Scrape web pages in markdown, HTML, or screenshot format'
 icon: 'code'
 ---
 
-<Frame>
-  <img src="/services/images/markdownify-banner.png" alt="Scrape Service" />
-</Frame>
-
 ## Overview
 
-The Scrape service provides direct access to raw HTML content from web pages, with optional JavaScript rendering support. This service is perfect for applications that need the complete HTML structure of a webpage, including dynamically generated content.
+The Scrape service fetches web page content and returns it in your preferred format: markdown, HTML, screenshot, or branding. It replaces the previous Markdownify service and supports flexible output through a simple `format` parameter.
 
 <Note>
-Try the Scrape service instantly in our [interactive playground](https://dashboard.scrapegraphai.com/) 
+Try the Scrape service instantly in our [interactive playground](https://scrapegraphai.com/dashboard) 
 </Note>
 
 ## Getting Started
@@ -24,61 +20,47 @@ Try the Scrape service instantly in our [interactive playground](https://dashboa
 
 ```python Python
 from scrapegraph_py import Client
-from scrapegraph_py.logger import sgai_logger
 
-sgai_logger.set_logging(level="INFO")
+client = Client(api_key="your-api-key")
 
-# Initialize the client
-sgai_client = Client(api_key="your-api-key")
+# Get markdown (default)
+response = client.scrape("https://example.com")
 
-# Scrape request
-response = sgai_client.htmlify(
-    website_url="https://example.com",
-    branding=True  # Set to True to extract brand design and metadata
-)
+# Get HTML
+response = client.scrape("https://example.com", format="html")
 
-print("HTML Content:", response.html)
-print("Request ID:", response.scrape_request_id)
-print("Status:", response.status)
-# Optional branding result
-if response.branding:
-    print("Branding extracted")
+# Get screenshot
+response = client.scrape("https://example.com", format="screenshot")
 ```
 
 ```javascript JavaScript
 import { scrape } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
-
-const response = await scrape(apiKey, {
-  website_url: 'https://example.com',
-  branding: true,
+// Get markdown (default)
+const result = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'markdown' }],
 });
 
-if (response.status === 'error') {
-  console.error('Error:', response.error);
-} else {
-  console.log('HTML Content:', response.data.html);
-  console.log('Request ID:', response.data.scrape_request_id);
-  console.log('Status:', response.data.status);
-  if (response.data.branding) {
-    console.log('Branding extracted');
-  }
+// Get HTML
+const htmlResult = await scrape('your-api-key', {
+  url: 'https://example.com',
+  formats: [{ type: 'html' }],
+});
+
+if (result.status === 'success') {
+  console.log(result.data?.results.markdown?.data);
 }
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/v1/scrape \
+curl -X POST https://api.scrapegraphai.com/api/v2/scrape \
   -H "Content-Type: application/json" \
-  -H "SGAI-APIKEY: your-api-key" \
+  -H "Authorization: Bearer your-api-key" \
   -d '{
-    "website_url": "https://example.com",
-    "branding": true
+    "url": "https://example.com",
+    "format": "markdown"
   }'
-```
-
-```bash CLI
-just-scrape scrape https://example.com --branding
 ```
 
 </CodeGroup>
@@ -87,148 +69,70 @@ just-scrape scrape https://example.com --branding
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| apiKey | string | Yes | The ScrapeGraph API Key. |
-| website_url | string | Yes | The URL of the webpage to scrape. |
-| branding | boolean | No | Return extracted brand design and metadata. Default: false |
-| stealth | boolean | No | Enable stealth mode for anti-bot protection. Adds additional credits. Default: false |
-| wait_ms | integer | No | Milliseconds to wait before capturing page content. Default: 3000 |
-| country_code | string | No | Two-letter ISO country code for geo-targeted proxy routing (e.g., "us", "gb", "de"). |
+| url | string | Yes | The URL of the webpage to scrape. |
+| format | string | No | Output format: `"markdown"` (default), `"html"`, `"screenshot"`, or `"branding"`. |
+| fetch_config | FetchConfig | No | Configuration for page fetching (headers, stealth, etc.). |
 
 <Note>
-Get your API key from the [dashboard](https://dashboard.scrapegraphai.com)
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
 </Note>
 
-<Accordion title="Example Response (without branding)" icon="terminal">
+<Accordion title="Example Response" icon="terminal">
 ```json
 {
-  "scrape_request_id": "2f0f7a7e-7eb3-4bd2-8f8d-ae8a7f2d9c1a",
-  "status": "completed",
-  "html": "<!DOCTYPE html><html><head><title>Example Page</title></head><body><h1>Welcome to Example.com</h1><p>This is the raw HTML content...</p></body></html>",
-  "error": ""
-}
-```
-
-The response includes:
-- `scrape_request_id`: Unique identifier for tracking your request
-- `status`: Current status of the scraping operation
-- `html`: Raw HTML content of the webpage
-- `error`: Error message (if any occurred during scraping)
-</Accordion>
-
-<Accordion title="Example Response (with branding=true)" icon="terminal">
-```json
-{
-  "scrape_request_id": "2f0f7a7e-7eb3-4bd2-8f8d-ae8a7f2d9c1a",
-  "status": "completed",
-  "html": "<!DOCTYPE html><html>...</html>",
-  "error": "",
-  "branding": {
-    "branding": {
-      "colorScheme": "light",
-      "colors": {
-        "primary": "#0B5FFF",
-        "accent": "#FF8A00",
-        "background": "#FFFFFF",
-        "textPrimary": "#111827",
-        "link": "#0B5FFF"
-      },
-      "fonts": [
-        { "family": "Inter", "role": "body" }
-      ],
-      "typography": {
-        "fontFamilies": { "primary": "Inter", "heading": "Inter" },
-        "fontStacks": { "heading": ["Inter"], "body": ["Inter"] },
-        "fontSizes": { "h1": "32px", "h2": "24px", "body": "16px" }
-      },
-      "spacing": { "baseUnit": 4, "borderRadius": "6px" },
-      "components": {
-        "input": { "borderColor": "#E5E7EB", "borderRadius": "6px" },
-        "buttonPrimary": {
-          "background": "#0B5FFF",
-          "textColor": "#FFFFFF",
-          "borderRadius": "6px",
-          "shadow": "..."
-        }
-      },
-      "images": {
-        "logo": "https://example.com/logo.svg",
-        "favicon": "https://example.com/favicon.ico",
-        "ogImage": "https://example.com/og.png"
-      },
-      "designSystem": { "framework": "tailwind", "componentLibrary": null },
-      "confidence": { "overall": 0.86 }
-    },
-    "metadata": {
-      "title": "Example",
-      "language": "en",
-      "favicon": "https://example.com/favicon.ico"
-    }
+  "id": "0d6c4b31-931b-469b-9a7f-2f1e002e79ca",
+  "format": "markdown",
+  "content": [
+    "# Example Domain\n\nThis domain is for use in documentation examples..."
+  ],
+  "metadata": {
+    "contentType": "text/html"
   }
 }
 ```
-
-When `branding=true` is passed, the response includes a `branding` object with brand design data and page metadata.
 </Accordion>
 
-## Key Features
+## Output Formats
 
-<CardGroup cols={2}>
-  <Card title="Raw HTML Access" icon="code">
-    Get complete HTML structure including all elements
-  </Card>
-  <Card title="Branding Extraction" icon="palette">
-    Optionally extract brand colors, fonts, typography, UI components, images, and metadata
-  </Card>
-  <Card title="Fast Processing" icon="clock">
-    Quick extraction for simple HTML content
-  </Card>
-  <Card title="Reliable Output" icon="shield-check">
-    Consistent results across different websites
-  </Card>
-</CardGroup>
-
-## Use Cases
-
-### Web Development
-- Extract HTML templates
-- Analyze page structure
-- Test website rendering
-- Debug HTML issues
-
-### Data Analysis
-- Parse HTML content
-- Extract specific elements
-- Monitor website changes
-- Build web scrapers
-
-### Content Processing
-- Process dynamic content
-- Handle JavaScript-heavy sites
-- Extract embedded data
-- Analyze page performance
-
-<Note>
-Want to learn more about our AI-powered scraping technology? Visit our [main website](https://scrapegraphai.com) to discover how we're revolutionizing web data extraction.
-</Note>
+| Format | Description |
+|--------|-------------|
+| `markdown` | Clean markdown conversion of the page content (default). |
+| `html` | Raw HTML content of the page. |
+| `screenshot` | Screenshot image of the rendered page. |
+| `branding` | Brand design extraction: colors, fonts, typography, logos. |
 
 ## Advanced Usage
 
-### Async Support
-
-For applications requiring asynchronous execution, the Scrape service provides async support:
+### With FetchConfig
 
 ```python
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import Client, FetchConfig
+
+client = Client(api_key="your-api-key")
+
+response = client.scrape(
+    "https://example.com",
+    format="markdown",
+    fetch_config=FetchConfig(
+        mode="js",
+        stealth=True,
+        wait=2000,
+        headers={"User-Agent": "MyBot"},
+    ),
+)
+```
+
+### Async Support
+
+```python
 import asyncio
+from scrapegraph_py import AsyncClient
 
 async def main():
     async with AsyncClient(api_key="your-api-key") as client:
-        response = await client.htmlify(
-            website_url="https://example.com"
-        )
+        response = await client.scrape("https://example.com")
         print(response)
 
-# Run the async function
 asyncio.run(main())
 ```
 
@@ -239,40 +143,43 @@ Process multiple URLs concurrently for better performance:
 ```python
 import asyncio
 from scrapegraph_py import AsyncClient
-from scrapegraph_py.logger import sgai_logger
-
-sgai_logger.set_logging(level="INFO")
 
 async def main():
-    # Initialize async client
-    sgai_client = AsyncClient(api_key="your-api-key")
+    async with AsyncClient(api_key="your-api-key") as client:
+        urls = [
+            "https://example.com",
+            "https://scrapegraphai.com/",
+            "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
+        ]
 
-    # URLs to scrape
-    urls = [
-        "https://example.com",
-        "https://scrapegraphai.com/",
-        "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
-    ]
+        tasks = [client.scrape(url) for url in urls]
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
 
-    tasks = [sgai_client.htmlify(website_url=url) for url in urls]
+        for i, response in enumerate(responses):
+            if isinstance(response, Exception):
+                print(f"Error for {urls[i]}: {response}")
+            else:
+                print(f"Page {i+1}: {len(str(response))} characters")
 
-    # Execute requests concurrently
-    responses = await asyncio.gather(*tasks, return_exceptions=True)
-
-    # Process results
-    for i, response in enumerate(responses):
-        if isinstance(response, Exception):
-            print(f"\nError for {urls[i]}: {response}")
-        else:
-            print(f"\nPage {i+1} HTML:")
-            print(f"URL: {urls[i]}")
-            print(f"HTML Length: {len(response['html'])} characters")
-
-    await sgai_client.close()
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multiple Formats" icon="file-lines">
+    Get content as markdown, HTML, screenshot, or branding data
+  </Card>
+  <Card title="JavaScript Rendering" icon="code">
+    Handle JavaScript-heavy sites with `mode: "js"` fetch mode
+  </Card>
+  <Card title="Fast Processing" icon="clock">
+    Quick extraction for simple content
+  </Card>
+  <Card title="Reliable Output" icon="shield-check">
+    Consistent results across different websites
+  </Card>
+</CardGroup>
 
 ## Integration Options
 
@@ -283,37 +190,6 @@ if __name__ == "__main__":
 ### AI Framework Integrations
 - [LangChain Integration](/integrations/langchain) - Use Scrape in your content pipelines
 - [LlamaIndex Integration](/integrations/llamaindex) - Create searchable knowledge bases
-
-## Best Practices
-
-### Performance Optimization
-1. Process multiple URLs concurrently
-3. Cache results when possible
-4. Monitor API usage and costs
-
-### Error Handling
-- Always check the `status` field
-- Handle network timeouts gracefully
-- Implement retry logic for failed requests
-- Log errors for debugging
-
-### Content Processing
-- Validate HTML structure before parsing
-- Handle different character encodings
-- Extract only needed content sections
-- Clean up HTML for further processing
-
-## Example Projects
-
-Check out our [cookbook](/cookbook/introduction) for real-world examples:
-- Web scraping automation tools
-- Content monitoring systems
-- HTML analysis applications
-- Dynamic content extractors
-
-## API Reference
-
-For detailed API documentation, see the [API Reference](/api-reference/introduction).
 
 ## Support & Resources
 
@@ -330,11 +206,8 @@ For detailed API documentation, see the [API Reference](/api-reference/introduct
   <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
     Check out our open-source projects
   </Card>
-  <Card title="Main Website" icon="globe" href="https://www.scrapegraphai.com">
-    Visit our official website
-  </Card>
 </CardGroup>
 
-<Card title="Ready to Start?" icon="rocket" href="https://dashboard.scrapegraphai.com">
+<Card title="Ready to Start?" icon="rocket" href="https://scrapegraphai.com/dashboard">
   Sign up now and get your API key to begin scraping web content!
 </Card>

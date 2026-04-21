@@ -27,24 +27,24 @@ If using Node < 20, install `dotenv` and add `import 'dotenv/config'` to your co
 This example demonstrates a simple workflow: scrape a website and summarize the content using Claude.
 
 ```typescript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import Anthropic from '@anthropic-ai/sdk';
 
-const apiKey = process.env.SGAI_APIKEY;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const scrapeResult = await smartScraper(apiKey, {
-    website_url: 'https://scrapegraphai.com',
-    user_prompt: 'Extract all content from this page',
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://scrapegraphai.com',
+    prompt: 'Extract all content from this page',
 });
 
-console.log('Scraped content length:', JSON.stringify(scrapeResult.data.result).length);
+const data = result.data?.json;
+console.log('Scraped content length:', JSON.stringify(data).length);
 
 const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
     messages: [
-        { role: 'user', content: `Summarize in 100 words: ${JSON.stringify(scrapeResult.data.result)}` }
+        { role: 'user', content: `Summarize in 100 words: ${JSON.stringify(data)}` }
     ]
 });
 
@@ -56,12 +56,11 @@ console.log('Response:', message);
 This example shows how to use Claude's tool use feature to let the model decide when to scrape websites based on user requests.
 
 ```typescript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import { Anthropic } from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-const apiKey = process.env.SGAI_APIKEY;
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY
 });
@@ -91,12 +90,13 @@ if (toolUse && toolUse.type === 'tool_use') {
     const input = toolUse.input as { url: string };
     console.log(`Calling tool: ${toolUse.name} | URL: ${input.url}`);
 
-    const result = await smartScraper(apiKey, {
-        website_url: input.url,
-        user_prompt: 'Extract all content from this page',
+    const result = await extract(process.env.SGAI_APIKEY!, {
+        url: input.url,
+        prompt: 'Extract all content from this page',
     });
 
-    console.log(`Scraped content preview: ${JSON.stringify(result.data.result)?.substring(0, 300)}...`);
+    const data = result.data?.json;
+    console.log(`Scraped content preview: ${JSON.stringify(data)?.substring(0, 300)}...`);
     // Continue with the conversation or process the scraped content as needed
 }
 ```
@@ -106,11 +106,10 @@ if (toolUse && toolUse.type === 'tool_use') {
 This example demonstrates how to use Claude to extract structured data from scraped website content.
 
 ```typescript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
 
-const apiKey = process.env.SGAI_APIKEY;
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const CompanyInfoSchema = z.object({
@@ -119,10 +118,11 @@ const CompanyInfoSchema = z.object({
     description: z.string().optional()
 });
 
-const scrapeResult = await smartScraper(apiKey, {
-    website_url: 'https://stripe.com',
-    user_prompt: 'Extract all content from this page',
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://stripe.com',
+    prompt: 'Extract all content from this page',
 });
+const data = result.data?.json;
 
 const prompt = `Extract company information from this website content.
 
@@ -135,7 +135,7 @@ Output ONLY valid JSON in this exact format (no markdown, no explanation):
 }
 
 Website content:
-${JSON.stringify(scrapeResult.data.result)}`;
+${JSON.stringify(data)}`;
 
 const message = await anthropic.messages.create({
     model: 'claude-haiku-4-5',

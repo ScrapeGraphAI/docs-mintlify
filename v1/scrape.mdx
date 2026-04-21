@@ -1,0 +1,37 @@
+---
+title: 'Scrape'
+description: 'Basic webpage scraping service (v1)'
+icon: 'spider-web'
+---
+
+<Warning>
+You are viewing the **v1 (legacy)** documentation. See the [v2 documentation](/services/scrape).
+</Warning>
+
+## Overview
+
+The Scrape service provides basic webpage scraping capabilities, returning the raw content of a webpage.
+
+## Usage
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import Client
+
+client = Client(api_key="your-api-key")
+
+response = client.scrape(
+    website_url="https://example.com"
+)
+```
+
+```javascript JavaScript
+import { scrape } from "scrapegraph-js";
+
+const response = await scrape(apiKey, {
+  website_url: "https://example.com",
+});
+```
+
+</CodeGroup>

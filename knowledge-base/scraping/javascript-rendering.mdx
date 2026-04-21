@@ -26,14 +26,13 @@ response = client.smartscraper(
 ```
 
 ```javascript
-import { smartScraper } from "scrapegraph-js";
+import { extract } from "scrapegraph-js";
 
-const result = await smartScraper(
-  "your-api-key",
-  "https://example.com/products",
-  "Extract all product names and prices",
-  { wait_ms: 2000 }
-);
+const result = await extract("your-api-key", {
+  url: "https://example.com/products",
+  prompt: "Extract all product names and prices",
+  fetchConfig: { wait: 2000 },
+});
 ```
 
 See the [wait_ms parameter documentation](/services/additional-parameters/wait-ms) for more details.

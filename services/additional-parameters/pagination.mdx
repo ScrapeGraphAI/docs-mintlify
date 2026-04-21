@@ -65,15 +65,12 @@ response = client.smartscraper(
 ### JavaScript SDK
 
 ```javascript
-import { smartScraper } from 'scrapegraph-js';
+import { extract } from 'scrapegraph-js';
 
-const apiKey = 'your-api-key';
-
-// Basic pagination - scrape 3 pages
-const response = await smartScraper(apiKey, {
-  website_url: 'https://example-store.com/products',
-  user_prompt: 'Extract all product information',
-  total_pages: 3,
+// Basic extraction
+const result = await extract('your-api-key', {
+  url: 'https://example-store.com/products',
+  prompt: 'Extract all product information',
 });
 ```
 
