@@ -18,11 +18,11 @@ Use this table to map old entry points to new ones. Details and examples follow 
 | `markdownify` | **`scrape`** with `format="markdown"` (Python) or `format: "markdown"` (JS) | HTML → markdown and related “raw page” outputs live under **`scrape`**. |
 | `smartscraper` / `smartScraper` | **`extract`** | Same job: structured extraction from a URL. Rename params and pass extra fetch/LLM options via config objects. |
 | `searchscraper` / `searchScraper` | **`search`** | Web search + extraction; use `query` (or positional string in JS). |
-| `crawl` (single start call) | **`crawl.start`**, then **`crawl.get`**, **`crawl.stop`**, **`crawl.resume`**, **`crawl.delete`** | Crawl is explicitly async: you poll or track job id. |
+| `smartcrawler` (single start call) | **`crawl.start`**, then **`crawl.get`**, **`crawl.stop`**, **`crawl.resume`**, **`crawl.delete`** | Crawl is explicitly async: you poll or track job id. |
 | Monitors (if you used them) | **`monitor.create`**, **`monitor.list`**, **`monitor.get`**, pause/resume/delete | Same product, namespaced API. |
 | `sitemap` | **Removed from v2 SDKs** | Discover URLs with **`crawl.start`** and URL patterns, or call the REST sitemap endpoint if your integration still requires it—see [Sitemap](/services/sitemap) and SDK release notes. |
-| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `mode="js"`, `stealth=True`, `wait=2000`) for hard pages, or **`crawl.start`** for multi-page flows. |
 | `healthz` / `checkHealth`, `feedback`, built-in mock helpers | **Removed or changed** | Use **`credits`**, **`history`**, and dashboard features; check the SDK migration guides for replacements. |
+| `agenticscraper` | **Removed** | Use **`extract`** with `FetchConfig` (e.g. `mode="js"`, `stealth=True`, `wait=2000`) for hard pages, or **`crawl.start`** for multi-page flows. |
 
 ## Code-level transition
 
