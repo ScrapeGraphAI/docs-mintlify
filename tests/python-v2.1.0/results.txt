@@ -1,0 +1,53 @@
+scrapegraph-py 2.1.0 — live endpoint verification (2026-04-21)
+
+=== test_scrape.py ===
+[scrape 1/5] https://example.com -> status=success len=168 elapsed_ms=66
+[scrape 2/5] https://scrapegraphai.com -> status=success len=25939 elapsed_ms=428
+[scrape 3/5] https://httpbin.org/html -> status=success len=3600 elapsed_ms=903
+[scrape 4/5] https://www.iana.org/ -> status=success len=2557 elapsed_ms=822
+[scrape 5/5] https://example.org -> status=success len=168 elapsed_ms=69
+
+=== test_extract.py ===
+[extract 1/5] https://example.com -> status=success elapsed_ms=342 keys=['title', 'heading']
+[extract 2/5] https://scrapegraphai.com -> status=success elapsed_ms=4581 keys=['answer', 'description']
+[extract 3/5] https://www.iana.org/ -> status=success elapsed_ms=391 keys=['main_purpose']
+[extract 4/5] https://example.org -> status=success elapsed_ms=304 keys=['title', 'description']
+[extract 5/5] https://httpbin.org/html -> status=success elapsed_ms=474 keys=['summary']
+
+=== test_search.py ===
+[search 1/5] 'best programming languages 2025' -> status=success results=2 elapsed_ms=16309
+[search 2/5] 'latest AI research breakthroughs' -> status=success results=3 elapsed_ms=2155
+[search 3/5] 'python web scraping libraries' -> status=success results=3 elapsed_ms=1874
+[search 4/5] 'top e-commerce platforms' -> status=success results=3 elapsed_ms=2161
+[search 5/5] 'climate change recent news' -> status=success results=3 elapsed_ms=2137
+
+=== test_utilities.py (credits + health) ===
+[utils 1/5] credits.status=success remaining=998723 used=1663 | health.status=success service=ok
+[utils 2/5] credits.status=success remaining=998723 used=1663 | health.status=success service=ok
+[utils 3/5] credits.status=success remaining=998723 used=1663 | health.status=success service=ok
+[utils 4/5] credits.status=success remaining=998723 used=1663 | health.status=success service=ok
+[utils 5/5] credits.status=success remaining=998723 used=1663 | health.status=success service=ok
+
+=== test_crawl.py ===
+[crawl 1/5] https://example.com id=41ef82d7 final=completed
+[crawl 2/5] https://scrapegraphai.com id=5cc234e7 final=completed
+[crawl 3/5] https://example.org id=a29f5267 final=completed
+[crawl 4/5] https://www.iana.org/ id=8d51e6e5 final=completed
+[crawl 5/5] https://httpbin.org/ id=ee8d26ca final=completed
+
+=== test_monitor.py ===
+[monitor 1/5] created id=e4606611 interval=0 * * * *
+[monitor 2/5] created id=7cb417bf interval=0 * * * *
+[monitor 3/5] created id=8ec56850 interval=0 * * * *
+[monitor 4/5] created id=793ff7ff interval=0 * * * *
+[monitor 5/5] created id=353213ae interval=0 * * * *
+Cleaned up 5 monitors
+
+--- Summary ---
+scrape:   5/5 success
+extract:  5/5 success
+search:   5/5 success
+credits:  5/5 success
+health:   5/5 success
+crawl:    5/5 success (all reached status=completed)
+monitor:  5/5 success (create + delete lifecycle)
