@@ -11,27 +11,29 @@ description: 'Install and get started with ScrapeGraphAI v2 SDKs'
 
 ## Python SDK
 
+Requires **Python ≥ 3.12**.
+
 ```bash
-pip install scrapegraph-py
+pip install "scrapegraph-py>=2.1.0"
 ```
 
 **Usage:**
 
 ```python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
-client = Client(api_key="your-api-key-here")
+sgai = ScrapeGraphAI(api_key="your-api-key-here")
 
 # Extract data from a website
-response = client.extract(
+res = sgai.extract(
+    "Extract information about the company",
     url="https://scrapegraphai.com",
-    prompt="Extract information about the company"
 )
-print(response)
+print(res.data.json_data if res.status == "success" else res.error)
 ```
 
 <Note>
-You can also set the `SGAI_API_KEY` environment variable and initialize the client without parameters: `client = Client()`
+You can also set the `SGAI_API_KEY` environment variable and initialize the client without parameters: `sgai = ScrapeGraphAI()`.
 </Note>
 
 For more advanced usage, see the [Python SDK documentation](/sdks/python).
@@ -110,22 +112,25 @@ Both SDKs support structured output using schemas:
 ### Python Example
 
 ```python
-from scrapegraph_py import Client
-from pydantic import BaseModel, Field
+from scrapegraph_py import ScrapeGraphAI
 
-class CompanyInfo(BaseModel):
-    company_name: str = Field(description="The company name")
-    description: str = Field(description="Company description")
-    website: str = Field(description="Company website URL")
-    industry: str = Field(description="Industry sector")
+sgai = ScrapeGraphAI(api_key="your-api-key")
 
-client = Client(api_key="your-api-key")
-response = client.extract(
+res = sgai.extract(
+    "Extract company information",
     url="https://scrapegraphai.com",
-    prompt="Extract company information",
-    output_schema=CompanyInfo
+    schema={
+        "type": "object",
+        "properties": {
+            "company_name": {"type": "string", "description": "The company name"},
+            "description":  {"type": "string", "description": "Company description"},
+            "website":      {"type": "string", "description": "Company website URL"},
+            "industry":     {"type": "string", "description": "Industry sector"},
+        },
+        "required": ["company_name"],
+    },
 )
-print(response)
+print(res.data.json_data if res.status == "success" else res.error)
 ```
 
 ### JavaScript Example
