@@ -1,15 +1,15 @@
 ---
 title: 'Scrape'
-description: 'Scrape web pages in markdown, HTML, or screenshot format'
+description: 'Scrape web pages in markdown, HTML, screenshot, JSON, and more'
 icon: 'code'
 ---
 
 ## Overview
 
-The Scrape service fetches web page content and returns it in your preferred format: markdown, HTML, screenshot, or branding. It replaces the previous Markdownify service and supports flexible output through a simple `format` parameter.
+The Scrape service fetches a web page and returns content in one or more formats at the same time: markdown, HTML, links, images, summary, JSON extraction, branding, or screenshots. It replaces the previous Markdownify service and uses a flexible `formats` array so a single call can return any combination you need.
 
 <Note>
-Try the Scrape service instantly in our [interactive playground](https://scrapegraphai.com/dashboard) 
+Try the Scrape service instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
 ## Getting Started
@@ -19,47 +19,47 @@ Try the Scrape service instantly in our [interactive playground](https://scrapeg
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
 
-client = Client(api_key="your-api-key")
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 
-# Get markdown (default)
-response = client.scrape("https://example.com")
+res = sgai.scrape(ScrapeRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
+))
 
-# Get HTML
-response = client.scrape("https://example.com", format="html")
-
-# Get screenshot
-response = client.scrape("https://example.com", format="screenshot")
+if res.status == "success":
+    print(res.data.results["markdown"]["data"][0])
+else:
+    print("Failed:", res.error)
 ```
 
 ```javascript JavaScript
-import { scrape } from 'scrapegraph-js';
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-// Get markdown (default)
-const result = await scrape('your-api-key', {
-  url: 'https://example.com',
-  formats: [{ type: 'markdown' }],
+// reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI({ apiKey: "..." })
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [{ type: "markdown" }],
 });
 
-// Get HTML
-const htmlResult = await scrape('your-api-key', {
-  url: 'https://example.com',
-  formats: [{ type: 'html' }],
-});
-
-if (result.status === 'success') {
-  console.log(result.data?.results.markdown?.data);
+if (res.status === "success") {
+  console.log(res.data?.results.markdown?.data?.[0]);
+} else {
+  console.error(res.error);
 }
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/api/v2/scrape \
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-api-key" \
   -d '{
     "url": "https://example.com",
-    "format": "markdown"
+    "formats": [{ "type": "markdown" }]
   }'
 ```
 
@@ -69,22 +69,26 @@ curl -X POST https://api.scrapegraphai.com/api/v2/scrape \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| url | string | Yes | The URL of the webpage to scrape. |
-| format | string | No | Output format: `"markdown"` (default), `"html"`, `"screenshot"`, or `"branding"`. |
-| fetch_config | FetchConfig | No | Configuration for page fetching (headers, stealth, etc.). |
+| `url` | string | Yes | The URL of the webpage to scrape. |
+| `formats` | array | Yes | One or more output formats (see [Formats](#output-formats)). |
+| `contentType` | string | No | Override auto-detected content type (e.g. `"text/html"`, `"application/pdf"`). |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options — `mode`, `stealth`, `headers`, `cookies`, `scrolls`, `wait`, `timeout`, `country`. |
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
 <Accordion title="Example Response" icon="terminal">
 ```json
 {
-  "id": "0d6c4b31-931b-469b-9a7f-2f1e002e79ca",
-  "format": "markdown",
-  "content": [
-    "# Example Domain\n\nThis domain is for use in documentation examples..."
-  ],
+  "id": "03907b00-3c10-4b73-a6b5-e3b399a850b1",
+  "results": {
+    "markdown": {
+      "data": [
+        "# Example Domain\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)\n"
+      ]
+    }
+  },
   "metadata": {
     "contentType": "text/html"
   }
@@ -94,72 +98,223 @@ Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
 
 ## Output Formats
 
-| Format | Description |
-|--------|-------------|
-| `markdown` | Clean markdown conversion of the page content (default). |
-| `html` | Raw HTML content of the page. |
-| `screenshot` | Screenshot image of the rendered page. |
-| `branding` | Brand design extraction: colors, fonts, typography, logos. |
+Pass an array of format objects. Each entry has a `type` and optional per-format options.
 
-## Advanced Usage
+| Format | Options | Description |
+|--------|---------|-------------|
+| `markdown` | `mode`: `"normal"` \| `"reader"` \| `"prune"` | Clean markdown conversion of the page. |
+| `html` | `mode`: `"normal"` \| `"reader"` \| `"prune"` | Raw or processed HTML. |
+| `links` | — | All outgoing links on the page. |
+| `images` | — | All image URLs on the page. |
+| `summary` | — | AI-generated short summary. |
+| `json` | `prompt`, `schema` | Structured JSON extraction (AI). |
+| `branding` | — | Brand colors, typography, and logos. |
+| `screenshot` | `fullPage`, `width`, `height`, `quality` | Screenshot image URL. |
 
-### With FetchConfig
+### Multi-format example
 
-```python
-from scrapegraph_py import Client, FetchConfig
+<CodeGroup>
 
-client = Client(api_key="your-api-key")
+```python Python
+from scrapegraph_py import (
+    ScrapeGraphAI,
+    ScrapeRequest,
+    MarkdownFormatConfig,
+    LinksFormatConfig,
+    ScreenshotFormatConfig,
+)
 
-response = client.scrape(
-    "https://example.com",
-    format="markdown",
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(ScrapeRequest(
+    url="https://example.com",
+    formats=[
+        MarkdownFormatConfig(mode="reader"),
+        LinksFormatConfig(),
+        ScreenshotFormatConfig(width=1280, height=720),
+    ],
+))
+
+if res.status == "success":
+    results = res.data.results
+    print("Markdown preview:", results["markdown"]["data"][0][:200])
+    print("Links count:", len(results["links"]["data"]))
+    print("Screenshot URL:", results["screenshot"]["data"]["url"])
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [
+    { type: "markdown", mode: "reader" },
+    { type: "links" },
+    { type: "screenshot", fullPage: false, width: 1280, height: 720 },
+  ],
+});
+
+if (res.status === "success") {
+  const r = res.data?.results;
+  console.log("md:", r?.markdown?.data?.[0]?.slice(0, 200));
+  console.log("links:", r?.links?.metadata?.count);
+  console.log("screenshot:", r?.screenshot?.data?.url);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "formats": [
+      { "type": "markdown", "mode": "reader" },
+      { "type": "links" },
+      { "type": "screenshot", "width": 1280, "height": 720 }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+### Structured JSON extraction
+
+Use the `json` format to extract structured data during the scrape.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, JsonFormatConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(ScrapeRequest(
+    url="https://scrapegraphai.com",
+    formats=[
+        JsonFormatConfig(
+            prompt="Extract the company name and tagline",
+            schema={
+                "type": "object",
+                "properties": {
+                    "companyName": {"type": "string"},
+                    "tagline": {"type": "string"},
+                },
+                "required": ["companyName"],
+            },
+        ),
+    ],
+))
+
+if res.status == "success":
+    print(res.data.results["json"]["data"])
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://scrapegraphai.com",
+  formats: [
+    {
+      type: "json",
+      prompt: "Extract the company name and tagline",
+      schema: {
+        type: "object",
+        properties: {
+          companyName: { type: "string" },
+          tagline: { type: "string" },
+        },
+        required: ["companyName"],
+      },
+    },
+  ],
+});
+
+if (res.status === "success") {
+  console.log(res.data?.results.json?.data);
+}
+```
+
+</CodeGroup>
+
+## FetchConfig
+
+Control how pages are fetched — JS rendering, stealth, custom headers, etc.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig, FetchConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(ScrapeRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
     fetch_config=FetchConfig(
         mode="js",
         stealth=True,
         wait=2000,
+        scrolls=3,
         headers={"User-Agent": "MyBot"},
+        cookies={"session": "abc123"},
+        country="us",
     ),
-)
+))
 ```
 
-### Async Support
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [{ type: "markdown" }],
+  fetchConfig: {
+    mode: "js",
+    stealth: true,
+    wait: 2000,
+    scrolls: 3,
+    headers: { "User-Agent": "MyBot" },
+    cookies: { session: "abc123" },
+    country: "us",
+  },
+});
+```
+
+</CodeGroup>
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `mode` | string | Fetch mode: `"auto"` (default), `"fast"`, or `"js"`. |
+| `stealth` | bool | Enable stealth mode with residential proxy and anti-bot headers. |
+| `headers` | object | Custom HTTP headers. |
+| `cookies` | object | Cookies to include in the request. |
+| `scrolls` | int | Number of page scrolls (0–100). |
+| `wait` | int | Milliseconds to wait after page load (0–30000). |
+| `timeout` | int | Request timeout in milliseconds (1000–60000). |
+| `country` | string | Two-letter ISO country code for geo-targeted proxy routing. |
+
+## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
 
 async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        response = await client.scrape("https://example.com")
-        print(response)
-
-asyncio.run(main())
-```
-
-### Concurrent Processing
-
-Process multiple URLs concurrently for better performance:
-
-```python
-import asyncio
-from scrapegraph_py import AsyncClient
-
-async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        urls = [
-            "https://example.com",
-            "https://scrapegraphai.com/",
-            "https://github.com/ScrapeGraphAI/Scrapegraph-ai",
-        ]
-
-        tasks = [client.scrape(url) for url in urls]
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
-
-        for i, response in enumerate(responses):
-            if isinstance(response, Exception):
-                print(f"Error for {urls[i]}: {response}")
-            else:
-                print(f"Page {i+1}: {len(str(response))} characters")
+    async with AsyncScrapeGraphAI() as sgai:
+        res = await sgai.scrape(ScrapeRequest(
+            url="https://example.com",
+            formats=[MarkdownFormatConfig()],
+        ))
+        if res.status == "success":
+            print(res.data.results["markdown"]["data"][0])
 
 asyncio.run(main())
 ```
@@ -168,28 +323,28 @@ asyncio.run(main())
 
 <CardGroup cols={2}>
   <Card title="Multiple Formats" icon="file-lines">
-    Get content as markdown, HTML, screenshot, or branding data
+    Request any combination of markdown, HTML, links, images, summary, JSON, branding, or screenshots in a single call.
   </Card>
   <Card title="JavaScript Rendering" icon="code">
-    Handle JavaScript-heavy sites with `mode: "js"` fetch mode
+    Handle JavaScript-heavy sites with `mode: "js"` on `fetchConfig`.
   </Card>
-  <Card title="Fast Processing" icon="clock">
-    Quick extraction for simple content
+  <Card title="Structured Output" icon="table">
+    Use the `json` format with a JSON schema to get typed data back.
   </Card>
   <Card title="Reliable Output" icon="shield-check">
-    Consistent results across different websites
+    Stealth mode and country-targeted proxies for difficult sources.
   </Card>
 </CardGroup>
 
 ## Integration Options
 
 ### Official SDKs
-- [Python SDK](/sdks/python) - Perfect for automation and data processing
-- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and browser tools
+- [Python SDK](/sdks/python) — perfect for automation and data processing
+- [JavaScript SDK](/sdks/javascript) — ideal for web applications and Node.js (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
 
 ### AI Framework Integrations
-- [LangChain Integration](/integrations/langchain) - Use Scrape in your content pipelines
-- [LlamaIndex Integration](/integrations/llamaindex) - Create searchable knowledge bases
+- [LangChain Integration](/integrations/langchain) — use Scrape in your content pipelines
+- [LlamaIndex Integration](/integrations/llamaindex) — create searchable knowledge bases
 
 ## Support & Resources
 

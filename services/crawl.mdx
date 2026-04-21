@@ -6,10 +6,10 @@ icon: 'spider'
 
 ## Overview
 
-Crawl is an advanced web crawling service that traverses multiple pages, follows links, and returns content in your preferred format (markdown or HTML). It provides namespaced operations for starting, monitoring, stopping, and resuming crawl jobs.
+Crawl traverses a site starting from a URL, follows links up to a depth you set, and returns each page in the formats you request. Crawls are async — you start a job, then poll (or get notified via webhook) until it completes.
 
 <Note>
-Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/dashboard) 
+Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
 ## Getting Started
@@ -19,53 +19,83 @@ Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/da
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+import time
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
 
-client = Client(api_key="your-api-key")
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
 
-# Start a crawl
-response = client.crawl.start(
-    "https://example.com",
-    depth=2,
-    max_pages=10,
-    format="markdown",
-)
-print("Crawl started:", response)
+start = sgai.crawl.start(CrawlRequest(
+    url="https://scrapegraphai.com/",
+    formats=[MarkdownFormatConfig()],
+    max_pages=5,
+    max_depth=2,
+))
+
+if start.status != "success":
+    print("Failed:", start.error)
+else:
+    crawl_id = start.data.id
+    print("Crawl started:", crawl_id)
+
+    while True:
+        time.sleep(2)
+        status = sgai.crawl.get(crawl_id)
+        if status.status != "success":
+            break
+        print(f"{status.data.finished}/{status.data.total} - {status.data.status}")
+        if status.data.status in ("completed", "failed"):
+            for page in status.data.pages:
+                print(f"  {page.url} - {page.status}")
+            break
 ```
 
 ```javascript JavaScript
-import { crawl } from 'scrapegraph-js';
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const job = await crawl.start('your-api-key', {
-  url: 'https://example.com',
+const sgai = ScrapeGraphAI();
+
+const start = await sgai.crawl.start({
+  url: "https://scrapegraphai.com/",
+  formats: [{ type: "markdown" }],
+  maxPages: 5,
   maxDepth: 2,
-  maxPages: 10,
-  formats: [{ type: 'markdown' }],
 });
 
-if (job.status === 'success') {
-  console.log('Crawl started:', job.data?.id);
+if (start.status !== "success" || !start.data) {
+  console.error("Failed:", start.error);
+} else {
+  const crawlId = start.data.id;
+  console.log("Crawl started:", crawlId);
 
-  // Check status
-  const status = await crawl.get('your-api-key', job.data?.id);
-
-  // Stop / Resume / Delete
-  await crawl.stop('your-api-key', job.data?.id);
-  await crawl.resume('your-api-key', job.data?.id);
-  await crawl.delete('your-api-key', job.data?.id);
+  while (true) {
+    await new Promise((r) => setTimeout(r, 2000));
+    const status = await sgai.crawl.get(crawlId);
+    if (status.status !== "success" || !status.data) break;
+    console.log(`${status.data.finished}/${status.data.total} - ${status.data.status}`);
+    if (status.data.status === "completed" || status.data.status === "failed") {
+      for (const p of status.data.pages) console.log(`  ${p.url} - ${p.status}`);
+      break;
+    }
+  }
 }
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/api/v2/crawl \
+# Start a crawl
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer your-api-key" \
   -d '{
-    "url": "https://example.com",
-    "depth": 2,
-    "max_pages": 10,
-    "format": "markdown"
+    "url": "https://scrapegraphai.com/",
+    "formats": [{ "type": "markdown" }],
+    "maxPages": 5,
+    "maxDepth": 2
   }'
+
+# Check status (replace :id with the crawl id returned above)
+curl -X GET https://v2-api.scrapegraphai.com/api/crawl/:id \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
 ```
 
 </CodeGroup>
@@ -74,80 +104,108 @@ curl -X POST https://api.scrapegraphai.com/api/v2/crawl \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| url | string | Yes | The starting URL to crawl. |
-| depth | int | No | How many levels deep to follow links. |
-| max_pages | int | No | Maximum number of pages to crawl. |
-| format | string | No | Output format: `"markdown"` or `"html"`. Default: `"markdown"`. |
-| include_patterns | list | No | URL patterns to include (e.g., `["/blog/*"]`). |
-| exclude_patterns | list | No | URL patterns to exclude (e.g., `["/admin/*"]`). |
-| fetch_config | FetchConfig | No | Configuration for page fetching (headers, stealth, etc.). |
+| `url` | string | Yes | Starting URL to crawl. |
+| `formats` | array | No | Output formats per page (see [Scrape formats](/services/scrape#output-formats)). |
+| `maxPages` / `max_pages` | int | No | Maximum number of pages to crawl. |
+| `maxDepth` / `max_depth` | int | No | How many levels deep to follow links. |
+| `maxLinksPerPage` / `max_links_per_page` | int | No | Cap on links expanded per page. |
+| `includePatterns` / `include_patterns` | array | No | URL patterns to include (e.g. `["/blog/*"]`). |
+| `excludePatterns` / `exclude_patterns` | array | No | URL patterns to exclude (e.g. `["/admin/*"]`). |
+| `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
+
+<Accordion title="Example Response (start)" icon="terminal">
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "running",
+  "total": 3,
+  "finished": 0,
+  "pages": []
+}
+```
+</Accordion>
+
+<Accordion title="Example Response (get)" icon="terminal">
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "completed",
+  "total": 3,
+  "finished": 1,
+  "pages": [
+    {
+      "url": "https://example.com",
+      "depth": 0,
+      "title": "",
+      "status": "completed",
+      "parentUrl": null,
+      "contentType": "text/html",
+      "links": ["https://iana.org/domains/example"],
+      "scrapeRefId": "83a911ed-c0bc-4a8c-ad62-8efeeb93f33a"
+    }
+  ]
+}
+```
+</Accordion>
 
 ## Managing Crawl Jobs
 
-### Check Status
-
 ```python
-status = client.crawl.status(crawl_id)
-print("Status:", status)
+# Check status
+status = sgai.crawl.get(crawl_id)
+
+# Stop / resume / delete
+sgai.crawl.stop(crawl_id)
+sgai.crawl.resume(crawl_id)
+sgai.crawl.delete(crawl_id)
 ```
 
-### Stop a Running Crawl
-
-```python
-client.crawl.stop(crawl_id)
-```
-
-### Resume a Stopped Crawl
-
-```python
-client.crawl.resume(crawl_id)
+```javascript
+await sgai.crawl.get(crawlId);
+await sgai.crawl.stop(crawlId);
+await sgai.crawl.resume(crawlId);
+await sgai.crawl.delete(crawlId);
 ```
 
 ## Advanced Usage
 
-### With FetchConfig
+### URL patterns and fetch config
 
 ```python
-from scrapegraph_py import Client, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig, FetchConfig
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-response = client.crawl.start(
-    "https://example.com",
-    depth=2,
+res = sgai.crawl.start(CrawlRequest(
+    url="https://example.com",
+    formats=[MarkdownFormatConfig()],
+    max_depth=2,
     max_pages=10,
-    format="markdown",
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
-    fetch_config=FetchConfig(
-        mode="js",
-        stealth=True,
-        wait=1000,
-        headers={"User-Agent": "MyBot"},
-    ),
-)
+    fetch_config=FetchConfig(mode="js", stealth=True, wait=1000),
+))
 ```
 
-### Async Support
+### Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncClient
+from scrapegraph_py import AsyncScrapeGraphAI, CrawlRequest
 
 async def main():
-    async with AsyncClient(api_key="your-api-key") as client:
-        job = await client.crawl.start(
-            "https://example.com",
-            depth=2,
+    async with AsyncScrapeGraphAI() as sgai:
+        start = await sgai.crawl.start(CrawlRequest(
+            url="https://example.com",
             max_pages=5,
-        )
-        
-        status = await client.crawl.status(job["id"])
-        print("Crawl status:", status)
+            max_depth=2,
+        ))
+        status = await sgai.crawl.get(start.data.id)
+        print("Status:", status.data.status)
 
 asyncio.run(main())
 ```
@@ -156,34 +214,34 @@ asyncio.run(main())
 
 <CardGroup cols={2}>
   <Card title="Multi-Page Crawling" icon="sitemap">
-    Traverse entire websites following links automatically
+    Traverse entire sites, following links automatically.
   </Card>
   <Card title="Flexible Formats" icon="file-lines">
-    Get results in markdown or HTML format
+    Request markdown, HTML, links, images, and more per page.
   </Card>
   <Card title="Job Control" icon="sliders">
-    Start, stop, resume, and monitor crawl jobs
+    Start, stop, resume, and delete crawl jobs.
   </Card>
   <Card title="URL Filtering" icon="filter">
-    Include or exclude pages by URL patterns
+    Include or exclude by URL pattern.
   </Card>
 </CardGroup>
 
 ## Integration Options
 
 ### Official SDKs
-- [Python SDK](/sdks/python) - Perfect for data science and backend applications
-- [JavaScript SDK](/sdks/javascript) - Ideal for web applications and Node.js
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
 
 ### AI Framework Integrations
-- [LangChain Integration](/integrations/langchain) - Use Crawl in your LLM workflows
-- [LlamaIndex Integration](/integrations/llamaindex) - Build powerful search and QA systems
+- [LangChain Integration](/integrations/langchain)
+- [LlamaIndex Integration](/integrations/llamaindex)
 
 ## Support & Resources
 
 <CardGroup cols={2}>
   <Card title="Documentation" icon="book" href="/introduction">
-    Comprehensive guides and tutorials
+    Guides and tutorials
   </Card>
   <Card title="API Reference" icon="code" href="/api-reference/introduction">
     Detailed API documentation
