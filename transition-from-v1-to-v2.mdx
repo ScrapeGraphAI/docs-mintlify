@@ -39,18 +39,18 @@ Use this table to map old entry points to new ones. Details and examples follow 
 <CodeGroup>
 
 ```python Python (v2)
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
-))
+)
 
 if res.status == "success":
-    print(res.data.results["markdown"]["data"][0])
+    print(res.data.results.get("markdown", {}).get("data", [None])[0])
 ```
 
 ```javascript JavaScript (v2)
@@ -91,14 +91,14 @@ response = client.smartscraper(
 ```
 
 ```python Python (v2)
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
 sgai = ScrapeGraphAI()
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract the title and price",
     url="https://example.com",
-    prompt="Extract the title and price",
     fetch_config=FetchConfig(stealth=True),
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -140,13 +140,13 @@ if (res.status === "success") {
 <CodeGroup>
 
 ```python Python (v2)
-from scrapegraph_py import ScrapeGraphAI, SearchRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
-res = sgai.search(SearchRequest(
-    query="Latest pricing for product X",
+res = sgai.search(
+    "Latest pricing for product X",
     num_results=5,
-))
+)
 
 if res.status == "success":
     for r in res.data.results:
@@ -179,16 +179,16 @@ if (res.status === "success") {
 <CodeGroup>
 
 ```python Python (v2)
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-start = sgai.crawl.start(CrawlRequest(
-    url="https://example.com",
+start = sgai.crawl.start(
+    "https://example.com",
     max_depth=2,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
-))
+)
 
 status = sgai.crawl.get(start.data.id)
 print(status.data.status, status.data.finished, "/", status.data.total)
@@ -231,7 +231,7 @@ Exact paths and payloads are listed under each service (for example [Scrape](/se
 1. Log in at [scrapegraphai.com/login](https://scrapegraphai.com/login)
 2. Start from [Introduction](/introduction)
 3. Follow [Installation](/install)
-4. Upgrade packages: `pip install -U scrapegraph-py` / `npm i scrapegraph-js@latest` (requires **`scrapegraph-js` ≥ 2.1.0** and **Node ≥ 22**)
+4. Upgrade packages: `pip install "scrapegraph-py>=2.0.1,<2.1.0"` / `npm i scrapegraph-js@latest` (requires **`scrapegraph-py` 2.0.1** with **Python ≥ 3.12**, and **`scrapegraph-js` ≥ 2.1.0** with **Node ≥ 22**)
 
 ## SDK migration guides (detailed changelogs)
 

@@ -19,18 +19,19 @@ Try the Scrape service instantly in our [interactive playground](https://scrapeg
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
-))
+)
 
 if res.status == "success":
-    print(res.data.results["markdown"]["data"][0])
+    md = res.data.results.get("markdown", {}).get("data", [])
+    print(md[0] if md else None)
 else:
     print("Failed:", res.error)
 ```
@@ -118,7 +119,6 @@ Pass an array of format objects. Each entry has a `type` and optional per-format
 ```python Python
 from scrapegraph_py import (
     ScrapeGraphAI,
-    ScrapeRequest,
     MarkdownFormatConfig,
     LinksFormatConfig,
     ScreenshotFormatConfig,
@@ -126,20 +126,20 @@ from scrapegraph_py import (
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[
         MarkdownFormatConfig(mode="reader"),
         LinksFormatConfig(),
         ScreenshotFormatConfig(width=1280, height=720),
     ],
-))
+)
 
 if res.status == "success":
     results = res.data.results
-    print("Markdown preview:", results["markdown"]["data"][0][:200])
-    print("Links count:", len(results["links"]["data"]))
-    print("Screenshot URL:", results["screenshot"]["data"]["url"])
+    print("Markdown preview:", results.get("markdown", {}).get("data", [""])[0][:200])
+    print("Links count:", len(results.get("links", {}).get("data", [])))
+    print("Screenshot URL:", results.get("screenshot", {}).get("data", {}).get("url"))
 ```
 
 ```javascript JavaScript
@@ -187,12 +187,12 @@ Use the `json` format to extract structured data during the scrape.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, JsonFormatConfig
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://scrapegraphai.com",
+res = sgai.scrape(
+    "https://scrapegraphai.com",
     formats=[
         JsonFormatConfig(
             prompt="Extract the company name and tagline",
@@ -206,10 +206,10 @@ res = sgai.scrape(ScrapeRequest(
             },
         ),
     ],
-))
+)
 
 if res.status == "success":
-    print(res.data.results["json"]["data"])
+    print(res.data.results.get("json", {}).get("data"))
 ```
 
 ```javascript JavaScript
@@ -249,12 +249,12 @@ Control how pages are fetched — JS rendering, stealth, custom headers, etc.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
     fetch_config=FetchConfig(
         mode="js",
@@ -265,7 +265,7 @@ res = sgai.scrape(ScrapeRequest(
         cookies={"session": "abc123"},
         country="us",
     ),
-))
+)
 ```
 
 ```javascript JavaScript
@@ -305,16 +305,17 @@ const res = await sgai.scrape({
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
+from scrapegraph_py import AsyncScrapeGraphAI, MarkdownFormatConfig
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.scrape(ScrapeRequest(
-            url="https://example.com",
+        res = await sgai.scrape(
+            "https://example.com",
             formats=[MarkdownFormatConfig()],
-        ))
+        )
         if res.status == "success":
-            print(res.data.results["markdown"]["data"][0])
+            md = res.data.results.get("markdown", {}).get("data", [])
+            print(md[0] if md else None)
 
 asyncio.run(main())
 ```

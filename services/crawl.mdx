@@ -20,17 +20,17 @@ Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/da
 
 ```python Python
 import time
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-start = sgai.crawl.start(CrawlRequest(
-    url="https://scrapegraphai.com/",
+start = sgai.crawl.start(
+    "https://scrapegraphai.com/",
     formats=[MarkdownFormatConfig()],
     max_pages=5,
     max_depth=2,
-))
+)
 
 if start.status != "success":
     print("Failed:", start.error)
@@ -176,34 +176,34 @@ await sgai.crawl.delete(crawlId);
 ### URL patterns and fetch config
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.crawl.start(CrawlRequest(
-    url="https://example.com",
+res = sgai.crawl.start(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
     max_depth=2,
     max_pages=10,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
     fetch_config=FetchConfig(mode="js", stealth=True, wait=1000),
-))
+)
 ```
 
 ### Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, CrawlRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        start = await sgai.crawl.start(CrawlRequest(
-            url="https://example.com",
+        start = await sgai.crawl.start(
+            "https://example.com",
             max_pages=5,
             max_depth=2,
-        ))
+        )
         status = await sgai.crawl.get(start.data.id)
         print("Status:", status.data.status)
 
