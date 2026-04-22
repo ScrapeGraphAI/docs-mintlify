@@ -9,7 +9,7 @@ Rate limiting restricts the number of API requests you can make within a given t
 
 ## Rate limit response
 
-When you exceed the rate limit, the API returns an HTTP `429 Too Many Requests` response:
+When you exceed the rate limit, the API returns an HTTP `429 Too Many Requests` response. In the v2 SDK this surfaces as `res.status === "error"` with `res.error` describing the failure — no exception is raised.
 
 ```json
 {
@@ -37,34 +37,37 @@ When you exceed the rate limit, the API returns an HTTP `429 Too Many Requests` 
 
 ```python
 import time
-from scrapegraph_py import Client
-from scrapegraph_py.exceptions import RateLimitError
+from scrapegraph_py import ScrapeGraphAI
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-def scrape_with_retry(url: str, prompt: str, max_retries: int = 3):
+def extract_with_retry(url: str, prompt: str, max_retries: int = 3):
     for attempt in range(max_retries):
-        try:
-            return client.smartscraper(website_url=url, user_prompt=prompt)
-        except RateLimitError:
-            wait = 2 ** attempt  # 1s, 2s, 4s
-            print(f"Rate limited. Retrying in {wait}s...")
-            time.sleep(wait)
-    raise Exception("Max retries exceeded")
+        res = sgai.extract(prompt, url=url)
+        if res.status == "success":
+            return res
+        if "rate_limit" not in (res.error or "").lower():
+            return res  # non-rate-limit error — don't retry
+        wait = 2 ** attempt  # 1s, 2s, 4s
+        print(f"Rate limited. Retrying in {wait}s...")
+        time.sleep(wait)
+    raise RuntimeError("Max retries exceeded")
 ```
 
 ### JavaScript — with retry
 
 ```javascript
-import { extract } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-async function scrapeWithRetry(apiKey, url, prompt, retries = 3) {
+const sgai = ScrapeGraphAI();
+
+async function extractWithRetry(url, prompt, retries = 3) {
   for (let i = 0; i < retries; i++) {
-    const result = await extract(apiKey, { url, prompt });
-    if (result.status === "success") return result;
-    // Exponential backoff
+    const res = await sgai.extract({ url, prompt });
+    if (res.status === "success") return res;
+    if (!/rate.?limit/i.test(res.error ?? "")) return res;
     const wait = Math.pow(2, i) * 1000;
-    console.log(`Attempt ${i + 1} failed: ${result.error}. Retrying in ${wait}ms...`);
+    console.log(`Rate limited. Retrying in ${wait}ms...`);
     await new Promise((r) => setTimeout(r, wait));
   }
   throw new Error("Max retries exceeded");
@@ -75,4 +78,5 @@ async function scrapeWithRetry(apiKey, url, prompt, retries = 3) {
 
 - **Batch requests** — process URLs in batches with a small delay between each batch rather than sending them all at once.
 - **Cache results** — if you are scraping the same URLs repeatedly, store the results and only re-scrape when the data needs to be fresh.
+- **Use `crawl.start`** for multi-page jobs — one crawl job counts as one concurrent job, not one per page.
 - **Upgrade your plan** — if your use case requires higher throughput, consider upgrading to a plan with higher limits.

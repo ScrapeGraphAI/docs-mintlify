@@ -15,7 +15,7 @@ Bolt.new can generate Node.js / Express backends alongside your frontend. Make S
 
 Start a new Bolt project and prompt it:
 
-> Create a full-stack app with an Express backend. Add a POST endpoint at `/api/scrape` that accepts `url` and `prompt` fields, calls the ScrapeGraphAI SmartScraper API, and returns the result.
+> Create a full-stack app with an Express backend. Install `scrapegraph-js`. Add a POST endpoint at `/api/scrape` that accepts `url` and `prompt` fields, calls `sgai.extract` from ScrapeGraphAI v2, and returns the structured JSON result.
 
 ### 2. Backend endpoint
 
@@ -23,31 +23,40 @@ Bolt will generate something like this — make sure the API key is loaded from 
 
 ```javascript
 import express from "express";
-import fetch from "node-fetch";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
 const app = express();
 app.use(express.json());
 
+// Reads SGAI_API_KEY from process.env
+const sgai = ScrapeGraphAI();
+
 app.post("/api/scrape", async (req, res) => {
   const { url, prompt } = req.body;
 
-  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "SGAI-APIKEY": process.env.SGAI_API_KEY,
-    },
-    body: JSON.stringify({
-      website_url: url,
-      user_prompt: prompt,
-    }),
-  });
+  const result = await sgai.extract({ url, prompt });
 
-  const data = await response.json();
-  res.json(data);
+  if (result.status === "success") {
+    res.json({ data: result.data?.json, usage: result.data?.usage });
+  } else {
+    res.status(502).json({ error: result.error });
+  }
 });
 
 app.listen(3001);
+```
+
+If you prefer `fetch` over the SDK, call the v2 REST endpoint directly:
+
+```javascript
+const response = await fetch("https://v2-api.scrapegraphai.com/api/extract", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "SGAI-APIKEY": process.env.SGAI_API_KEY,
+  },
+  body: JSON.stringify({ url, prompt }),
+});
 ```
 
 ### 3. Add your API key
@@ -70,10 +79,10 @@ const response = await fetch("/api/scrape", {
   }),
 });
 
-const data = await response.json();
-console.log(data.result);
+const { data } = await response.json();
+console.log(data);
 ```
 
 ## Example prompt for Bolt
 
-> Build a price tracker UI. It should have an input for a product URL and a button. When clicked, it calls the backend scrape endpoint and shows the extracted product name and price in a card.
+> Build a price tracker UI. It should have an input for a product URL and a button. When clicked, it calls the backend `/api/scrape` endpoint and shows the extracted product name and price in a card.

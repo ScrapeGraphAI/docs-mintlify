@@ -1,80 +1,99 @@
 ---
 title: Handling pagination
-description: 'Scrape multi-page results using the pagination parameter'
+description: 'Scrape multi-page results with Crawl or iterate URLs yourself'
 ---
 
-Many websites spread their content across multiple pages — product listings, search results, articles. ScrapeGraphAI provides built-in support for paginated content.
+Many websites spread their content across multiple pages — product listings, search results, articles. In v2 there are two approaches: let `crawl.start` follow links for you, or iterate page URLs manually with `extract`.
 
-## Using SmartCrawler for multi-page extraction
+## Using Crawl for multi-page extraction
 
-[SmartCrawler](/services/smartcrawler) is the recommended service for crawling multiple pages. It follows links and aggregates results across pages automatically.
+[`crawl.start`](/services/crawl) is the recommended service when you want to follow links automatically. It runs asynchronously — start a job and poll for the result.
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
 
-client = Client(api_key="your-api-key")
+```python Python
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
 
-response = client.smartcrawler(
-    website_url="https://example.com/products",
-    user_prompt="Extract all product names and prices from every page",
-    max_pages=10,
+sgai = ScrapeGraphAI()
+
+start = sgai.crawl.start(
+    "https://example.com/products",
+    formats=[JsonFormatConfig(prompt="Extract product names and prices")],
+    max_depth=2,
+    max_pages=50,
+    include_patterns=["/products*"],
 )
+
+status = sgai.crawl.get(start.data.id)
+print(f"{status.data.finished}/{status.data.total} - {status.data.status}")
 ```
 
-## Using SmartScraper with explicit page URLs
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-If you know the URL pattern for each page, scrape them individually and aggregate results:
+const sgai = ScrapeGraphAI();
 
-```python
-from scrapegraph_py import Client
+const start = await sgai.crawl.start({
+  url: "https://example.com/products",
+  formats: [{ type: "json", prompt: "Extract product names and prices" }],
+  maxDepth: 2,
+  maxPages: 50,
+  includePatterns: ["/products*"],
+});
 
-client = Client(api_key="your-api-key")
+const status = await sgai.crawl.get(start.data.id);
+```
 
-all_results = []
+</CodeGroup>
+
+## Iterating page URLs with Extract
+
+If you know the URL pattern for each page, call `extract` on each URL and aggregate results:
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI
+
+sgai = ScrapeGraphAI()
+
+all_products = []
 for page in range(1, 6):  # pages 1-5
     url = f"https://example.com/products?page={page}"
-    response = client.smartscraper(
-        website_url=url,
-        user_prompt="Extract all product names and prices on this page",
+    res = sgai.extract(
+        "Extract all product names and prices on this page",
+        url=url,
     )
-    all_results.extend(response.get("result", {}).get("products", []))
+    if res.status == "success":
+        all_products.extend(res.data.json_data.get("products", []))
 
-print(f"Total products extracted: {len(all_results)}")
+print(f"Total products extracted: {len(all_products)}")
 ```
 
-```javascript
-import { extract } from "scrapegraph-js";
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const allResults = [];
+const sgai = ScrapeGraphAI();
+const allProducts = [];
 
 for (let page = 1; page <= 5; page++) {
   const url = `https://example.com/products?page=${page}`;
-  const result = await extract("your-api-key", {
+  const res = await sgai.extract({
     url,
     prompt: "Extract all product names and prices on this page",
   });
-  if (result.status === "success") {
-    allResults.push(...(result.data?.json?.products ?? []));
+  if (res.status === "success") {
+    allProducts.push(...(res.data?.json?.products ?? []));
   }
 }
 ```
 
-## Using the `pagination` parameter
-
-For services that support it, you can pass the `pagination` parameter to iterate through pages automatically:
-
-```python
-response = client.smartscraper(
-    website_url="https://example.com/products",
-    user_prompt="Extract all products",
-    pagination=True,
-)
-```
-
-See the [pagination parameter documentation](/services/additional-parameters/pagination) for full options.
+</CodeGroup>
 
 ## Tips
 
-- **Add delays between pages** to avoid triggering rate limits on the target website.
-- **Check for a "next page" link** in your prompt — `"Extract all items and the URL of the next page"` — to discover pagination dynamically.
-- **Stop early** when the extracted list is empty or a "no more results" message appears.
+- Prefer **`crawl.start`** when the number or pattern of pages is unknown — it handles link discovery for you.
+- Use **manual iteration** when URLs follow a predictable pattern (`?page=N`) and you want tight control.
+- **Add delays between pages** in manual mode to avoid triggering rate limits on the target website.
+- **Stop early** when the extracted list is empty or a "no more results" marker appears.
+- For infinite-scroll pages, use [`FetchConfig(scrolls=N)`](/knowledge-base/scraping/javascript-rendering#infinite-scroll-lazy-loading) instead of pagination.

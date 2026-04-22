@@ -146,7 +146,6 @@
               {
                 "group": "Troubleshooting",
                 "pages": [
-                  "knowledge-base/troubleshooting/cors-error",
                   "knowledge-base/troubleshooting/empty-results",
                   "knowledge-base/troubleshooting/rate-limiting",
                   "knowledge-base/troubleshooting/timeout-errors"

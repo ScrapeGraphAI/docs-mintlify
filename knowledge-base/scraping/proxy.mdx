@@ -3,9 +3,9 @@ title: Proxy & Fetch Configuration
 description: 'Control proxy routing, stealth mode, and geo-targeting with FetchConfig'
 ---
 
-In v2, all proxy and fetch behaviour is controlled through the `FetchConfig` object. You can set the proxy strategy (`mode`), country-based geotargeting (`country`), wait times, scrolling, custom headers, and more.
+In v2, all proxy and fetch behaviour is controlled through the `FetchConfig` object. You can set the proxy strategy (`mode`), country-based geotargeting (`country`), wait times, scrolling, custom headers, cookies, and more.
 
-See the [full proxy reference](/services/additional-parameters/proxy) for all available options.
+`FetchConfig` is accepted by `sgai.extract()`, `sgai.scrape()`, `sgai.search()`, and `sgai.crawl.start()`.
 
 ## Choosing a fetch mode
 
@@ -28,21 +28,23 @@ Access content from a specific country using the `country` parameter:
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-response = client.extract(
+res = sgai.extract(
+    "Extract the main content",
     url="https://example.com",
-    prompt="Extract the main content",
     fetch_config=FetchConfig(country="de"),  # Route through Germany
 )
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { ScrapeGraphAI } from 'scrapegraph-js';
 
-const result = await extract('your-api-key', {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
   url: 'https://example.com',
   prompt: 'Extract the main content',
   fetchConfig: { country: 'de' },
@@ -53,18 +55,18 @@ const result = await extract('your-api-key', {
 
 ### Stealth mode for protected sites
 
-Use stealth modes to bypass anti-bot protections:
+Use stealth mode to bypass anti-bot protections:
 
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig, MarkdownFormatConfig
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-response = client.scrape(
-    url="https://protected-site.com",
-    format="markdown",
+res = sgai.scrape(
+    "https://protected-site.com",
+    formats=[MarkdownFormatConfig()],
     fetch_config=FetchConfig(
         mode="js",
         stealth=True,
@@ -76,9 +78,11 @@ response = client.scrape(
 ```
 
 ```javascript JavaScript
-import { scrape } from 'scrapegraph-js';
+import { ScrapeGraphAI } from 'scrapegraph-js';
 
-const result = await scrape('your-api-key', {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
   url: 'https://protected-site.com',
   formats: [{ type: 'markdown' }],
   fetchConfig: {
@@ -100,13 +104,13 @@ Pass custom HTTP headers or cookies with your requests:
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()
 
-response = client.extract(
+res = sgai.extract(
+    "Extract product details",
     url="https://example.com",
-    prompt="Extract product details",
     fetch_config=FetchConfig(
         headers={"Accept-Language": "en-US"},
         cookies={"session": "abc123"},
@@ -115,9 +119,11 @@ response = client.extract(
 ```
 
 ```javascript JavaScript
-import { extract } from 'scrapegraph-js';
+import { ScrapeGraphAI } from 'scrapegraph-js';
 
-const result = await extract('your-api-key', {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
   url: 'https://example.com',
   prompt: 'Extract product details',
   fetchConfig: {
