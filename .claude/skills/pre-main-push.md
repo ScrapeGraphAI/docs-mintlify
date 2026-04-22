@@ -105,6 +105,11 @@ Only if step 3 passed with 5/5:
 3. Open the PR with `gh pr create`. In the PR body, include a short "Validation" section stating:
    > Endpoint `<name>` tested against 5 live websites — all passed. API key supplied by user at PR creation time (not stored).
    Do not include the key itself or any response data that might contain it.
+4. After the PR is open, post the per-URL test results as a PR comment with `gh pr comment <number> --body ...`. Include one line per URL with status and `elapsed_ms` (and response key names if useful), e.g.:
+   ```
+   [extract 1/5] https://example.com -> status=success elapsed_ms=534 keys=['page_title', 'main_heading']
+   ```
+   Never paste the API key, request headers, raw response bodies, or any field that might echo the key. If the endpoint returns content that could contain user data, summarize (keys only) instead of dumping the payload.
 
 Defer to the `creating-pr` skill (`gh-pr.md`) for PR title/body formatting and branch naming conventions.
 
