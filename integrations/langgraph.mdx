@@ -48,94 +48,97 @@ Save as `sgai_tools.py` — every example below imports from it.
 ```python sgai_tools.py
 from typing import Optional
 from langchain_core.tools import tool
-from scrapegraph_py import (
-    ScrapeGraphAI,
-    ScrapeRequest, ExtractRequest, SearchRequest, CrawlRequest,
-    MonitorCreateRequest, MarkdownFormatConfig,
-)
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, JsonFormatConfig
 
 sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+def _unwrap(result):
+    """Return the SDK response payload as a plain dict."""
+    if result.error:
+        raise RuntimeError(f"ScrapeGraph error: {result.error}")
+    data = result.data
+    return data.model_dump() if hasattr(data, "model_dump") else data
 
 @tool
 def scrape(url: str) -> dict:
     """Fetch a web page and return its content as markdown."""
-    return sgai.scrape(ScrapeRequest(url=url, formats=[MarkdownFormatConfig()]))
+    return _unwrap(sgai.scrape(url=url, formats=[MarkdownFormatConfig()]))
 
 @tool
 def extract(url: str, prompt: str) -> dict:
     """Extract structured data from a web page using a natural-language prompt."""
-    return sgai.extract(ExtractRequest(url=url, prompt=prompt))
+    return _unwrap(sgai.extract(prompt=prompt, url=url))
 
 @tool
 def search(query: str, num_results: int = 3) -> dict:
     """Run an AI web search; returns ranked results with fetched content."""
-    return sgai.search(SearchRequest(query=query, num_results=num_results))
+    return _unwrap(sgai.search(query=query, num_results=num_results))
 
 @tool
-def crawl_start(url: str, depth: int = 2, max_pages: int = 10) -> dict:
-    """Start a multi-page crawl job."""
-    return sgai.crawl.start(CrawlRequest(
-        url=url, depth=depth, max_pages=max_pages,
+def crawl_start(url: str, max_depth: int = 2, max_pages: int = 10) -> dict:
+    """Start a multi-page crawl job. Returns a dict including the crawl `id`."""
+    return _unwrap(sgai.crawl.start(
+        url=url, max_depth=max_depth, max_pages=max_pages,
         formats=[MarkdownFormatConfig()],
     ))
 
 @tool
 def crawl_get(crawl_id: str) -> dict:
     """Fetch the status and result of a crawl job."""
-    return sgai.crawl.get(crawl_id)
+    return _unwrap(sgai.crawl.get(crawl_id))
 
 @tool
 def crawl_stop(crawl_id: str) -> dict:
     """Stop a running crawl."""
-    return sgai.crawl.stop(crawl_id)
+    return _unwrap(sgai.crawl.stop(crawl_id))
 
 @tool
 def crawl_resume(crawl_id: str) -> dict:
     """Resume a stopped crawl."""
-    return sgai.crawl.resume(crawl_id)
+    return _unwrap(sgai.crawl.resume(crawl_id))
 
 @tool
-def monitor_create(name: str, url: str, prompt: str, interval: str = "0 9 * * *") -> dict:
-    """Create a scheduled monitor that polls a URL on a cron interval."""
-    return sgai.monitor.create(MonitorCreateRequest(
-        name=name, url=url, prompt=prompt, interval=interval,
-    ))
+def monitor_create(url: str, interval: str, name: Optional[str] = None, prompt: Optional[str] = None) -> dict:
+    """Create a scheduled monitor. If `prompt` is given, each tick stores
+    JSON extraction; otherwise it stores markdown. `interval` is cron syntax."""
+    formats = [JsonFormatConfig(prompt=prompt)] if prompt else [MarkdownFormatConfig()]
+    return _unwrap(sgai.monitor.create(url=url, interval=interval, name=name, formats=formats))
 
 @tool
 def monitor_list() -> list:
     """List all monitors."""
-    return sgai.monitor.list()
+    return _unwrap(sgai.monitor.list())
 
 @tool
 def monitor_get(monitor_id: str) -> dict:
     """Get one monitor by id."""
-    return sgai.monitor.get(monitor_id)
+    return _unwrap(sgai.monitor.get(monitor_id))
 
 @tool
 def monitor_pause(monitor_id: str) -> dict:
     """Pause a monitor."""
-    return sgai.monitor.pause(monitor_id)
+    return _unwrap(sgai.monitor.pause(monitor_id))
 
 @tool
 def monitor_resume(monitor_id: str) -> dict:
     """Resume a paused monitor."""
-    return sgai.monitor.resume(monitor_id)
+    return _unwrap(sgai.monitor.resume(monitor_id))
 
 @tool
 def monitor_delete(monitor_id: str) -> dict:
     """Delete a monitor."""
-    sgai.monitor.delete(monitor_id)
+    _unwrap(sgai.monitor.delete(monitor_id))
     return {"deleted": monitor_id}
 
 @tool
 def history_list(service: Optional[str] = None, page: int = 1, limit: int = 20) -> dict:
     """List recent API request history."""
-    return sgai.history.list(service=service, page=page, limit=limit)
+    return _unwrap(sgai.history.list(service=service, page=page, limit=limit))
 
 @tool
 def credits() -> dict:
     """Check remaining ScrapeGraph API credits."""
-    return sgai.credits()
+    return _unwrap(sgai.credits())
 
 ALL_TOOLS = [
     scrape, extract, search,
@@ -150,14 +153,14 @@ ALL_TOOLS = [
 
 | ScrapeGraph endpoint | SDK call | Tool |
 |---|---|---|
-| `POST /scrape` | `sgai.scrape(ScrapeRequest(...))` | `scrape` |
-| `POST /extract` | `sgai.extract(ExtractRequest(...))` | `extract` |
-| `POST /search` | `sgai.search(SearchRequest(...))` | `search` |
-| `POST /crawl` | `sgai.crawl.start(CrawlRequest(...))` | `crawl_start` |
+| `POST /scrape` | `sgai.scrape(url=...)` | `scrape` |
+| `POST /extract` | `sgai.extract(prompt=..., url=...)` | `extract` |
+| `POST /search` | `sgai.search(query=...)` | `search` |
+| `POST /crawl` | `sgai.crawl.start(url=...)` | `crawl_start` |
 | `GET /crawl/{id}` | `sgai.crawl.get(id)` | `crawl_get` |
 | `POST /crawl/{id}/stop` | `sgai.crawl.stop(id)` | `crawl_stop` |
 | `POST /crawl/{id}/resume` | `sgai.crawl.resume(id)` | `crawl_resume` |
-| `POST /monitor` | `sgai.monitor.create(...)` | `monitor_create` |
+| `POST /monitor` | `sgai.monitor.create(url=..., interval=...)` | `monitor_create` |
 | `GET /monitor` | `sgai.monitor.list()` | `monitor_list` |
 | `GET /monitor/{id}` | `sgai.monitor.get(id)` | `monitor_get` |
 | `POST /monitor/{id}/pause` | `sgai.monitor.pause(id)` | `monitor_pause` |
@@ -168,20 +171,20 @@ ALL_TOOLS = [
 
 ---
 
-## Option A — prebuilt ReAct agent
+## Option A — prebuilt agent via `create_agent`
 
-Fastest path: one call to `create_react_agent` wires up every tool behind an LLM router.
+Fastest path: LangChain v1's `create_agent` returns a compiled LangGraph with the standard ReAct loop baked in — one call wires up every tool behind an LLM router.
 
 ```python
+from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
 from sgai_tools import ALL_TOOLS
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
-agent = create_react_agent(
+agent = create_agent(
     model=llm,
     tools=ALL_TOOLS,
-    prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
+    system_prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
 )
 
 final_state = agent.invoke({
@@ -189,6 +192,10 @@ final_state = agent.invoke({
 })
 print(final_state["messages"][-1].content)
 ```
+
+<Note>
+`langgraph.prebuilt.create_react_agent` still exists but is deprecated in LangGraph v1.0 — use `create_agent` from `langchain.agents`.
+</Note>
 
 ## Option B — custom StateGraph with ToolNode
 
@@ -277,7 +284,7 @@ class CrawlState(TypedDict):
     result: dict
 
 def run_crawl(state: CrawlState):
-    job = crawl_start.invoke({"url": state["url"], "depth": 2, "max_pages": 10})
+    job = crawl_start.invoke({"url": state["url"], "max_depth": 2, "max_pages": 10})
     crawl_id = job["id"]
     while True:
         info = crawl_get.invoke({"crawl_id": crawl_id})
