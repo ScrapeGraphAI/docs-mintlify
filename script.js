@@ -7,12 +7,12 @@
     el.className = 'sgai-cta';
     el.innerHTML = [
       '<div class="sgai-cta__brand">',
-      '  <img src="/logos/logo-color.svg" alt="" class="sgai-cta__brand-logo" style="background:transparent;mask:none;-webkit-mask:none;border-radius:0" />',
+      '  <img src="/logos/logo-color.svg" alt="" class="sgai-cta__brand-logo" />',
       '  <span>ScrapeGraphAI</span>',
       '</div>',
       '<div class="sgai-cta__title">Ready to build?</div>',
-      '<p class="sgai-cta__desc">Start extracting structured web data for free and scale seamlessly as your project grows. <strong>No credit card needed.</strong></p>',
-      '<a class="sgai-cta__btn sgai-cta__btn--primary" href="https://dashboard.scrapegraphai.com/">Start for free</a>',
+      '<p class="sgai-cta__desc">Start extracting structured web data for free and scale seamlessly as your project grows.</p>',
+      '<a class="sgai-cta__btn sgai-cta__btn--primary" href="https://scrapegraphai.com/login">Start for free</a>',
       '<a class="sgai-cta__btn sgai-cta__btn--secondary" href="https://scrapegraphai.com/pricing">See our plans</a>'
     ].join('');
     return el;
