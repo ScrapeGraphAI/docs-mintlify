@@ -1,11 +1,11 @@
 ---
 title: '🕸️ LangGraph'
-description: 'Build stateful agent workflows with ScrapeGraph tools'
+description: 'Build stateful workflows with ScrapeGraph endpoints as LangGraph nodes'
 ---
 
 ## Overview
 
-LangGraph runs on top of LangChain, so every tool in [`langchain-scrapegraph`](https://pypi.org/project/langchain-scrapegraph/) plugs directly into a `StateGraph` or `create_react_agent` — no adapters, no wrappers. Use ScrapeGraph endpoints as nodes in a deterministic pipeline, or let an LLM router pick the right tool inside a ReAct loop.
+LangGraph runs on top of LangChain, so vanilla `@tool`-decorated wrappers around the [`scrapegraph-py`](https://pypi.org/project/scrapegraph-py/) SDK plug straight into `create_react_agent`, `ToolNode`, or any custom `StateGraph` node — no third-party integration package needed.
 
 <CardGroup cols={2}>
   <Card
@@ -16,18 +16,18 @@ LangGraph runs on top of LangChain, so every tool in [`langchain-scrapegraph`](h
     Official LangGraph documentation
   </Card>
   <Card
-    title="GitHub"
-    icon="github"
-    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph"
+    title="scrapegraph-py on PyPI"
+    icon="cube"
+    href="https://pypi.org/project/scrapegraph-py/"
   >
-    Source and issues for langchain-scrapegraph
+    The official Python SDK for ScrapeGraph v2
   </Card>
 </CardGroup>
 
 ## Installation
 
 ```bash
-pip install langchain-scrapegraph langchain-openai langgraph
+pip install langchain langchain-openai langgraph scrapegraph-py
 ```
 
 Set your keys:
@@ -41,26 +41,130 @@ export OPENAI_API_KEY="your-openai-key"
 Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Build the toolkit
+
+Save as `sgai_tools.py` — every example below imports from it.
+
+```python sgai_tools.py
+from typing import Optional
+from langchain_core.tools import tool
+from scrapegraph_py import (
+    ScrapeGraphAI,
+    ScrapeRequest, ExtractRequest, SearchRequest, CrawlRequest,
+    MonitorCreateRequest, MarkdownFormatConfig,
+)
+
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+@tool
+def scrape(url: str) -> dict:
+    """Fetch a web page and return its content as markdown."""
+    return sgai.scrape(ScrapeRequest(url=url, formats=[MarkdownFormatConfig()]))
+
+@tool
+def extract(url: str, prompt: str) -> dict:
+    """Extract structured data from a web page using a natural-language prompt."""
+    return sgai.extract(ExtractRequest(url=url, prompt=prompt))
+
+@tool
+def search(query: str, num_results: int = 3) -> dict:
+    """Run an AI web search; returns ranked results with fetched content."""
+    return sgai.search(SearchRequest(query=query, num_results=num_results))
+
+@tool
+def crawl_start(url: str, depth: int = 2, max_pages: int = 10) -> dict:
+    """Start a multi-page crawl job."""
+    return sgai.crawl.start(CrawlRequest(
+        url=url, depth=depth, max_pages=max_pages,
+        formats=[MarkdownFormatConfig()],
+    ))
+
+@tool
+def crawl_get(crawl_id: str) -> dict:
+    """Fetch the status and result of a crawl job."""
+    return sgai.crawl.get(crawl_id)
+
+@tool
+def crawl_stop(crawl_id: str) -> dict:
+    """Stop a running crawl."""
+    return sgai.crawl.stop(crawl_id)
+
+@tool
+def crawl_resume(crawl_id: str) -> dict:
+    """Resume a stopped crawl."""
+    return sgai.crawl.resume(crawl_id)
+
+@tool
+def monitor_create(name: str, url: str, prompt: str, interval: str = "0 9 * * *") -> dict:
+    """Create a scheduled monitor that polls a URL on a cron interval."""
+    return sgai.monitor.create(MonitorCreateRequest(
+        name=name, url=url, prompt=prompt, interval=interval,
+    ))
+
+@tool
+def monitor_list() -> list:
+    """List all monitors."""
+    return sgai.monitor.list()
+
+@tool
+def monitor_get(monitor_id: str) -> dict:
+    """Get one monitor by id."""
+    return sgai.monitor.get(monitor_id)
+
+@tool
+def monitor_pause(monitor_id: str) -> dict:
+    """Pause a monitor."""
+    return sgai.monitor.pause(monitor_id)
+
+@tool
+def monitor_resume(monitor_id: str) -> dict:
+    """Resume a paused monitor."""
+    return sgai.monitor.resume(monitor_id)
+
+@tool
+def monitor_delete(monitor_id: str) -> dict:
+    """Delete a monitor."""
+    sgai.monitor.delete(monitor_id)
+    return {"deleted": monitor_id}
+
+@tool
+def history_list(service: Optional[str] = None, page: int = 1, limit: int = 20) -> dict:
+    """List recent API request history."""
+    return sgai.history.list(service=service, page=page, limit=limit)
+
+@tool
+def credits() -> dict:
+    """Check remaining ScrapeGraph API credits."""
+    return sgai.credits()
+
+ALL_TOOLS = [
+    scrape, extract, search,
+    crawl_start, crawl_get, crawl_stop, crawl_resume,
+    monitor_create, monitor_list, monitor_get,
+    monitor_pause, monitor_resume, monitor_delete,
+    history_list, credits,
+]
+```
+
 ## Endpoint → tool reference
 
-| ScrapeGraph endpoint | Tool class |
-|---|---|
-| `POST /scrape` | `ScrapeTool` |
-| `POST /extract` | `ExtractTool` |
-| `POST /search` | `SearchTool` |
-| `POST /markdownify` | `MarkdownifyTool` |
-| `POST /crawl` | `CrawlStartTool` |
-| `GET /crawl/{id}` | `CrawlStatusTool` |
-| `POST /crawl/{id}/stop` | `CrawlStopTool` |
-| `POST /crawl/{id}/resume` | `CrawlResumeTool` |
-| `POST /monitor` | `MonitorCreateTool` |
-| `GET /monitor` | `MonitorListTool` |
-| `GET /monitor/{id}` | `MonitorGetTool` |
-| `POST /monitor/{id}/pause` | `MonitorPauseTool` |
-| `POST /monitor/{id}/resume` | `MonitorResumeTool` |
-| `DELETE /monitor/{id}` | `MonitorDeleteTool` |
-| `GET /history` | `HistoryTool` |
-| `GET /credits` | `GetCreditsTool` |
+| ScrapeGraph endpoint | SDK call | Tool |
+|---|---|---|
+| `POST /scrape` | `sgai.scrape(ScrapeRequest(...))` | `scrape` |
+| `POST /extract` | `sgai.extract(ExtractRequest(...))` | `extract` |
+| `POST /search` | `sgai.search(SearchRequest(...))` | `search` |
+| `POST /crawl` | `sgai.crawl.start(CrawlRequest(...))` | `crawl_start` |
+| `GET /crawl/{id}` | `sgai.crawl.get(id)` | `crawl_get` |
+| `POST /crawl/{id}/stop` | `sgai.crawl.stop(id)` | `crawl_stop` |
+| `POST /crawl/{id}/resume` | `sgai.crawl.resume(id)` | `crawl_resume` |
+| `POST /monitor` | `sgai.monitor.create(...)` | `monitor_create` |
+| `GET /monitor` | `sgai.monitor.list()` | `monitor_list` |
+| `GET /monitor/{id}` | `sgai.monitor.get(id)` | `monitor_get` |
+| `POST /monitor/{id}/pause` | `sgai.monitor.pause(id)` | `monitor_pause` |
+| `POST /monitor/{id}/resume` | `sgai.monitor.resume(id)` | `monitor_resume` |
+| `DELETE /monitor/{id}` | `sgai.monitor.delete(id)` | `monitor_delete` |
+| `GET /history` | `sgai.history.list(...)` | `history_list` |
+| `GET /credits` | `sgai.credits()` | `credits` |
 
 ---
 
@@ -71,26 +175,12 @@ Fastest path: one call to `create_react_agent` wires up every tool behind an LLM
 ```python
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from langchain_scrapegraph.tools import (
-    ScrapeTool, ExtractTool, SearchTool, MarkdownifyTool,
-    CrawlStartTool, CrawlStatusTool, CrawlStopTool, CrawlResumeTool,
-    MonitorCreateTool, MonitorListTool, MonitorGetTool,
-    MonitorPauseTool, MonitorResumeTool, MonitorDeleteTool,
-    HistoryTool, GetCreditsTool,
-)
-
-tools = [
-    ScrapeTool(), ExtractTool(), SearchTool(), MarkdownifyTool(),
-    CrawlStartTool(), CrawlStatusTool(), CrawlStopTool(), CrawlResumeTool(),
-    MonitorCreateTool(), MonitorListTool(), MonitorGetTool(),
-    MonitorPauseTool(), MonitorResumeTool(), MonitorDeleteTool(),
-    HistoryTool(), GetCreditsTool(),
-]
+from sgai_tools import ALL_TOOLS
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 agent = create_react_agent(
     model=llm,
-    tools=tools,
+    tools=ALL_TOOLS,
     prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
 )
 
@@ -111,19 +201,12 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_scrapegraph.tools import (
-    ScrapeTool, ExtractTool, SearchTool, CrawlStartTool, CrawlStatusTool,
-    MonitorCreateTool, GetCreditsTool,
-)
+from sgai_tools import scrape, extract, search, crawl_start, crawl_get, credits
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-tools = [
-    ScrapeTool(), ExtractTool(), SearchTool(),
-    CrawlStartTool(), CrawlStatusTool(),
-    MonitorCreateTool(), GetCreditsTool(),
-]
+tools = [scrape, extract, search, crawl_start, crawl_get, credits]
 llm = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools)
 
 def call_model(state: State):
@@ -150,12 +233,7 @@ When the sequence is known in advance — e.g. *search → pick URL → extract*
 ```python
 from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
-from langchain_scrapegraph.tools import SearchTool, ExtractTool
-from pydantic import BaseModel, Field
-
-class Product(BaseModel):
-    name: str = Field(description="Product name")
-    price: str = Field(description="Product price")
+from sgai_tools import search, extract
 
 class State(TypedDict):
     query: str
@@ -163,14 +241,13 @@ class State(TypedDict):
     data: dict
 
 def do_search(state: State):
-    hits = SearchTool().invoke({"query": state["query"]})
+    hits = search.invoke({"query": state["query"], "num_results": 1})
     return {"top_url": hits["results"][0]["url"]}
 
 def do_extract(state: State):
-    tool = ExtractTool(llm_output_schema=Product)
-    return {"data": tool.invoke({
+    return {"data": extract.invoke({
         "url": state["top_url"],
-        "prompt": "Extract the product name and price",
+        "prompt": "Extract the product name and price as JSON",
     })}
 
 g = StateGraph(State)
@@ -192,7 +269,7 @@ Crawls are async. Wrap start + poll in a single node so the graph advances only 
 import time
 from typing import TypedDict
 from langgraph.graph import StateGraph, START, END
-from langchain_scrapegraph.tools import CrawlStartTool, CrawlStatusTool
+from sgai_tools import crawl_start, crawl_get
 
 class CrawlState(TypedDict):
     url: str
@@ -200,17 +277,12 @@ class CrawlState(TypedDict):
     result: dict
 
 def run_crawl(state: CrawlState):
-    job = CrawlStartTool().invoke({
-        "url": state["url"],
-        "depth": 2,
-        "max_pages": 10,
-        "format": "markdown",
-    })
-    status_tool = CrawlStatusTool()
+    job = crawl_start.invoke({"url": state["url"], "depth": 2, "max_pages": 10})
+    crawl_id = job["id"]
     while True:
-        info = status_tool.invoke({"crawl_id": job["id"]})
+        info = crawl_get.invoke({"crawl_id": crawl_id})
         if info["status"] in ("completed", "failed"):
-            return {"crawl_id": job["id"], "result": info}
+            return {"crawl_id": crawl_id, "result": info}
         time.sleep(5)
 
 g = StateGraph(CrawlState)
@@ -234,11 +306,11 @@ print(app.invoke({"url": "https://scrapegraphai.com"}))
 
 <CardGroup cols={2}>
   <Card
-    title="GitHub Issues"
+    title="Python SDK"
     icon="github"
-    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph/issues"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py"
   >
-    Report bugs and request features
+    Source and issues for scrapegraph-py
   </Card>
   <Card
     title="Discord"
