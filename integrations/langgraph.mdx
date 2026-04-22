@@ -1,19 +1,19 @@
 ---
-title: '🦜 LangChain'
-description: 'Wrap ScrapeGraph endpoints as vanilla LangChain tools'
+title: '🕸️ LangGraph'
+description: 'Build stateful workflows with ScrapeGraph endpoints as LangGraph nodes'
 ---
 
 ## Overview
 
-Every ScrapeGraph v2 endpoint is one method on the official [`scrapegraph-py`](https://pypi.org/project/scrapegraph-py/) SDK. Wrap each one with LangChain's built-in `@tool` decorator and you get a fully typed toolkit — no extra dependency, no third-party integration package, full control over arguments and return shapes.
+LangGraph runs on top of LangChain, so vanilla `@tool`-decorated wrappers around the [`scrapegraph-py`](https://pypi.org/project/scrapegraph-py/) SDK plug straight into `create_react_agent`, `ToolNode`, or any custom `StateGraph` node — no third-party integration package needed.
 
 <CardGroup cols={2}>
   <Card
-    title="LangChain tool docs"
+    title="LangGraph docs"
     icon="book"
-    href="https://python.langchain.com/docs/how_to/custom_tools/"
+    href="https://langchain-ai.github.io/langgraph/"
   >
-    How LangChain's `@tool` decorator works
+    Official LangGraph documentation
   </Card>
   <Card
     title="scrapegraph-py on PyPI"
@@ -27,7 +27,7 @@ Every ScrapeGraph v2 endpoint is one method on the official [`scrapegraph-py`](h
 ## Installation
 
 ```bash
-pip install langchain langchain-openai scrapegraph-py
+pip install langchain langchain-openai langgraph scrapegraph-py
 ```
 
 Set your keys:
@@ -43,7 +43,7 @@ Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dash
 
 ## Build the toolkit
 
-Save this once as `sgai_tools.py` — every example below imports from it.
+Save as `sgai_tools.py` — every example below imports from it.
 
 ```python sgai_tools.py
 from typing import Optional
@@ -59,8 +59,6 @@ def _unwrap(result):
     data = result.data
     return data.model_dump() if hasattr(data, "model_dump") else data
 
-# --- content endpoints -------------------------------------------------------
-
 @tool
 def scrape(url: str) -> dict:
     """Fetch a web page and return its content as markdown."""
@@ -75,8 +73,6 @@ def extract(url: str, prompt: str) -> dict:
 def search(query: str, num_results: int = 3) -> dict:
     """Run an AI web search; returns ranked results with fetched content."""
     return _unwrap(sgai.search(query=query, num_results=num_results))
-
-# --- crawl (async job) -------------------------------------------------------
 
 @tool
 def crawl_start(url: str, max_depth: int = 2, max_pages: int = 10) -> dict:
@@ -102,17 +98,9 @@ def crawl_resume(crawl_id: str) -> dict:
     return _unwrap(sgai.crawl.resume(crawl_id))
 
 @tool
-def crawl_delete(crawl_id: str) -> dict:
-    """Delete a crawl job."""
-    return _unwrap(sgai.crawl.delete(crawl_id))
-
-# --- monitor (scheduled jobs) ------------------------------------------------
-
-@tool
 def monitor_create(url: str, interval: str, name: Optional[str] = None, prompt: Optional[str] = None) -> dict:
-    """Create a scheduled monitor. If `prompt` is given each tick stores JSON
-    extraction; otherwise it stores markdown. `interval` is cron syntax,
-    e.g. "0 9 * * *" for daily at 9am."""
+    """Create a scheduled monitor. If `prompt` is given, each tick stores
+    JSON extraction; otherwise it stores markdown. `interval` is cron syntax."""
     formats = [JsonFormatConfig(prompt=prompt)] if prompt else [MarkdownFormatConfig()]
     return _unwrap(sgai.monitor.create(url=url, interval=interval, name=name, formats=formats))
 
@@ -143,21 +131,9 @@ def monitor_delete(monitor_id: str) -> dict:
     return {"deleted": monitor_id}
 
 @tool
-def monitor_activity(monitor_id: str) -> dict:
-    """Get the recent runs of a monitor."""
-    return _unwrap(sgai.monitor.activity(monitor_id))
-
-# --- account / history -------------------------------------------------------
-
-@tool
 def history_list(service: Optional[str] = None, page: int = 1, limit: int = 20) -> dict:
-    """List recent API request history, optionally filtered by service."""
+    """List recent API request history."""
     return _unwrap(sgai.history.list(service=service, page=page, limit=limit))
-
-@tool
-def history_get(request_id: str) -> dict:
-    """Get a single history entry by request id."""
-    return _unwrap(sgai.history.get(request_id))
 
 @tool
 def credits() -> dict:
@@ -166,16 +142,16 @@ def credits() -> dict:
 
 ALL_TOOLS = [
     scrape, extract, search,
-    crawl_start, crawl_get, crawl_stop, crawl_resume, crawl_delete,
+    crawl_start, crawl_get, crawl_stop, crawl_resume,
     monitor_create, monitor_list, monitor_get,
-    monitor_pause, monitor_resume, monitor_delete, monitor_activity,
-    history_list, history_get, credits,
+    monitor_pause, monitor_resume, monitor_delete,
+    history_list, credits,
 ]
 ```
 
 ## Endpoint → tool reference
 
-| ScrapeGraph endpoint | SDK call | LangChain tool |
+| ScrapeGraph endpoint | SDK call | Tool |
 |---|---|---|
 | `POST /scrape` | `sgai.scrape(url=...)` | `scrape` |
 | `POST /extract` | `sgai.extract(prompt=..., url=...)` | `extract` |
@@ -184,42 +160,20 @@ ALL_TOOLS = [
 | `GET /crawl/{id}` | `sgai.crawl.get(id)` | `crawl_get` |
 | `POST /crawl/{id}/stop` | `sgai.crawl.stop(id)` | `crawl_stop` |
 | `POST /crawl/{id}/resume` | `sgai.crawl.resume(id)` | `crawl_resume` |
-| `DELETE /crawl/{id}` | `sgai.crawl.delete(id)` | `crawl_delete` |
 | `POST /monitor` | `sgai.monitor.create(url=..., interval=...)` | `monitor_create` |
 | `GET /monitor` | `sgai.monitor.list()` | `monitor_list` |
 | `GET /monitor/{id}` | `sgai.monitor.get(id)` | `monitor_get` |
 | `POST /monitor/{id}/pause` | `sgai.monitor.pause(id)` | `monitor_pause` |
 | `POST /monitor/{id}/resume` | `sgai.monitor.resume(id)` | `monitor_resume` |
 | `DELETE /monitor/{id}` | `sgai.monitor.delete(id)` | `monitor_delete` |
-| `GET /monitor/{id}/activity` | `sgai.monitor.activity(id)` | `monitor_activity` |
 | `GET /history` | `sgai.history.list(...)` | `history_list` |
-| `GET /history/{id}` | `sgai.history.get(id)` | `history_get` |
 | `GET /credits` | `sgai.credits()` | `credits` |
 
 ---
 
-## Direct invocation
+## Option A — prebuilt agent via `create_agent`
 
-Call any tool by itself without an LLM — useful for scripts, tests, or as a building block inside chains.
-
-```python
-from sgai_tools import scrape, extract, search, credits, crawl_start, crawl_get
-
-print(credits.invoke({}))
-print(scrape.invoke({"url": "https://example.com"}))
-print(extract.invoke({
-    "url": "https://scrapegraphai.com",
-    "prompt": "Extract the company name and a short description",
-}))
-print(search.invoke({"query": "best AI scraping tools 2026", "num_results": 3}))
-
-job = crawl_start.invoke({"url": "https://scrapegraphai.com", "max_depth": 1, "max_pages": 5})
-print(crawl_get.invoke({"crawl_id": job["id"]}))
-```
-
-## Tool-calling agent
-
-Give the LLM the whole toolkit and let it pick. LangChain v1's `create_agent` works with any chat model that supports tool calling (`ChatOpenAI`, `ChatAnthropic`, etc.).
+Fastest path: LangChain v1's `create_agent` returns a compiled LangGraph with the standard ReAct loop baked in — one call wires up every tool behind an LLM router.
 
 ```python
 from langchain.agents import create_agent
@@ -233,50 +187,127 @@ agent = create_agent(
     system_prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
 )
 
-result = agent.invoke({
-    "messages": [("user", "Find the pricing page of scrapegraphai.com and list the plan names and prices.")],
+final_state = agent.invoke({
+    "messages": [("user", "Search for 'best AI scraping tools 2026' and extract the top 3 names into JSON.")],
 })
-print(result["messages"][-1].content)
+print(final_state["messages"][-1].content)
 ```
 
 <Note>
-`create_agent` returns a compiled LangGraph under the hood — see the [LangGraph page](/integrations/langgraph) for advanced patterns (custom `StateGraph`, `ToolNode`, checkpointing).
+`langgraph.prebuilt.create_react_agent` still exists but is deprecated in LangGraph v1.0 — use `create_agent` from `langchain.agents`.
 </Note>
 
-## Structured output with Pydantic
+## Option B — custom StateGraph with ToolNode
 
-`extract` already returns structured JSON under the `json_data` key. Validate it into a Pydantic model for type safety downstream.
+Use this when you need custom routing, streaming, interrupts, or checkpointing.
 
 ```python
-from pydantic import BaseModel, Field
-from sgai_tools import extract
+from typing import Annotated, TypedDict
+from langchain_core.messages import BaseMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph, START
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
+from sgai_tools import scrape, extract, search, crawl_start, crawl_get, credits
 
-class Company(BaseModel):
-    name: str = Field(description="Company name")
-    tagline: str = Field(description="One-line description of what they do")
+class State(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
 
-result = extract.invoke({
-    "url": "https://scrapegraphai.com",
-    "prompt": "Return an object with 'name' and 'tagline' describing the company",
+tools = [scrape, extract, search, crawl_start, crawl_get, credits]
+llm = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools)
+
+def call_model(state: State):
+    return {"messages": [llm.invoke(state["messages"])]}
+
+graph = StateGraph(State)
+graph.add_node("agent", call_model)
+graph.add_node("tools", ToolNode(tools))
+graph.add_edge(START, "agent")
+graph.add_conditional_edges("agent", tools_condition)
+graph.add_edge("tools", "agent")
+app = graph.compile()
+
+out = app.invoke({
+    "messages": [("user", "Extract the top stories from https://news.ycombinator.com")],
 })
-company = Company(**result["json_data"])
-print(company)
+print(out["messages"][-1].content)
 ```
 
-## Chain pattern
+## Option C — deterministic pipeline
 
-Compose tools with LCEL when the sequence is fixed.
+When the sequence is known in advance — e.g. *search → pick URL → extract* — skip the agent loop and call tools directly from nodes. No LLM routing, fully reproducible.
 
 ```python
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
 from sgai_tools import search, extract
 
-def _search_then_extract(query: str) -> dict:
-    hits = search.invoke({"query": query, "num_results": 1})
-    top_url = hits["results"][0]["url"]
-    return extract.invoke({"url": top_url, "prompt": "Summarise this page in 3 bullet points"})
+class State(TypedDict):
+    query: str
+    top_url: str
+    data: dict
 
-print(_search_then_extract("scrapegraphai documentation"))
+def do_search(state: State):
+    hits = search.invoke({"query": state["query"], "num_results": 1})
+    return {"top_url": hits["results"][0]["url"]}
+
+def do_extract(state: State):
+    return {"data": extract.invoke({
+        "url": state["top_url"],
+        "prompt": "Extract the product name and price as JSON",
+    })}
+
+g = StateGraph(State)
+g.add_node("search", do_search)
+g.add_node("extract", do_extract)
+g.add_edge(START, "search")
+g.add_edge("search", "extract")
+g.add_edge("extract", END)
+pipeline = g.compile()
+
+print(pipeline.invoke({"query": "iPhone 15 Pro price apple.com"}))
 ```
+
+## Crawl as a background node
+
+Crawls are async. Wrap start + poll in a single node so the graph advances only when the job completes.
+
+```python
+import time
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
+from sgai_tools import crawl_start, crawl_get
+
+class CrawlState(TypedDict):
+    url: str
+    crawl_id: str
+    result: dict
+
+def run_crawl(state: CrawlState):
+    job = crawl_start.invoke({"url": state["url"], "max_depth": 2, "max_pages": 10})
+    crawl_id = job["id"]
+    while True:
+        info = crawl_get.invoke({"crawl_id": crawl_id})
+        if info["status"] in ("completed", "failed"):
+            return {"crawl_id": crawl_id, "result": info}
+        time.sleep(5)
+
+g = StateGraph(CrawlState)
+g.add_node("crawl", run_crawl)
+g.add_edge(START, "crawl")
+g.add_edge("crawl", END)
+app = g.compile()
+
+print(app.invoke({"url": "https://scrapegraphai.com"}))
+```
+
+## Choosing a pattern
+
+| Pattern | Use when |
+|---------|----------|
+| **Option A** — ReAct agent | Open-ended tasks; the model decides which endpoint to call |
+| **Option B** — StateGraph + ToolNode | You need checkpointing, streaming, human-in-the-loop, or custom routing |
+| **Option C** — deterministic pipeline | Steps and order are fixed; no need for LLM decision-making |
 
 ## Support
 

@@ -103,7 +103,9 @@
               {
                 "group": "Frameworks",
                 "pages": [
-                  "integrations/llamaindex"
+                  "integrations/llamaindex",
+                  "integrations/langchain",
+                  "integrations/langgraph"
                 ]
               },
               {
