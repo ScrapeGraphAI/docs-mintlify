@@ -8,7 +8,7 @@ description: 'Extract structured company data from websites'
   src="/cookbook/images/company-banner.png"
 />
 
-Learn how to extract structured company information from websites using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather company details, contact information, and social media presence.
+Learn how to extract structured company information from websites using ScrapeGraphAI's Extract service. This example demonstrates how to gather company details, contact information, and social media presence.
 
 <Note>
 Try it yourself in our interactive notebooks:
@@ -38,8 +38,8 @@ We'll extract the following company information:
 
 ```python
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
-from scrapegraph_py import Client
+from typing import List
+from scrapegraph_py import ScrapeGraphAI
 
 # Schema for founder information
 class FounderSchema(BaseModel):
@@ -73,13 +73,18 @@ class CompanyInfoSchema(BaseModel):
     terms_of_service: str = Field(description="URL to the terms of service")
     api_status: str = Field(description="API status page URL")
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI(api_key="your-api-key")
 
-response = client.smartscraper(
-    website_url="https://scrapegraphai.com/",
-    user_prompt="Extract info about the company",
-    output_schema=CompanyInfoSchema
+res = sgai.extract(
+    "Extract info about the company",
+    url="https://scrapegraphai.com/",
+    schema=CompanyInfoSchema.model_json_schema(),
 )
+
+if res.status == "success":
+    print(res.data.json_data)
+else:
+    print("Failed:", res.error)
 ```
 
 ## Example Output
@@ -118,9 +123,9 @@ response = client.smartscraper(
 
 <CardGroup cols={2}>
   <Card
-    title="SmartScraper"
+    title="Extract"
     icon="robot"
-    href="/services/smartscraper"
+    href="/services/extract"
   >
     Learn more about our AI-powered extraction service
   </Card>

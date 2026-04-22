@@ -19,15 +19,15 @@ Try Extract instantly in our [interactive playground](https://scrapegraphai.com/
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "What does the company do? Extract name and description.",
     url="https://scrapegraphai.com",
-    prompt="What does the company do? Extract name and description.",
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -109,13 +109,13 @@ Pass a JSON schema to pin down the exact output shape.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract structured information about this page",
     url="https://example.com",
-    prompt="Extract structured information about this page",
     schema={
         "type": "object",
         "properties": {
@@ -125,7 +125,7 @@ res = sgai.extract(ExtractRequest(
         },
         "required": ["title"],
     },
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -179,14 +179,14 @@ curl -X POST https://v2-api.scrapegraphai.com/api/extract \
 Skip the fetch and extract from content you already have.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract product name and price",
     html="<html><body><h1>Widget</h1><p>$9.99</p></body></html>",
-    prompt="Extract product name and price",
-))
+)
 ```
 
 ## FetchConfig
@@ -194,29 +194,29 @@ res = sgai.extract(ExtractRequest(
 Control how the page is fetched before extraction (JS rendering, stealth, headers, etc). See the full options in [Scrape · FetchConfig](/services/scrape#fetchconfig).
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract the main content",
     url="https://example.com",
-    prompt="Extract the main content",
     fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
-))
+)
 ```
 
 ## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, ExtractRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.extract(ExtractRequest(
+        res = await sgai.extract(
+            "Summarize what this product does",
             url="https://scrapegraphai.com",
-            prompt="Summarize what this product does",
-        ))
+        )
         if res.status == "success":
             print(res.data.json_data)
 

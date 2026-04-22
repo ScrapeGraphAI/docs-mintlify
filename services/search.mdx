@@ -19,15 +19,15 @@ Try Search instantly in our [interactive playground](https://scrapegraphai.com/d
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, SearchRequest
+from scrapegraph_py import ScrapeGraphAI
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.search(SearchRequest(
-    query="best programming languages 2024",
+res = sgai.search(
+    "best programming languages 2024",
     num_results=3,
-))
+)
 
 if res.status == "success":
     for r in res.data.results:
@@ -89,12 +89,12 @@ Combine search with AI extraction to roll results into one structured output.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, SearchRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.search(SearchRequest(
-    query="best programming languages 2024",
+res = sgai.search(
+    "best programming languages 2024",
     num_results=3,
     prompt="Summarize the top languages and why they are recommended",
     schema={
@@ -112,7 +112,7 @@ res = sgai.search(SearchRequest(
             },
         },
     },
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -163,14 +163,14 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, SearchRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.search(SearchRequest(
-            query="Best practices for web scraping",
+        res = await sgai.search(
+            "Best practices for web scraping",
             num_results=5,
-        ))
+        )
         if res.status == "success":
             for r in res.data.results:
                 print(r.title, "-", r.url)

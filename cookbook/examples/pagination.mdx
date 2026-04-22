@@ -1,6 +1,6 @@
 ---
 title: '📄 Pagination Examples'
-description: 'Learn how to use pagination functionality with SmartScraper API'
+description: 'Walk through paginated listings with the Extract service'
 ---
 
 <img
@@ -8,7 +8,7 @@ description: 'Learn how to use pagination functionality with SmartScraper API'
   src="/cookbook/images/company-banner.png"
 />
 
-Learn how to use pagination functionality with ScrapeGraphAI's SmartScraper to extract data from multiple pages. This example demonstrates how to scrape e-commerce products, news articles, or any paginated content across multiple pages.
+Learn how to walk through paginated listings with ScrapeGraphAI's Extract service. v2 does not ship a built-in `total_pages` parameter — instead, you iterate through each page URL yourself and merge the results. This example demonstrates how to scrape e-commerce products, news articles, or any paginated content across multiple pages.
 
 <Note>
 Try it yourself in our interactive notebooks:
@@ -34,116 +34,67 @@ We'll extract product information from an e-commerce website across multiple pag
 ```python
 #!/usr/bin/env python3
 """
-SmartScraper Pagination Example (Sync)
+Extract Pagination Example (Sync)
 
-This example demonstrates how to use pagination functionality with SmartScraper API using the synchronous client.
+Iterate through paginated listings and merge the extracted items.
 """
 
 import json
-import logging
 import os
 import time
-from pydantic import BaseModel
 from typing import List, Optional
+
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
-from scrapegraph_py import Client
-from scrapegraph_py.exceptions import APIError
+from scrapegraph_py import ScrapeGraphAI
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
 
 class ProductInfo(BaseModel):
-    """Schema for product information"""
     name: str
     price: Optional[str] = None
     rating: Optional[str] = None
     image_url: Optional[str] = None
     description: Optional[str] = None
 
+
 class ProductList(BaseModel):
-    """Schema for list of products"""
     products: List[ProductInfo]
 
-def smartscraper_pagination_example():
-    """Example of using pagination with SmartScraper (sync)"""
-    
-    print("SmartScraper Pagination Example (Sync)")
-    print("=" * 50)
-    
-    # Initialize client from environment variable
-    api_key = os.getenv("SGAI_API_KEY")
-    if not api_key:
-        print("❌ Error: SGAI_API_KEY environment variable not set")
-        return
-    
-    try:
-        client = Client(api_key=api_key)
-    except Exception as e:
-        print(f"❌ Error initializing client: {e}")
-        return
-    
-    # Configuration
-    website_url = "https://www.amazon.in/s?k=tv&crid=1TEF1ZFVLU8R8&sprefix=t%2Caps%2C390&ref=nb_sb_noss_2"
-    user_prompt = "Extract all product info including name, price, rating, image_url, and description"
-    total_pages = 3  # Number of pages to scrape
-    
-    print(f"🌐 Website URL: {website_url}")
-    print(f"📝 User Prompt: {user_prompt}")
-    print(f"📄 Total Pages: {total_pages}")
-    print("-" * 50)
-    
-    try:
-        # Start timing
-        start_time = time.time()
-        
-        # Make the request with pagination
-        result = client.smartscraper(
-            user_prompt=user_prompt,
-            website_url=website_url,
-            output_schema=ProductList,
-            total_pages=total_pages
-        )
-        
-        # Calculate duration
-        duration = time.time() - start_time
-        
-        print(f"✅ Request completed in {duration:.2f} seconds")
-        print(f"📊 Response type: {type(result)}")
-        
-        # Display results
-        if isinstance(result, dict):
-            print("\n🔍 Response:")
-            print(json.dumps(result, indent=2, ensure_ascii=False))
-            
-            # Check for pagination success indicators
-            if "data" in result:
-                print(f"\n✨ Pagination successful! Data extracted from {total_pages} pages")
-            
-        elif isinstance(result, list):
-            print(f"\n✅ Pagination successful! Extracted {len(result)} items")
-            for i, item in enumerate(result[:5]):  # Show first 5 items
-                print(f"  {i+1}. {item}")
-            if len(result) > 5:
-                print(f"  ... and {len(result) - 5} more items")
-        else:
-            print(f"\n📋 Result: {result}")
-            
-    except APIError as e:
-        print(f"❌ API Error: {e}")
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+
+def page_urls(base: str, pages: int) -> list[str]:
+    # Adapt this to your target site's pagination scheme.
+    return [f"{base}&page={i}" for i in range(1, pages + 1)]
+
+
+def main():
+    sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+    base_url = "https://www.amazon.in/s?k=tv"
+    prompt = "Extract all product info including name, price, rating, image_url, and description"
+    schema = ProductList.model_json_schema()
+
+    all_products: list[dict] = []
+    start = time.time()
+
+    for url in page_urls(base_url, pages=3):
+        res = sgai.extract(prompt, url=url, schema=schema)
+        if res.status != "success":
+            print(f"Page failed: {url} - {res.error}")
+            continue
+
+        products = (res.data.json_data or {}).get("products", [])
+        print(f"{url} -> {len(products)} products ({res.elapsed_ms}ms)")
+        all_products.extend(products)
+
+    print(f"\nDone in {time.time() - start:.1f}s. Total: {len(all_products)} products")
+    print(json.dumps(all_products[:3], indent=2, ensure_ascii=False))
+
 
 if __name__ == "__main__":
-    smartscraper_pagination_example()
+    main()
 ```
 
 ## Python SDK - Asynchronous Example
@@ -151,196 +102,59 @@ if __name__ == "__main__":
 ```python
 #!/usr/bin/env python3
 """
-SmartScraper Pagination Example (Async)
+Extract Pagination Example (Async)
 
-This example demonstrates how to use pagination functionality with SmartScraper API using the asynchronous client.
+Fetch every page in parallel with AsyncScrapeGraphAI.
 """
 
 import asyncio
 import json
-import logging
-import os
 import time
-from pydantic import BaseModel
 from typing import List, Optional
+
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
-from scrapegraph_py import AsyncClient
-from scrapegraph_py.exceptions import APIError
+from scrapegraph_py import AsyncScrapeGraphAI
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
-logger = logging.getLogger(__name__)
 
 class ProductInfo(BaseModel):
-    """Schema for product information"""
     name: str
     price: Optional[str] = None
     rating: Optional[str] = None
     image_url: Optional[str] = None
     description: Optional[str] = None
 
+
 class ProductList(BaseModel):
-    """Schema for list of products"""
     products: List[ProductInfo]
 
-async def smartscraper_pagination_example():
-    """Example of using pagination with SmartScraper (async)"""
-    
-    print("SmartScraper Pagination Example (Async)")
-    print("=" * 50)
-    
-    # Initialize client from environment variable
-    api_key = os.getenv("SGAI_API_KEY")
-    if not api_key:
-        print("❌ Error: SGAI_API_KEY environment variable not set")
-        return
-    
-    try:
-        client = AsyncClient(api_key=api_key)
-    except Exception as e:
-        print(f"❌ Error initializing client: {e}")
-        return
-    
-    # Configuration
-    website_url = "https://www.amazon.in/s?k=tv&crid=1TEF1ZFVLU8R8&sprefix=t%2Caps%2C390&ref=nb_sb_noss_2"
-    user_prompt = "Extract all product info including name, price, rating, image_url, and description"
-    total_pages = 3  # Number of pages to scrape
-    
-    print(f"🌐 Website URL: {website_url}")
-    print(f"📝 User Prompt: {user_prompt}")
-    print(f"📄 Total Pages: {total_pages}")
-    print("-" * 50)
-    
-    try:
-        # Start timing
-        start_time = time.time()
-        
-        # Make the request with pagination
-        result = await client.smartscraper(
-            user_prompt=user_prompt,
-            website_url=website_url,
-            output_schema=ProductList,
-            total_pages=total_pages
-        )
-        
-        # Calculate duration
-        duration = time.time() - start_time
-        
-        print(f"✅ Request completed in {duration:.2f} seconds")
-        print(f"📊 Response type: {type(result)}")
-        
-        # Display results
-        if isinstance(result, dict):
-            print("\n🔍 Response:")
-            print(json.dumps(result, indent=2, ensure_ascii=False))
-            
-            # Check for pagination success indicators
-            if "data" in result:
-                print(f"\n✨ Pagination successful! Data extracted from {total_pages} pages")
-            
-        elif isinstance(result, list):
-            print(f"\n✅ Pagination successful! Extracted {len(result)} items")
-            for i, item in enumerate(result[:5]):  # Show first 5 items
-                print(f"  {i+1}. {item}")
-            if len(result) > 5:
-                print(f"  ... and {len(result) - 5} more items")
-        else:
-            print(f"\n📋 Result: {result}")
-            
-    except APIError as e:
-        print(f"❌ API Error: {e}")
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-
-async def test_concurrent_pagination():
-    """Test multiple pagination requests concurrently"""
-    
-    print("\n" + "=" * 50)
-    print("Testing concurrent pagination requests")
-    print("=" * 50)
-    
-    api_key = os.getenv("SGAI_API_KEY")
-    if not api_key:
-        print("❌ Error: SGAI_API_KEY environment variable not set")
-        return
-    
-    try:
-        client = AsyncClient(api_key=api_key)
-    except Exception as e:
-        print(f"❌ Error initializing client: {e}")
-        return
-    
-    # Test concurrent requests
-    urls = [
-        "https://example.com/products?page=1",
-        "https://example.com/products?page=2",
-        "https://example.com/products?page=3",
-    ]
-    
-    tasks = []
-    for i, url in enumerate(urls):
-        print(f"🚀 Creating task {i+1} for URL: {url}")
-        tasks.append(asyncio.create_task(
-            simulate_pagination_request(client, url, i+1)
-        ))
-    
-    print(f"⏱️ Starting {len(tasks)} concurrent tasks...")
-    start_time = time.time()
-    
-    try:
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        duration = time.time() - start_time
-        
-        print(f"✅ All tasks completed in {duration:.2f} seconds")
-        
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                print(f"❌ Task {i+1} failed: {result}")
-            else:
-                print(f"✅ Task {i+1} succeeded: {result}")
-                
-    except Exception as e:
-        print(f"❌ Concurrent execution failed: {e}")
-
-async def simulate_pagination_request(client: AsyncClient, url: str, task_id: int):
-    """Simulate a pagination request (for demonstration)"""
-    
-    print(f"📋 Task {task_id}: Processing {url}")
-    
-    # Simulate some work
-    await asyncio.sleep(0.5)
-    
-    # Return a simulated result
-    return f"Task {task_id} completed successfully"
 
 async def main():
-    """Main function to run the pagination examples"""
-    
-    print("ScrapeGraph SDK - SmartScraper Pagination Examples (Async)")
-    print("=" * 60)
-    
-    # Run the main example
-    await smartscraper_pagination_example()
-    
-    # Test concurrent pagination
-    await test_concurrent_pagination()
-    
-    print("\n" + "=" * 60)
-    print("Examples completed!")
-    print("\nNext steps:")
-    print("1. Set SGAI_API_KEY environment variable")
-    print("2. Replace example URLs with real websites")
-    print("3. Adjust total_pages parameter (1-10)")
-    print("4. Customize user_prompt for your use case")
-    print("5. Define output_schema for structured data")
+    base_url = "https://www.amazon.in/s?k=tv"
+    prompt = "Extract all product info including name, price, rating, image_url, and description"
+    schema = ProductList.model_json_schema()
+    urls = [f"{base_url}&page={i}" for i in range(1, 4)]
+
+    start = time.time()
+    async with AsyncScrapeGraphAI() as sgai:
+        tasks = [sgai.extract(prompt, url=u, schema=schema) for u in urls]
+        results = await asyncio.gather(*tasks)
+
+    all_products: list[dict] = []
+    for url, res in zip(urls, results):
+        if res.status != "success":
+            print(f"Page failed: {url} - {res.error}")
+            continue
+        products = (res.data.json_data or {}).get("products", [])
+        print(f"{url} -> {len(products)} products ({res.elapsed_ms}ms)")
+        all_products.extend(products)
+
+    print(f"\nDone in {time.time() - start:.1f}s. Total: {len(all_products)} products")
+    print(json.dumps(all_products[:3], indent=2, ensure_ascii=False))
+
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -392,13 +206,22 @@ if (result.status === 'success') {
 }
 ```
 
-## Pagination Parameters
+## Pagination in v2
 
-| Parameter | Type | Description | Default | Range |
-|-----------|------|-------------|---------|-------|
-| `total_pages` | integer | Number of pages to scrape | 1 | 1-10 |
-| `number_of_scrolls` | integer | Number of scrolls per page | 0 | 0-10 |
-| `wait_for` | integer | Wait time in seconds | 0 | 0-30 |
+v2 does not have a built-in `total_pages` parameter. Instead, build the list of page URLs yourself and call `extract` once per page — either sequentially (shown in the sync example) or concurrently via `AsyncScrapeGraphAI` and `asyncio.gather`.
+
+For JS-rendered pagination, combine `extract` with `FetchConfig`:
+
+```python
+from scrapegraph_py import FetchConfig
+
+res = sgai.extract(
+    prompt,
+    url=url,
+    schema=schema,
+    fetch_config=FetchConfig(mode="js", scrolls=2, wait=1500),
+)
+```
 
 ## Best Practices
 
@@ -432,34 +255,37 @@ if (result.status === 'success') {
 ### E-commerce Product Scraping
 ```python
 # Extract products from multiple category pages
-result = client.smartscraper(
-    website_url="https://example-store.com/electronics",
-    user_prompt="Extract all product information including name, price, rating, and availability",
-    output_schema=ProductList,
-    total_pages=5
-)
+urls = [f"https://example-store.com/electronics?page={i}" for i in range(1, 6)]
+for url in urls:
+    res = sgai.extract(
+        "Extract all product information including name, price, rating, and availability",
+        url=url,
+        schema=ProductList.model_json_schema(),
+    )
 ```
 
 ### News Article Collection
 ```python
 # Collect articles from multiple news pages
-result = client.smartscraper(
-    website_url="https://example-news.com/technology",
-    user_prompt="Extract article titles, summaries, publication dates, and author names",
-    output_schema=ArticleList,
-    total_pages=3
-)
+urls = [f"https://example-news.com/technology?page={i}" for i in range(1, 4)]
+for url in urls:
+    res = sgai.extract(
+        "Extract article titles, summaries, publication dates, and author names",
+        url=url,
+        schema=ArticleList.model_json_schema(),
+    )
 ```
 
 ### Job Listing Aggregation
 ```python
 # Gather job listings from multiple pages
-result = client.smartscraper(
-    website_url="https://example-jobs.com/search?q=python",
-    user_prompt="Extract job titles, companies, locations, salaries, and requirements",
-    output_schema=JobList,
-    total_pages=4
-)
+urls = [f"https://example-jobs.com/search?q=python&page={i}" for i in range(1, 5)]
+for url in urls:
+    res = sgai.extract(
+        "Extract job titles, companies, locations, salaries, and requirements",
+        url=url,
+        schema=JobList.model_json_schema(),
+    )
 ```
 
 ## Troubleshooting
@@ -469,7 +295,7 @@ result = client.smartscraper(
 1. **Pagination Not Working**
    - Check if the website supports pagination
    - Verify the URL structure includes page parameters
-   - Ensure `total_pages` is within the valid range (1-10)
+   - Double-check that your URL builder produces reachable pages
 
 2. **Rate Limiting**
    - Reduce the number of concurrent requests
@@ -477,9 +303,9 @@ result = client.smartscraper(
    - Check your API usage limits
 
 3. **Incomplete Data**
-   - Increase `number_of_scrolls` for dynamic content
-   - Add `wait_for` parameter for slow-loading pages
-   - Refine your user prompt for better extraction
+   - Increase `FetchConfig(scrolls=...)` for dynamic content
+   - Add `FetchConfig(wait=...)` (milliseconds) for slow-loading pages
+   - Refine your prompt for better extraction
 
 4. **API Errors**
    - Verify your API key is valid
@@ -488,9 +314,9 @@ result = client.smartscraper(
 
 <CardGroup cols={2}>
   <Card
-    title="SmartScraper"
+    title="Extract"
     icon="robot"
-    href="/services/smartscraper"
+    href="/services/extract"
   >
     Learn more about our AI-powered extraction service
   </Card>
