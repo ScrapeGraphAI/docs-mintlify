@@ -1,0 +1,100 @@
+.sgai-cta {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(172, 109, 255, 0.35);
+  background:
+    linear-gradient(180deg, rgba(172, 109, 255, 0.10) 0%, rgba(172, 109, 255, 0) 60%),
+    #0d0d12;
+  color: #ffffff;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.sgai-cta__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d9c7ff;
+}
+
+.sgai-cta__brand-logo {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  border-radius: 4px;
+  background: #AC6DFF;
+  mask-image: radial-gradient(circle at 30% 30%, #000 55%, transparent 56%);
+  -webkit-mask-image: radial-gradient(circle at 30% 30%, #000 55%, transparent 56%);
+}
+
+.sgai-cta__title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 8px 0;
+  color: #ffffff;
+}
+
+.sgai-cta__desc {
+  font-size: 13px;
+  color: #b6b6c2;
+  margin: 0 0 16px 0;
+}
+
+.sgai-cta__desc strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sgai-cta__btn {
+  display: block;
+  text-align: center;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: opacity 0.15s ease;
+}
+
+.sgai-cta__btn:hover {
+  opacity: 0.9;
+}
+
+.sgai-cta__btn--primary {
+  background: #AC6DFF;
+  color: #ffffff !important;
+  margin-bottom: 8px;
+}
+
+.sgai-cta__btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff !important;
+}
+
+@media (prefers-color-scheme: light) {
+  html:not(.dark) .sgai-cta {
+    background:
+      linear-gradient(180deg, rgba(172, 109, 255, 0.08) 0%, rgba(172, 109, 255, 0) 60%),
+      #ffffff;
+    border-color: rgba(172, 109, 255, 0.35);
+    color: #111114;
+  }
+  html:not(.dark) .sgai-cta__title { color: #111114; }
+  html:not(.dark) .sgai-cta__desc { color: #55555f; }
+  html:not(.dark) .sgai-cta__desc strong { color: #111114; }
+  html:not(.dark) .sgai-cta__btn--secondary {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #111114 !important;
+  }
+}
