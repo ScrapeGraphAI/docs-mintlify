@@ -1,233 +1,228 @@
 ---
 title: '🦜 LangChain'
-description: 'Supercharge your LangChain agents with AI-powered web scraping'
+description: 'Use ScrapeGraph tools inside LangChain agents'
 ---
 
 ## Overview
 
-The LangChain integration enables your agents to extract structured data from websites using natural language. This powerful combination allows you to build sophisticated AI agents that can understand and process web content intelligently.
+The [`langchain-scrapegraph`](https://pypi.org/project/langchain-scrapegraph/) package exposes every ScrapeGraph v2 endpoint as a LangChain `BaseTool`. Drop them into an `AgentExecutor`, call them directly with `.invoke()`, or compose them into chains — the standard LangChain interfaces apply.
 
-<Card
-  title="Official LangChain Documentation"
-  icon="book"
-  href="https://python.langchain.com/docs/integrations/providers/scrapegraph/"
->
-  View the integration in LangChain's official documentation
-</Card>
+<CardGroup cols={2}>
+  <Card
+    title="LangChain docs"
+    icon="book"
+    href="https://python.langchain.com/docs/integrations/providers/scrapegraph/"
+  >
+    Official LangChain integration entry
+  </Card>
+  <Card
+    title="GitHub"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph"
+  >
+    Source and issues for langchain-scrapegraph
+  </Card>
+</CardGroup>
 
 ## Installation
 
-Install the package using pip:
+```bash
+pip install langchain-scrapegraph langchain-openai
+```
+
+Set your keys:
 
 ```bash
-pip install langchain-scrapegraph
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
 ```
 
-## Available Tools
+<Note>
+Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
 
-### ExtractTool
+## Endpoint → tool reference
 
-Extract structured data from any webpage using natural language prompts:
+| ScrapeGraph endpoint | Tool class |
+|---|---|
+| `POST /scrape` | `ScrapeTool` |
+| `POST /extract` | `ExtractTool` |
+| `POST /search` | `SearchTool` |
+| `POST /markdownify` | `MarkdownifyTool` |
+| `POST /crawl` | `CrawlStartTool` |
+| `GET /crawl/{id}` | `CrawlStatusTool` |
+| `POST /crawl/{id}/stop` | `CrawlStopTool` |
+| `POST /crawl/{id}/resume` | `CrawlResumeTool` |
+| `POST /monitor` | `MonitorCreateTool` |
+| `GET /monitor` | `MonitorListTool` |
+| `GET /monitor/{id}` | `MonitorGetTool` |
+| `POST /monitor/{id}/pause` | `MonitorPauseTool` |
+| `POST /monitor/{id}/resume` | `MonitorResumeTool` |
+| `DELETE /monitor/{id}` | `MonitorDeleteTool` |
+| `GET /history` | `HistoryTool` |
+| `GET /credits` | `GetCreditsTool` |
+
+---
+
+## Scrape
+
+Fetch a page as markdown, HTML, or screenshot.
 
 ```python
-from langchain_scrapegraph.tools import ExtractTool
+from langchain_scrapegraph.tools import ScrapeTool
 
-# Initialize the tool (uses SGAI_API_KEY from environment)
-tool = ExtractTool()
-
-# Extract information using natural language
-result = tool.invoke({
-    "url": "https://www.example.com",
-    "prompt": "Extract the main heading and first paragraph"
-})
+scrape = ScrapeTool()
+result = scrape.invoke({"url": "https://example.com", "format": "markdown"})
 ```
 
-<Accordion title="Using Output Schemas" icon="code">
-Define the structure of the output using Pydantic models:
+## Extract
+
+Pull structured data with a natural-language prompt and an optional Pydantic schema.
 
 ```python
 from pydantic import BaseModel, Field
 from langchain_scrapegraph.tools import ExtractTool
 
-class WebsiteInfo(BaseModel):
-    title: str = Field(description="The main title of the page")
-    description: str = Field(description="The main description")
+class Company(BaseModel):
+    name: str = Field(description="Company name")
+    description: str = Field(description="What the company does")
 
-# Initialize with output schema
-tool = ExtractTool(llm_output_schema=WebsiteInfo)
-
-result = tool.invoke({
-    "url": "https://example.com",
-    "prompt": "Extract the title and description"
+extract = ExtractTool(llm_output_schema=Company)
+result = extract.invoke({
+    "url": "https://scrapegraphai.com",
+    "prompt": "Extract the company name and description",
 })
 ```
-</Accordion>
 
-### SearchTool
+## Search
 
-Search the web and extract structured results using AI:
+Run an AI web search and get ranked results with content already fetched.
 
 ```python
 from langchain_scrapegraph.tools import SearchTool
 
-tool = SearchTool()
-result = tool.invoke({
-    "query": "Find the best restaurants in San Francisco",
-})
+search = SearchTool()
+result = search.invoke({"query": "Top Python web scraping libraries in 2026"})
 ```
 
-### ScrapeTool
+## Markdownify
 
-Scrape a webpage and return it in the desired format:
-
-```python
-from langchain_scrapegraph.tools import ScrapeTool
-
-tool = ScrapeTool()
-
-# Scrape as markdown (default)
-result = tool.invoke({"url": "https://example.com"})
-
-# Scrape as HTML
-result = tool.invoke({"url": "https://example.com", "format": "html"})
-```
-
-### MarkdownifyTool
-
-Convert any webpage into clean, formatted markdown:
+Convert any page into clean markdown.
 
 ```python
 from langchain_scrapegraph.tools import MarkdownifyTool
 
-tool = MarkdownifyTool()
-markdown = tool.invoke({"website_url": "https://example.com"})
+md = MarkdownifyTool()
+result = md.invoke({"website_url": "https://example.com"})
 ```
 
-### Crawl Tools
+## Crawl
 
-Start and manage crawl jobs with `CrawlStartTool`, `CrawlStatusTool`, `CrawlStopTool`, and `CrawlResumeTool`:
+Start a multi-page crawl, then poll, stop, or resume it.
 
 ```python
 import time
-from langchain_scrapegraph.tools import CrawlStartTool, CrawlStatusTool
+from langchain_scrapegraph.tools import (
+    CrawlStartTool, CrawlStatusTool, CrawlStopTool, CrawlResumeTool,
+)
 
-start_tool = CrawlStartTool()
-status_tool = CrawlStatusTool()
+start, status, stop, resume = (
+    CrawlStartTool(), CrawlStatusTool(), CrawlStopTool(), CrawlResumeTool(),
+)
 
-# Start a crawl job
-result = start_tool.invoke({
-    "url": "https://example.com",
+job = start.invoke({
+    "url": "https://scrapegraphai.com",
     "depth": 2,
-    "max_pages": 5,
+    "max_pages": 10,
     "format": "markdown",
 })
-print("Crawl started:", result)
+crawl_id = job["id"]
 
-# Check status
-crawl_id = result.get("id")
-if crawl_id:
+while True:
+    info = status.invoke({"crawl_id": crawl_id})
+    if info["status"] in ("completed", "failed"):
+        break
     time.sleep(5)
-    status = status_tool.invoke({"crawl_id": crawl_id})
-    print("Crawl status:", status)
+
+# stop.invoke({"crawl_id": crawl_id})
+# resume.invoke({"crawl_id": crawl_id})
 ```
 
-### Monitor Tools
+## Monitor
 
-Create and manage monitors (replaces scheduled jobs) with `MonitorCreateTool`, `MonitorListTool`, `MonitorGetTool`, `MonitorPauseTool`, `MonitorResumeTool`, and `MonitorDeleteTool`:
+Create a cron-scheduled watcher, then list, pause, resume, or delete it.
 
 ```python
-from langchain_scrapegraph.tools import MonitorCreateTool, MonitorListTool
+from langchain_scrapegraph.tools import (
+    MonitorCreateTool, MonitorListTool, MonitorGetTool,
+    MonitorPauseTool, MonitorResumeTool, MonitorDeleteTool,
+)
 
-create_tool = MonitorCreateTool()
-list_tool = MonitorListTool()
-
-# Create a monitor
-result = create_tool.invoke({
-    "name": "Price Monitor",
+mon = MonitorCreateTool().invoke({
+    "name": "Daily price check",
     "url": "https://example.com/products",
-    "prompt": "Extract current product prices",
-    "cron": "0 9 * * *",  # Daily at 9 AM
+    "prompt": "Extract all product prices",
+    "cron": "0 9 * * *",
 })
-print("Monitor created:", result)
 
-# List all monitors
-monitors = list_tool.invoke({})
-print("All monitors:", monitors)
+MonitorListTool().invoke({})
+MonitorGetTool().invoke({"monitor_id": mon["id"]})
+MonitorPauseTool().invoke({"monitor_id": mon["id"]})
+MonitorResumeTool().invoke({"monitor_id": mon["id"]})
+MonitorDeleteTool().invoke({"monitor_id": mon["id"]})
 ```
 
-### HistoryTool
-
-Retrieve request history:
+## History & credits
 
 ```python
-from langchain_scrapegraph.tools import HistoryTool
+from langchain_scrapegraph.tools import HistoryTool, GetCreditsTool
 
-tool = HistoryTool()
-history = tool.invoke({})
+HistoryTool().invoke({})
+GetCreditsTool().invoke({})
 ```
 
-### GetCreditsTool
-
-Check your remaining API credits:
-
-```python
-from langchain_scrapegraph.tools import GetCreditsTool
-
-tool = GetCreditsTool()
-credits = tool.invoke({})
-```
-
-## Example Agent
-
-Create a research agent that can gather and analyze web data:
+## Full agent with every tool
 
 ```python
 from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_scrapegraph.tools import ExtractTool, GetCreditsTool, SearchTool
+from langchain_scrapegraph.tools import (
+    ScrapeTool, ExtractTool, SearchTool, MarkdownifyTool,
+    CrawlStartTool, CrawlStatusTool, CrawlStopTool, CrawlResumeTool,
+    MonitorCreateTool, MonitorListTool, MonitorGetTool,
+    MonitorPauseTool, MonitorResumeTool, MonitorDeleteTool,
+    HistoryTool, GetCreditsTool,
+)
 
-# Initialize the tools
 tools = [
-    ExtractTool(),
-    GetCreditsTool(),
-    SearchTool(),
+    ScrapeTool(), ExtractTool(), SearchTool(), MarkdownifyTool(),
+    CrawlStartTool(), CrawlStatusTool(), CrawlStopTool(), CrawlResumeTool(),
+    MonitorCreateTool(), MonitorListTool(), MonitorGetTool(),
+    MonitorPauseTool(), MonitorResumeTool(), MonitorDeleteTool(),
+    HistoryTool(), GetCreditsTool(),
 ]
 
-# Create the prompt template
 prompt = ChatPromptTemplate.from_messages([
-    SystemMessage(
-        content=(
-            "You are a helpful AI assistant that can analyze websites and extract information. "
-            "You have access to tools that can help you scrape and process web content. "
-            "Always explain what you're doing before using a tool."
-        )
-    ),
-    MessagesPlaceholder(variable_name="chat_history", optional=True),
+    SystemMessage(content="You are a web research agent. Pick the right ScrapeGraph tool for each step."),
+    MessagesPlaceholder("chat_history", optional=True),
     ("user", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
+    MessagesPlaceholder("agent_scratchpad"),
 ])
 
-# Initialize the LLM
-llm = ChatOpenAI(temperature=0)
-
-# Create the agent
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
 agent = create_openai_functions_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-# Example usage
-response = agent_executor.invoke({
-    "input": "Extract the main products from https://www.scrapegraphai.com/"
-})
-print(response["output"])
+print(executor.invoke({
+    "input": "Find the pricing page of scrapegraphai.com and extract the plan names and prices.",
+})["output"])
 ```
 
 ## Migration from v1
 
-If you're upgrading from v1, here are the key changes:
-
-| v1 Tool | v2 Tool |
+| v1 tool | v2 tool |
 |---------|---------|
 | `SmartScraperTool` | `ExtractTool` |
 | `SearchScraperTool` | `SearchTool` |
@@ -241,47 +236,9 @@ If you're upgrading from v1, here are the key changes:
 | `MarkdownifyTool` | `MarkdownifyTool` (unchanged) |
 | `GetCreditsTool` | `GetCreditsTool` (unchanged) |
 | `AgenticScraperTool` | Removed |
-| -- | `HistoryTool` (new) |
-
-## Configuration
-
-Set your ScrapeGraph API key in your environment:
-
-```bash
-export SGAI_API_KEY="your-api-key-here"
-```
-
-Or set it programmatically:
-
-```python
-import os
-os.environ["SGAI_API_KEY"] = "your-api-key-here"
-```
-
-<Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
-</Note>
-
-## Use Cases
-
-<CardGroup cols={2}>
-  <Card title="Research Agents" icon="magnifying-glass">
-    Create agents that gather and analyze web data
-  </Card>
-  <Card title="Data Collection" icon="database">
-    Automate structured data extraction from websites
-  </Card>
-  <Card title="Content Processing" icon="file-lines">
-    Convert web content into markdown for further processing
-  </Card>
-  <Card title="Information Extraction" icon="filter">
-    Extract specific data points using natural language
-  </Card>
-</CardGroup>
+| — | `HistoryTool` (new) |
 
 ## Support
-
-Need help with the integration?
 
 <CardGroup cols={2}>
   <Card
@@ -292,7 +249,7 @@ Need help with the integration?
     Report bugs and request features
   </Card>
   <Card
-    title="Discord Community"
+    title="Discord"
     icon="discord"
     href="https://discord.gg/uJN7TYcpNa"
   >

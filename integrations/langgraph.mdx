@@ -1,0 +1,250 @@
+---
+title: '🕸️ LangGraph'
+description: 'Build stateful agent workflows with ScrapeGraph tools'
+---
+
+## Overview
+
+LangGraph runs on top of LangChain, so every tool in [`langchain-scrapegraph`](https://pypi.org/project/langchain-scrapegraph/) plugs directly into a `StateGraph` or `create_react_agent` — no adapters, no wrappers. Use ScrapeGraph endpoints as nodes in a deterministic pipeline, or let an LLM router pick the right tool inside a ReAct loop.
+
+<CardGroup cols={2}>
+  <Card
+    title="LangGraph docs"
+    icon="book"
+    href="https://langchain-ai.github.io/langgraph/"
+  >
+    Official LangGraph documentation
+  </Card>
+  <Card
+    title="GitHub"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph"
+  >
+    Source and issues for langchain-scrapegraph
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pip install langchain-scrapegraph langchain-openai langgraph
+```
+
+Set your keys:
+
+```bash
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+<Note>
+Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Endpoint → tool reference
+
+| ScrapeGraph endpoint | Tool class |
+|---|---|
+| `POST /scrape` | `ScrapeTool` |
+| `POST /extract` | `ExtractTool` |
+| `POST /search` | `SearchTool` |
+| `POST /markdownify` | `MarkdownifyTool` |
+| `POST /crawl` | `CrawlStartTool` |
+| `GET /crawl/{id}` | `CrawlStatusTool` |
+| `POST /crawl/{id}/stop` | `CrawlStopTool` |
+| `POST /crawl/{id}/resume` | `CrawlResumeTool` |
+| `POST /monitor` | `MonitorCreateTool` |
+| `GET /monitor` | `MonitorListTool` |
+| `GET /monitor/{id}` | `MonitorGetTool` |
+| `POST /monitor/{id}/pause` | `MonitorPauseTool` |
+| `POST /monitor/{id}/resume` | `MonitorResumeTool` |
+| `DELETE /monitor/{id}` | `MonitorDeleteTool` |
+| `GET /history` | `HistoryTool` |
+| `GET /credits` | `GetCreditsTool` |
+
+---
+
+## Option A — prebuilt ReAct agent
+
+Fastest path: one call to `create_react_agent` wires up every tool behind an LLM router.
+
+```python
+from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import create_react_agent
+from langchain_scrapegraph.tools import (
+    ScrapeTool, ExtractTool, SearchTool, MarkdownifyTool,
+    CrawlStartTool, CrawlStatusTool, CrawlStopTool, CrawlResumeTool,
+    MonitorCreateTool, MonitorListTool, MonitorGetTool,
+    MonitorPauseTool, MonitorResumeTool, MonitorDeleteTool,
+    HistoryTool, GetCreditsTool,
+)
+
+tools = [
+    ScrapeTool(), ExtractTool(), SearchTool(), MarkdownifyTool(),
+    CrawlStartTool(), CrawlStatusTool(), CrawlStopTool(), CrawlResumeTool(),
+    MonitorCreateTool(), MonitorListTool(), MonitorGetTool(),
+    MonitorPauseTool(), MonitorResumeTool(), MonitorDeleteTool(),
+    HistoryTool(), GetCreditsTool(),
+]
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+agent = create_react_agent(
+    model=llm,
+    tools=tools,
+    prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
+)
+
+final_state = agent.invoke({
+    "messages": [("user", "Search for 'best AI scraping tools 2026' and extract the top 3 names into JSON.")],
+})
+print(final_state["messages"][-1].content)
+```
+
+## Option B — custom StateGraph with ToolNode
+
+Use this when you need custom routing, streaming, interrupts, or checkpointing.
+
+```python
+from typing import Annotated, TypedDict
+from langchain_core.messages import BaseMessage
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph, START
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_scrapegraph.tools import (
+    ScrapeTool, ExtractTool, SearchTool, CrawlStartTool, CrawlStatusTool,
+    MonitorCreateTool, GetCreditsTool,
+)
+
+class State(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
+
+tools = [
+    ScrapeTool(), ExtractTool(), SearchTool(),
+    CrawlStartTool(), CrawlStatusTool(),
+    MonitorCreateTool(), GetCreditsTool(),
+]
+llm = ChatOpenAI(model="gpt-4o", temperature=0).bind_tools(tools)
+
+def call_model(state: State):
+    return {"messages": [llm.invoke(state["messages"])]}
+
+graph = StateGraph(State)
+graph.add_node("agent", call_model)
+graph.add_node("tools", ToolNode(tools))
+graph.add_edge(START, "agent")
+graph.add_conditional_edges("agent", tools_condition)
+graph.add_edge("tools", "agent")
+app = graph.compile()
+
+out = app.invoke({
+    "messages": [("user", "Extract the top stories from https://news.ycombinator.com")],
+})
+print(out["messages"][-1].content)
+```
+
+## Option C — deterministic pipeline
+
+When the sequence is known in advance — e.g. *search → pick URL → extract* — skip the agent loop and call tools directly from nodes. No LLM routing, fully reproducible.
+
+```python
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
+from langchain_scrapegraph.tools import SearchTool, ExtractTool
+from pydantic import BaseModel, Field
+
+class Product(BaseModel):
+    name: str = Field(description="Product name")
+    price: str = Field(description="Product price")
+
+class State(TypedDict):
+    query: str
+    top_url: str
+    data: dict
+
+def do_search(state: State):
+    hits = SearchTool().invoke({"query": state["query"]})
+    return {"top_url": hits["results"][0]["url"]}
+
+def do_extract(state: State):
+    tool = ExtractTool(llm_output_schema=Product)
+    return {"data": tool.invoke({
+        "url": state["top_url"],
+        "prompt": "Extract the product name and price",
+    })}
+
+g = StateGraph(State)
+g.add_node("search", do_search)
+g.add_node("extract", do_extract)
+g.add_edge(START, "search")
+g.add_edge("search", "extract")
+g.add_edge("extract", END)
+pipeline = g.compile()
+
+print(pipeline.invoke({"query": "iPhone 15 Pro price apple.com"}))
+```
+
+## Crawl as a background node
+
+Crawls are async. Wrap start + poll in a single node so the graph advances only when the job completes.
+
+```python
+import time
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
+from langchain_scrapegraph.tools import CrawlStartTool, CrawlStatusTool
+
+class CrawlState(TypedDict):
+    url: str
+    crawl_id: str
+    result: dict
+
+def run_crawl(state: CrawlState):
+    job = CrawlStartTool().invoke({
+        "url": state["url"],
+        "depth": 2,
+        "max_pages": 10,
+        "format": "markdown",
+    })
+    status_tool = CrawlStatusTool()
+    while True:
+        info = status_tool.invoke({"crawl_id": job["id"]})
+        if info["status"] in ("completed", "failed"):
+            return {"crawl_id": job["id"], "result": info}
+        time.sleep(5)
+
+g = StateGraph(CrawlState)
+g.add_node("crawl", run_crawl)
+g.add_edge(START, "crawl")
+g.add_edge("crawl", END)
+app = g.compile()
+
+print(app.invoke({"url": "https://scrapegraphai.com"}))
+```
+
+## Choosing a pattern
+
+| Pattern | Use when |
+|---------|----------|
+| **Option A** — ReAct agent | Open-ended tasks; the model decides which endpoint to call |
+| **Option B** — StateGraph + ToolNode | You need checkpointing, streaming, human-in-the-loop, or custom routing |
+| **Option C** — deterministic pipeline | Steps and order are fixed; no need for LLM decision-making |
+
+## Support
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
