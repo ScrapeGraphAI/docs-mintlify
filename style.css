@@ -8,7 +8,7 @@
   display: block;
   box-sizing: border-box;
   width: 100%;
-  max-width: 280px;
+  max-width: min(280px, 100%);
   margin-top: 24px;
   padding: 16px;
   border-radius: 12px;
@@ -20,6 +20,9 @@
   font-family: inherit;
   line-height: 1.45;
   box-shadow: 0 10px 30px -18px rgba(172, 109, 255, 0.55);
+  overflow: hidden;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .sgai-cta__brand {
@@ -31,6 +34,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   color: #AC6DFF;
+  min-width: 0;
 }
 
 .sgai-cta__brand-logo {
@@ -70,7 +74,8 @@
   font-size: 12.5px;
   font-weight: 600;
   text-decoration: none !important;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
   transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
 }
 
