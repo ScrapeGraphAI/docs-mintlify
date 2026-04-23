@@ -106,6 +106,7 @@
                   "integrations/llamaindex",
                   "integrations/langchain",
                   "integrations/langgraph",
+                  "integrations/crewai",
                   "integrations/agno"
                 ]
               },
