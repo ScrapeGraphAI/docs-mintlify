@@ -53,21 +53,22 @@ curl -X POST https://v2-api.scrapegraphai.com/api/monitor \
 
 ```json
 {
-  "cronId": "d9a09a07-5052-4262-a0b4-606cbd942287",
-  "scheduleId": "scd_8752XzxtXmLmrvgGzwLVG42iGKaz",
+  "cronId": "f0b171db-b288-4380-9cad-1bcac916348e",
+  "scheduleId": "scd_4u8PPLytsJ2niWBVEAPkLHkfjVge",
   "interval": "*/30 * * * *",
   "status": "active",
   "config": {
     "url": "https://example.com",
-    "name": "Homepage watch",
+    "name": "Doc test monitor",
     "formats": [{ "mode": "normal", "type": "markdown" }],
-    "interval": "*/30 * * * *",
-    "fetchConfig": { "mode": "auto", "wait": 0, "scrolls": 0, "stealth": false, "timeout": 30000 }
+    "interval": "*/30 * * * *"
   },
-  "createdAt": "2026-04-19T14:51:02.203Z",
-  "updatedAt": "2026-04-19T14:51:02.203Z"
+  "createdAt": "2026-04-23T11:11:37.487Z",
+  "updatedAt": "2026-04-23T11:11:37.487Z"
 }
 ```
+
+`config.fetchConfig` appears only when you pass `fetchConfig` in the request — otherwise the server uses its defaults and omits the field from the response.
 
 | Field | Description |
 |-------|-------------|

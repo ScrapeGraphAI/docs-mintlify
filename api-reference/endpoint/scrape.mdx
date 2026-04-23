@@ -57,11 +57,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com",
-    "formats": [
-      { "type": "markdown" },
-      { "type": "links" },
-      { "type": "screenshot", "width": 1280, "height": 720 }
-    ]
+    "formats": [{ "type": "markdown" }]
   }'
 ```
 
@@ -88,6 +84,38 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
 | `id` | UUID for this scrape call. |
 | `results` | Object keyed by format type; each value has a `data` field shaped per format. |
 | `metadata.contentType` | The detected (or overridden) content type. |
+
+## Multi-format request
+
+Request any combination of formats in one call:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "formats": [
+      { "type": "markdown" },
+      { "type": "links" },
+      { "type": "screenshot", "width": 1280, "height": 720 }
+    ]
+  }'
+```
+
+```json
+{
+  "id": "201a5efb-398f-474b-9d58-9639f98b43c9",
+  "results": {
+    "markdown": { "data": ["# Example Domain\n..."] },
+    "links":    { "data": ["https://iana.org/domains/example"], "metadata": { "count": 1 } },
+    "screenshot": { "data": { "url": "https://sgai-api-prod.../screenshots/....jpg?X-Amz-..." } }
+  },
+  "metadata": { "contentType": "text/html" }
+}
+```
+
+Screenshot URLs are pre-signed and expire after 1 hour — download the image if you need to keep it.
 
 ## Structured extraction during scrape
 

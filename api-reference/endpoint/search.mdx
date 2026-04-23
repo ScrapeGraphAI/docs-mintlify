@@ -105,6 +105,28 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
   }'
 ```
 
+When a `prompt` is supplied, the response includes three extra fields alongside `results`:
+
+```json
+{
+  "id": "74fb4595-1a77-4d6a-8c93-60894913fb41",
+  "results": [ /* fetched pages as above */ ],
+  "json": { "tips": ["..."] },
+  "raw": null,
+  "usage": { "promptTokens": 8421, "completionTokens": 310 },
+  "metadata": {
+    "search": {},
+    "pages": { "requested": 5, "scraped": 5 }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `json` | Structured output matching the schema (free-form JSON when no schema is supplied). |
+| `raw` | Raw model output before JSON parsing, when available. |
+| `usage.promptTokens` / `.completionTokens` | LLM token accounting. |
+
 ## Related
 
 - Service overview: [Search](/services/search)

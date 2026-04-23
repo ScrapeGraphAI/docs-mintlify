@@ -95,16 +95,26 @@ Response (shape):
 {
   "ticks": [
     {
-      "createdAt": "2026-04-19T15:00:02.000Z",
+      "id": "fb7ada6e-97d2-4e66-9fee-ebf598a5d16a",
+      "status": "completed",
+      "createdAt": "2026-04-23T11:11:37.619Z",
+      "elapsedMs": 14,
       "changed": true,
-      "results": { "markdown": { "data": ["..."] } }
+      "diffs": {}
     }
-  ]
+  ],
+  "nextCursor": null
 }
 ```
 
-- `changed` — whether the capture differs from the previous tick.
-- `results` — same `results` shape as the [Scrape response](/api-reference/endpoint/scrape#example-response).
+| Field | Description |
+|-------|-------------|
+| `ticks[].id` | UUID of the tick — use it to fetch the captured payload via the underlying Scrape reference. |
+| `ticks[].status` | `"completed"`, `"failed"`, or `"running"`. |
+| `ticks[].elapsedMs` | How long the fetch took, in milliseconds. |
+| `ticks[].changed` | Whether the capture differs from the previous tick. |
+| `ticks[].diffs` | Per-format diffs vs. the previous tick (empty on the first tick). |
+| `nextCursor` | Pagination cursor — pass it back on a follow-up request to get older ticks. `null` when there are no more. |
 
 ## Related
 
