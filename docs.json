@@ -336,8 +336,8 @@
     }
   },
   "logo": {
-    "light": "/logos/logo-light.svg",
-    "dark": "/logos/logo-dark.svg",
+    "light": "/logos/logo-dark.svg",
+    "dark": "/logos/logo-light.svg",
     "href": "https://docs.scrapegraphai.com"
   },
   "background": {
