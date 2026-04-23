@@ -8,7 +8,7 @@ description: 'Build a RAG chatbot for any webpage using ScrapeGraph and LanceDB'
   src="/cookbook/images/chat-webpage-banner.png"
 />
 
-Learn how to build a RAG (Retrieval Augmented Generation) chatbot that can answer questions about any webpage by combining ScrapeGraph's Markdownify service with LanceDB vector store and OpenAI.
+Learn how to build a RAG (Retrieval Augmented Generation) chatbot that can answer questions about any webpage by combining ScrapeGraph's Scrape service (markdown format) with LanceDB vector store and OpenAI.
 
 <Note>
 Try it yourself in our interactive notebooks:
@@ -30,7 +30,7 @@ We'll create a chatbot that can:
 
 ```python
 from burr.core import action, State, ApplicationBuilder
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 import lancedb
 from lancedb.pydantic import LanceModel, Vector
 import openai
@@ -47,9 +47,10 @@ class TextDocument(LanceModel):
 # Action to fetch and convert webpage to markdown
 @action(reads=[], writes=["markdown_content"])
 def fetch_webpage(state: State, webpage_url: str) -> State:
-    client = Client()
-    response = client.markdownify(website_url=webpage_url)
-    return state.update(markdown_content=response["result"])
+    sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+    res = sgai.scrape(webpage_url, formats=[MarkdownFormatConfig()])
+    markdown = res.data.results["markdown"]["data"][0] if res.status == "success" else ""
+    return state.update(markdown_content=markdown)
 
 # Action to embed and store chunks
 @action(reads=["markdown_content"], writes=[])
@@ -91,11 +92,11 @@ def ask_question(state: State, user_query: str) -> State:
 
 <CardGroup cols={2}>
   <Card
-    title="Markdownify"
+    title="Scrape"
     icon="robot"
-    href="/services/markdownify"
+    href="/services/scrape"
   >
-    Learn more about our webpage-to-markdown service
+    Learn more about our page-to-markdown/HTML/etc. service
   </Card>
   <Card
     title="Python SDK"

@@ -8,7 +8,7 @@ description: 'How to extract articles from Wired.com'
   src="/cookbook/images/wired-banner.png"
 />
 
-Learn how to extract article information from Wired.com using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather article details, categories, and author information.
+Learn how to extract article information from Wired.com using ScrapeGraphAI's Extract service. This example demonstrates how to gather article details, categories, and author information.
 
 <Note>
 Try it yourself in our interactive notebooks:
@@ -34,7 +34,7 @@ We'll extract the following article information:
 ```python
 from pydantic import BaseModel, Field
 from typing import List
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
 # Schema for a single news item
 class NewsItemSchema(BaseModel):
@@ -47,13 +47,16 @@ class NewsItemSchema(BaseModel):
 class ListNewsSchema(BaseModel):
     news: List[NewsItemSchema] = Field(description="List of news articles with their details")
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
 
-response = client.smartscraper(
-    website_url="https://www.wired.com/",
-    user_prompt="Extract latest news articles",
-    output_schema=ListNewsSchema
+res = sgai.extract(
+    "Extract latest news articles",
+    url="https://www.wired.com/",
+    schema=ListNewsSchema.model_json_schema(),
 )
+
+if res.status == "success":
+    print(res.data.json_data)
 ```
 
 ## Example Output
@@ -85,9 +88,9 @@ response = client.smartscraper(
 
 <CardGroup cols={2}>
   <Card
-    title="SmartScraper"
+    title="Extract"
     icon="robot"
-    href="/services/smartscraper"
+    href="/services/extract"
   >
     Learn more about our AI-powered extraction service
   </Card>

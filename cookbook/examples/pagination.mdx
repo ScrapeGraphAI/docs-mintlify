@@ -163,16 +163,18 @@ if __name__ == "__main__":
 ## JavaScript SDK Example
 
 ```javascript
-import { extract } from 'scrapegraph-js';
+import { ScrapeGraphAI } from 'scrapegraph-js';
 import 'dotenv/config';
 
-const result = await extract(process.env.SGAI_APIKEY, {
+const sgai = ScrapeGraphAI(); // reads SGAI_API_KEY from env
+
+const res = await sgai.extract({
   url: 'https://www.amazon.in/s?k=tv&crid=1TEF1ZFVLU8R8&sprefix=t%2Caps%2C390&ref=nb_sb_noss_2',
   prompt: 'Extract all product info including name, price, rating, and image_url',
 });
 
-if (result.status === 'success') {
-  console.log('Response:', JSON.stringify(result.data?.json, null, 2));
+if (res.status === 'success') {
+  console.log('Response:', JSON.stringify(res.data?.json, null, 2));
 }
 ```
 

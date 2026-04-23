@@ -13,30 +13,36 @@ Your API key authenticates every request you make to the ScrapeGraphAI API. Keep
 
 ## Using your API key
 
-Pass the key in the `SGAI-APIKEY` header for direct API calls, or provide it when initialising the SDK:
+Pass the key in the `SGAI-APIKEY` header for direct API calls. The v2 SDKs read it automatically from the `SGAI_API_KEY` environment variable — you can also pass it explicitly to the factory.
 
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
-client = Client(api_key="your-api-key")
+# Reads SGAI_API_KEY from env, or pass explicitly:
+sgai = ScrapeGraphAI(api_key="your-api-key")
+
+res = sgai.extract("Extract the title", url="https://example.com")
 ```
 
 ```javascript JavaScript
-import { extract } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await extract("your-api-key", {
+// Reads SGAI_API_KEY from env, or pass explicitly:
+const sgai = ScrapeGraphAI({ apiKey: "your-api-key" });
+
+const res = await sgai.extract({
   url: "https://example.com",
   prompt: "Extract the title",
 });
 ```
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/v1/smartscraper \
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
   -H "SGAI-APIKEY: your-api-key" \
   -H "Content-Type: application/json" \
-  -d '{"website_url": "https://example.com", "user_prompt": "Extract the title"}'
+  -d '{"url": "https://example.com", "prompt": "Extract the title"}'
 ```
 
 </CodeGroup>
@@ -51,10 +57,10 @@ SGAI_API_KEY=your-api-key-here
 ```
 
 ```python
-import os
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
-client = Client(api_key=os.getenv("SGAI_API_KEY"))
+# Picks up SGAI_API_KEY from the environment automatically
+sgai = ScrapeGraphAI()
 ```
 
 - **Never expose your key in frontend code**. Make API calls from a server or backend function.

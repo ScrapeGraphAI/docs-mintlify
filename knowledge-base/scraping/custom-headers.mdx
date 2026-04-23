@@ -7,51 +7,58 @@ Some websites require specific HTTP headers to return content — authentication
 
 ## How to pass headers
 
-Use the `headers` parameter available in SmartScraper, SearchScraper, and Markdownify:
+In v2 all fetch behaviour — including custom headers and cookies — is configured through `FetchConfig`. It's accepted by `sgai.extract()`, `sgai.scrape()`, `sgai.search()`, and `sgai.crawl.start()`.
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
 
-client = Client(api_key="your-api-key")
+```python Python
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
-response = client.smartscraper(
-    website_url="https://example.com/protected-page",
-    user_prompt="Extract the main content",
-    headers={
-        "Authorization": "Bearer your-token-here",
-        "Cookie": "session=abc123",
-        "User-Agent": "Mozilla/5.0 (compatible; MyBot/1.0)",
-    },
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(
+    "Extract the main content",
+    url="https://example.com/protected-page",
+    fetch_config=FetchConfig(
+        headers={
+            "Authorization": "Bearer your-token-here",
+            "User-Agent": "Mozilla/5.0 (compatible; MyBot/1.0)",
+        },
+        cookies={"session": "abc123"},
+    ),
 )
 ```
 
-```javascript
-import { extract } from "scrapegraph-js";
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await extract("your-api-key", {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
   url: "https://example.com/protected-page",
   prompt: "Extract the main content",
   fetchConfig: {
     headers: {
       Authorization: "Bearer your-token-here",
-      Cookie: "session=abc123",
+      "User-Agent": "Mozilla/5.0 (compatible; MyBot/1.0)",
     },
+    cookies: { session: "abc123" },
   },
 });
 ```
 
-See the [headers parameter documentation](/services/additional-parameters/headers) for the full reference.
+</CodeGroup>
+
+See the [proxy & fetch configuration guide](/knowledge-base/scraping/proxy) for all `FetchConfig` options.
 
 ## Common use cases
 
 ### Passing a session cookie
 
-Export cookies from your browser (e.g., using a browser extension like EditThisCookie) and pass them as the `Cookie` header:
+Export cookies from your browser (e.g., using a browser extension like EditThisCookie) and pass them via `cookies`:
 
 ```python
-headers = {
-    "Cookie": "user_session=abc123; _ga=GA1.2.xyz"
-}
+fetch_config=FetchConfig(cookies={"user_session": "abc123", "_ga": "GA1.2.xyz"})
 ```
 
 ### Mimicking a real browser
@@ -59,24 +66,26 @@ headers = {
 Some sites block requests without a browser-like User-Agent:
 
 ```python
-headers = {
+fetch_config=FetchConfig(headers={
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept-Language": "en-US,en;q=0.9",
-}
+})
 ```
+
+For stronger anti-bot protection, combine with `stealth=True` and `mode="js"` — see the [proxy guide](/knowledge-base/scraping/proxy#stealth-mode-for-protected-sites).
 
 ### Bearer token authentication
 
 For APIs or protected dashboards:
 
 ```python
-headers = {
+fetch_config=FetchConfig(headers={
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+})
 ```
 
 ## Tips
 
-- Headers are sent with the HTTP request to the target website, not to the ScrapeGraphAI API.
+- Headers and cookies are sent to the **target website**, not to the ScrapeGraphAI API.
 - Keep sensitive tokens out of your source code — load them from environment variables.
-- If you are unsure which headers to pass, open the target URL in your browser, go to DevTools → Network, and inspect the request headers of the first successful page load.
+- If you are unsure which headers to pass, open the target URL in your browser, go to DevTools → Network, and inspect the request headers of a successful page load.

@@ -5,9 +5,9 @@ description: 'Diagnose and resolve request timeouts for complex or slow websites
 
 ## What is a timeout error?
 
-A timeout error occurs when the ScrapeGraphAI API takes longer than the allowed time to process your request. This can happen when the target website is slow, the page is complex, or you are crawling many pages at once.
+A timeout error occurs when the ScrapeGraphAI API takes longer than the allowed time to fetch and process your request. This can happen when the target website is slow, the page is very complex, or you are crawling many pages at once.
 
-You may receive an HTTP `408 Request Timeout` or see a status of `"failed"` with a timeout message in the async job response.
+In the v2 SDK, timeouts surface as `res.status === "error"` with a timeout-related `res.error`. For `crawl.start`, the job record returned by `crawl.get` will show `status == "failed"` with the timeout reason.
 
 ## Common causes
 
@@ -15,63 +15,71 @@ You may receive an HTTP `408 Request Timeout` or see a status of `"failed"` with
 
 Some websites have very slow response times, especially under load or in certain geographic regions.
 
-**Fix:** Retry the request. Use the [status endpoint](/api-reference/endpoint/smartscraper/get-status) to poll the job result instead of waiting for a synchronous response.
+**Fix:** Raise `FetchConfig(timeout=...)` (ms), or rerun with a different `country` to route through a faster region.
 
 ### 2. The page has too much content
 
 Very large pages (e.g., pages with thousands of products or articles) take longer to process.
 
-**Fix:** Narrow your prompt to target a specific section of the page, or use [SmartCrawler](/services/smartcrawler) with a depth and page limit.
+**Fix:** Narrow your prompt to target a specific section of the page, or use [`crawl.start`](/services/crawl) with `max_depth` and `max_pages` limits to split the work.
 
 ### 3. JavaScript rendering takes too long
 
 Pages that rely heavily on JavaScript, lazy loading, or infinite scroll may time out while waiting for content to appear.
 
-**Fix:** Use the `wait_ms` parameter to give the page additional time to load before extraction begins.
+**Fix:** Use `FetchConfig(mode="js", wait=3000)` to give the page time to load, and tune `scrolls` for lazy-loaded content.
 
 ```python
-response = client.smartscraper(
-    website_url="https://example.com",
-    user_prompt="Extract all product listings",
-    wait_ms=3000,  # wait 3 seconds for JS to render
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(
+    "Extract all product listings",
+    url="https://example.com",
+    fetch_config=FetchConfig(mode="js", wait=3000, scrolls=2, timeout=60000),
 )
 ```
 
-See the [wait_ms documentation](/services/additional-parameters/wait-ms) for details.
+See the [JavaScript rendering guide](/knowledge-base/scraping/javascript-rendering) for more.
 
-## Using async mode for long-running jobs
+## Long-running work: use Crawl
 
-For requests that may take longer than usual, use the async API:
+For jobs that may take minutes (multi-page extraction, large sites), prefer `crawl.start` over a single `extract` call. Crawl is explicitly async — you start a job, then poll:
 
 ```python
-from scrapegraph_py import AsyncClient
-import asyncio
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
 
-async def scrape():
-    async with AsyncClient(api_key="your-api-key") as client:
-        job = await client.smartscraper(
-            website_url="https://slow-website.com",
-            user_prompt="Extract the main article content",
-        )
-        return job
+sgai = ScrapeGraphAI()
 
-result = asyncio.run(scrape())
+start = sgai.crawl.start(
+    "https://slow-website.com",
+    formats=[JsonFormatConfig(prompt="Extract the main article content")],
+    max_depth=1,
+    max_pages=5,
+)
+
+while True:
+    status = sgai.crawl.get(start.data.id)
+    if status.data.status in ("completed", "failed"):
+        break
 ```
 
-The async client handles polling automatically and waits for the job to complete.
-
 ## Retry strategy
+
+For transient timeouts, retry with a small delay. Check `res.status` instead of wrapping in try/except — v2 does not raise on API errors.
 
 ```python
 import time
 
-def scrape_with_timeout_retry(url, prompt, max_attempts=3):
+def extract_with_timeout_retry(prompt, url, max_attempts=3):
     for attempt in range(max_attempts):
-        try:
-            return client.smartscraper(website_url=url, user_prompt=prompt)
-        except TimeoutError:
-            if attempt < max_attempts - 1:
-                time.sleep(5)
-            else:
-                raise
+        res = sgai.extract(prompt, url=url)
+        if res.status == "success":
+            return res
+        if "timeout" not in (res.error or "").lower():
+            return res
+        if attempt < max_attempts - 1:
+            time.sleep(5)
+    return res
 ```
