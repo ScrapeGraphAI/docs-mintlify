@@ -1,0 +1,176 @@
+---
+title: '🦐 Agno'
+description: 'Wire ScrapeGraph into Agno agents with the first-party ScrapeGraphTools toolkit'
+---
+
+## Overview
+
+Agno ships a first-party `ScrapeGraphTools` toolkit at `agno.tools.scrapegraph`. One import, pass it to `Agent(tools=[...])`, and every ScrapeGraph endpoint is available to the model — no wrappers required.
+
+<CardGroup cols={2}>
+  <Card
+    title="Agno docs"
+    icon="book"
+    href="https://docs.agno.com"
+  >
+    Official Agno documentation
+  </Card>
+  <Card
+    title="ScrapeGraphTools source"
+    icon="github"
+    href="https://github.com/agno-agi/agno/blob/main/libs/agno/agno/tools/scrapegraph.py"
+  >
+    The toolkit on GitHub
+  </Card>
+</CardGroup>
+
+## Installation
+
+```bash
+pip install -U "agno @ git+https://github.com/agno-agi/agno.git#subdirectory=libs/agno" openai scrapegraph-py
+```
+
+Set your keys:
+
+```bash
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+<Note>
+Until the next Agno release ships the ScrapeGraph v2 rewrite, install Agno from `main` (as shown above). Agno is model-agnostic — swap `OpenAIChat` for `Claude`, `Gemini`, or any other [supported model](https://docs.agno.com/models).
+</Note>
+
+## Quickstart
+
+Enable every tool with `all=True` and let the model pick the right one per turn:
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.tools.scrapegraph import ScrapeGraphTools
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[ScrapeGraphTools(all=True)],
+    markdown=True,
+)
+
+agent.print_response(
+    "Use smartscraper on https://example.com to extract the page title and main heading. Return them as JSON.",
+    stream=True,
+)
+```
+
+## Tools exposed
+
+| Tool | Signature | ScrapeGraph endpoint |
+|---|---|---|
+| `smartscraper` | `(url, prompt) -> str` | `POST /extract` |
+| `markdownify` | `(url) -> str` | `POST /scrape` (markdown format) |
+| `searchscraper` | `(query) -> str` | `POST /search` |
+| `crawl` | `(url, prompt, schema, max_depth=2, max_pages=2) -> str` | `POST /crawl` (polls until complete) |
+| `scrape` | `(url) -> str` | `POST /scrape` (HTML format) |
+
+Each method returns a JSON string (or plain markdown for `markdownify`), which is what Agno hands back to the model.
+
+## Configuration
+
+All knobs live on `ScrapeGraphTools.__init__`:
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `api_key` | `$SGAI_API_KEY` | Your ScrapeGraph API key |
+| `enable_smartscraper` | `True` | Register `smartscraper` |
+| `enable_markdownify` | `False` | Register `markdownify` |
+| `enable_searchscraper` | `False` | Register `searchscraper` |
+| `enable_crawl` | `False` | Register `crawl` |
+| `enable_scrape` | `False` | Register `scrape` |
+| `all` | `False` | Shortcut: enable every tool |
+| `render_heavy_js` | `False` | Request JavaScript rendering on every call |
+| `headers` | `None` | Custom HTTP headers (User-Agent, Cookie, Authorization, …) applied to every fetch |
+| `crawl_poll_interval` | `3` | Seconds between crawl status polls |
+| `crawl_max_wait` | `180` | Max seconds to wait for a crawl to complete |
+
+Only enable what the agent needs — a tighter tool surface gives the model a smaller decision space and usually better routing.
+
+```python
+tools = ScrapeGraphTools(
+    enable_smartscraper=True,
+    enable_markdownify=True,
+    enable_scrape=True,
+    render_heavy_js=True,
+    headers={"User-Agent": "MyBot/1.0"},
+)
+```
+
+## Examples
+
+### Structured extraction with `smartscraper`
+
+```python
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[ScrapeGraphTools(enable_smartscraper=True)],
+    markdown=True,
+)
+
+agent.print_response(
+    "Extract the product name and price from "
+    "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/ as JSON.",
+    stream=True,
+)
+```
+
+### Markdown conversion with `markdownify`
+
+```python
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[ScrapeGraphTools(enable_markdownify=True)],
+    markdown=True,
+)
+
+agent.print_response(
+    "Fetch https://scrapegraphai.com and summarize the top three product features from the markdown.",
+    stream=True,
+)
+```
+
+### Multi-page extraction with `crawl`
+
+`crawl` requires a JSON schema so every page contributes to the same shape. The toolkit polls until completion (bounded by `crawl_max_wait`).
+
+```python
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    tools=[ScrapeGraphTools(enable_crawl=True, crawl_max_wait=600)],
+    markdown=True,
+)
+
+agent.print_response(
+    """Crawl https://books.toscrape.com with max_depth=2, max_pages=5.
+    Use this schema: {"type": "object", "properties": {"books": {"type": "array", "items": {"type": "object", "properties": {"title": {"type": "string"}, "price": {"type": "string"}}}}}}.
+    Prompt: 'Extract every book title and price on the page'. Return the merged JSON.""",
+    stream=True,
+)
+```
+
+## Support
+
+<CardGroup cols={2}>
+  <Card
+    title="Python SDK"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py"
+  >
+    Source and issues for scrapegraph-py
+  </Card>
+  <Card
+    title="Discord"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>

@@ -105,7 +105,8 @@
                 "pages": [
                   "integrations/llamaindex",
                   "integrations/langchain",
-                  "integrations/langgraph"
+                  "integrations/langgraph",
+                  "integrations/agno"
                 ]
               },
               {
