@@ -1,158 +1,355 @@
 ---
 title: '👥 CrewAI'
-description: 'Use CrewAI with Scrapegraph'
+description: 'Wrap ScrapeGraph endpoints as native CrewAI tools'
 ---
 
 ## Overview
 
-[CrewAI](https://github.com/joaomdmoura/crewAI) is a framework for orchestrating role-playing AI agents. With the Scrapegraph CrewAI integration, you can easily incorporate web scraping capabilities into your agent workflows.
+[CrewAI](https://docs.crewai.com) orchestrates role-playing agents around tasks. Every ScrapeGraph v2 endpoint is one method on the official [`scrapegraph-py`](https://pypi.org/project/scrapegraph-py/) SDK — wrap each one with CrewAI's `@tool` decorator and you get a full ScrapeGraph toolkit for your crew, no extra dependency required.
 
-<Card
-  title="Try it in Google Colab"
-  icon="google"
-  href="https://colab.research.google.com/drive/14f1nEmo_kPRhc6zTXcm3a9MFcF1aP_-l?authuser=2"
->
-  Interactive example notebook to get started with CrewAI and Scrapegraph
-</Card>
+<Note>
+The legacy `ScrapegraphScrapeTool` in `crewai-tools` still targets ScrapeGraph v1 (`smartscraper` / `website_url` / `user_prompt`) and its repository was archived on 2025-11-10. The wrappers below hit v2 directly through `scrapegraph-py` and cover every endpoint — scrape, extract, search, crawl, monitor, history, credits.
+</Note>
+
+<CardGroup cols={2}>
+  <Card
+    title="CrewAI tool docs"
+    icon="book"
+    href="https://docs.crewai.com/en/concepts/tools"
+  >
+    How CrewAI's `@tool` decorator and `BaseTool` work
+  </Card>
+  <Card
+    title="scrapegraph-py on PyPI"
+    icon="cube"
+    href="https://pypi.org/project/scrapegraph-py/"
+  >
+    The official Python SDK for ScrapeGraph v2
+  </Card>
+</CardGroup>
 
 ## Installation
 
-Install the required packages:
+```bash
+pip install crewai scrapegraph-py
+```
+
+Set your keys:
 
 ```bash
-pip install crewai scrapegraph-tools python-dotenv
-```
-
-## Available Tools
-
-### ScrapegraphScrapeTool
-
-The `ScrapegraphScrapeTool` provides web scraping capabilities to your CrewAI agents:
-
-```python
-from crewai import Agent, Crew, Task
-from crewai_tools import ScrapegraphScrapeTool
-from dotenv import load_dotenv
-
-# Initialize the tool
-tool = ScrapegraphScrapeTool()
-
-# Create an agent with the tool
-agent = Agent(
-    role="Web Researcher",
-    goal="Research and extract accurate information from websites",
-    backstory="You are an expert web researcher with experience in extracting and analyzing information from various websites.",
-    tools=[tool],
-)
-```
-
-<Accordion title="Complete Example" icon="code">
-```python
-from crewai import Agent, Crew, Task
-from crewai_tools import ScrapegraphScrapeTool
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Initialize the Scrapegraph tool
-tool = ScrapegraphScrapeTool()
-
-# Create an agent with the Scrapegraph tool
-agent = Agent(
-    role="Web Researcher",
-    goal="Research and extract accurate information from websites",
-    backstory="You are an expert web researcher with experience in extracting and analyzing information from various websites.",
-    tools=[tool],
-)
-
-# Define a task for the agent
-task = Task(
-    name="scraping task",
-    description="Visit the website https://scrapegraphai.com and extract detailed information about the founders, including their names, roles, and any relevant background information.",
-    expected_output="A file with the information extracted from the website.",
-    agent=agent,
-)
-
-# Create a crew with the agent and task
-crew = Crew(
-    agents=[agent],
-    tasks=[task],
-)
-
-# Execute the task
-result = crew.kickoff()
-```
-</Accordion>
-
-## Configuration
-
-Set your Scrapegraph API key in your environment:
-
-```bash
-export SCRAPEGRAPH_API_KEY="your-api-key-here"
-```
-
-Or using a `.env` file:
-
-```bash
-SCRAPEGRAPH_API_KEY=your_api_key_here
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
 ```
 
 <Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
+Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dashboard). CrewAI uses OpenAI models by default — swap in any [supported provider](https://docs.crewai.com/en/concepts/llms) by passing `llm=` to `Agent`.
 </Note>
 
-## Use Cases
+## Build the toolkit
 
-<CardGroup cols={2}>
-  <Card title="Content Research" icon="magnifying-glass">
-    Gather information from multiple websites for market research or competitive analysis
-  </Card>
-  <Card title="Data Collection" icon="database">
-    Extract structured data from websites for analysis or database population
-  </Card>
-  <Card title="Automated Monitoring" icon="chart-line">
-    Keep track of changes on specific web pages
-  </Card>
-  <Card title="Information Extraction" icon="filter">
-    Extract specific data points using natural language
-  </Card>
-</CardGroup>
+Save this once as `sgai_tools.py` — every example below imports from it.
 
-## Best Practices
+```python sgai_tools.py
+from typing import Optional
+from crewai.tools import tool
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, JsonFormatConfig
 
-<CardGroup cols={2}>
-  <Card title="Rate Limiting" icon="gauge">
-    Be mindful of website rate limits and implement appropriate delays
-  </Card>
-  <Card title="Error Handling" icon="bug">
-    Implement proper error handling for failed requests
-  </Card>
-  <Card title="Data Validation" icon="check">
-    Verify extracted data meets requirements
-  </Card>
-  <Card title="Ethical Scraping" icon="shield">
-    Respect robots.txt and website terms of service
-  </Card>
-</CardGroup>
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+def _unwrap(result):
+    """Return the SDK response payload as a plain dict."""
+    if result.error:
+        raise RuntimeError(f"ScrapeGraph error: {result.error}")
+    data = result.data
+    return data.model_dump() if hasattr(data, "model_dump") else data
+
+# --- content endpoints -------------------------------------------------------
+
+@tool("scrape")
+def scrape(url: str) -> dict:
+    """Fetch a web page and return its content as markdown."""
+    return _unwrap(sgai.scrape(url=url, formats=[MarkdownFormatConfig()]))
+
+@tool("extract")
+def extract(url: str, prompt: str) -> dict:
+    """Extract structured data from a web page using a natural-language prompt."""
+    return _unwrap(sgai.extract(prompt=prompt, url=url))
+
+@tool("search")
+def search(query: str, num_results: int = 3) -> dict:
+    """Run an AI web search; returns ranked results with fetched content."""
+    return _unwrap(sgai.search(query=query, num_results=num_results))
+
+# --- crawl (async job) -------------------------------------------------------
+
+@tool("crawl_start")
+def crawl_start(url: str, max_depth: int = 2, max_pages: int = 10) -> dict:
+    """Start a multi-page crawl job. Returns a dict including the crawl `id`."""
+    return _unwrap(sgai.crawl.start(
+        url=url, max_depth=max_depth, max_pages=max_pages,
+        formats=[MarkdownFormatConfig()],
+    ))
+
+@tool("crawl_get")
+def crawl_get(crawl_id: str) -> dict:
+    """Fetch the status and result of a crawl job."""
+    return _unwrap(sgai.crawl.get(crawl_id))
+
+@tool("crawl_stop")
+def crawl_stop(crawl_id: str) -> dict:
+    """Stop a running crawl."""
+    return _unwrap(sgai.crawl.stop(crawl_id))
+
+@tool("crawl_resume")
+def crawl_resume(crawl_id: str) -> dict:
+    """Resume a stopped crawl."""
+    return _unwrap(sgai.crawl.resume(crawl_id))
+
+@tool("crawl_delete")
+def crawl_delete(crawl_id: str) -> dict:
+    """Delete a crawl job."""
+    return _unwrap(sgai.crawl.delete(crawl_id))
+
+# --- monitor (scheduled jobs) ------------------------------------------------
+
+@tool("monitor_create")
+def monitor_create(url: str, interval: str, name: Optional[str] = None, prompt: Optional[str] = None) -> dict:
+    """Create a scheduled monitor. If `prompt` is given each tick stores JSON
+    extraction; otherwise it stores markdown. `interval` is cron syntax,
+    e.g. "0 9 * * *" for daily at 9am."""
+    formats = [JsonFormatConfig(prompt=prompt)] if prompt else [MarkdownFormatConfig()]
+    return _unwrap(sgai.monitor.create(url=url, interval=interval, name=name, formats=formats))
+
+@tool("monitor_list")
+def monitor_list() -> list:
+    """List all monitors."""
+    return _unwrap(sgai.monitor.list())
+
+@tool("monitor_get")
+def monitor_get(monitor_id: str) -> dict:
+    """Get one monitor by id."""
+    return _unwrap(sgai.monitor.get(monitor_id))
+
+@tool("monitor_pause")
+def monitor_pause(monitor_id: str) -> dict:
+    """Pause a monitor."""
+    return _unwrap(sgai.monitor.pause(monitor_id))
+
+@tool("monitor_resume")
+def monitor_resume(monitor_id: str) -> dict:
+    """Resume a paused monitor."""
+    return _unwrap(sgai.monitor.resume(monitor_id))
+
+@tool("monitor_delete")
+def monitor_delete(monitor_id: str) -> dict:
+    """Delete a monitor."""
+    _unwrap(sgai.monitor.delete(monitor_id))
+    return {"deleted": monitor_id}
+
+@tool("monitor_activity")
+def monitor_activity(monitor_id: str) -> dict:
+    """Get the recent runs of a monitor."""
+    return _unwrap(sgai.monitor.activity(monitor_id))
+
+# --- account / history -------------------------------------------------------
+
+@tool("history_list")
+def history_list(service: Optional[str] = None, page: int = 1, limit: int = 20) -> dict:
+    """List recent API request history, optionally filtered by service."""
+    return _unwrap(sgai.history.list(service=service, page=page, limit=limit))
+
+@tool("history_get")
+def history_get(request_id: str) -> dict:
+    """Get a single history entry by request id."""
+    return _unwrap(sgai.history.get(request_id))
+
+@tool("credits")
+def credits() -> dict:
+    """Check remaining ScrapeGraph API credits."""
+    return _unwrap(sgai.credits())
+
+ALL_TOOLS = [
+    scrape, extract, search,
+    crawl_start, crawl_get, crawl_stop, crawl_resume, crawl_delete,
+    monitor_create, monitor_list, monitor_get,
+    monitor_pause, monitor_resume, monitor_delete, monitor_activity,
+    history_list, history_get, credits,
+]
+```
+
+## Endpoint → tool reference
+
+| ScrapeGraph endpoint | SDK call | CrewAI tool |
+|---|---|---|
+| `POST /scrape` | `sgai.scrape(url=...)` | `scrape` |
+| `POST /extract` | `sgai.extract(prompt=..., url=...)` | `extract` |
+| `POST /search` | `sgai.search(query=...)` | `search` |
+| `POST /crawl` | `sgai.crawl.start(url=...)` | `crawl_start` |
+| `GET /crawl/{id}` | `sgai.crawl.get(id)` | `crawl_get` |
+| `POST /crawl/{id}/stop` | `sgai.crawl.stop(id)` | `crawl_stop` |
+| `POST /crawl/{id}/resume` | `sgai.crawl.resume(id)` | `crawl_resume` |
+| `DELETE /crawl/{id}` | `sgai.crawl.delete(id)` | `crawl_delete` |
+| `POST /monitor` | `sgai.monitor.create(url=..., interval=...)` | `monitor_create` |
+| `GET /monitor` | `sgai.monitor.list()` | `monitor_list` |
+| `GET /monitor/{id}` | `sgai.monitor.get(id)` | `monitor_get` |
+| `POST /monitor/{id}/pause` | `sgai.monitor.pause(id)` | `monitor_pause` |
+| `POST /monitor/{id}/resume` | `sgai.monitor.resume(id)` | `monitor_resume` |
+| `DELETE /monitor/{id}` | `sgai.monitor.delete(id)` | `monitor_delete` |
+| `GET /monitor/{id}/activity` | `sgai.monitor.activity(id)` | `monitor_activity` |
+| `GET /history` | `sgai.history.list(...)` | `history_list` |
+| `GET /history/{id}` | `sgai.history.get(id)` | `history_get` |
+| `GET /credits` | `sgai.credits()` | `credits` |
+
+---
+
+## Direct invocation
+
+CrewAI tools are callable outside an agent via `.run(**kwargs)` — useful for scripts, tests, or as a building block inside a custom task.
+
+```python
+from sgai_tools import scrape, extract, search, credits, crawl_start, crawl_get
+
+print(credits.run())
+print(scrape.run(url="https://example.com"))
+print(extract.run(
+    url="https://scrapegraphai.com",
+    prompt="Extract the company name and a short description",
+))
+print(search.run(query="best AI scraping tools 2026", num_results=3))
+
+job = crawl_start.run(url="https://scrapegraphai.com", max_depth=1, max_pages=5)
+print(crawl_get.run(crawl_id=job["id"]))
+```
+
+## Crew pattern
+
+Give an agent the whole toolkit and let it pick the right tool per task. CrewAI drives execution through `Crew.kickoff()`.
+
+```python
+from crewai import Agent, Crew, Task
+from sgai_tools import ALL_TOOLS
+
+researcher = Agent(
+    role="Web Researcher",
+    goal="Gather and extract accurate information from websites",
+    backstory="You are an expert web researcher with deep experience in "
+              "extracting structured data from the open web.",
+    tools=ALL_TOOLS,
+    verbose=True,
+)
+
+task = Task(
+    description=(
+        "Visit https://scrapegraphai.com and extract the company name, "
+        "tagline, and the top three product features. Return the result as JSON."
+    ),
+    expected_output="A JSON object with keys: name, tagline, features (list of 3 strings).",
+    agent=researcher,
+)
+
+crew = Crew(agents=[researcher], tasks=[task], verbose=True)
+result = crew.kickoff()
+print(result)
+```
+
+<Note>
+Prefer a focused toolset: if the agent only needs `extract` and `search`, pass `tools=[extract, search]` instead of `ALL_TOOLS`. A tighter surface gives the model a smaller decision space and better routing.
+</Note>
+
+## Structured output with Pydantic
+
+`extract` already returns structured JSON under the `json_data` key. Ask CrewAI to validate the task output against a Pydantic model with `output_pydantic`.
+
+```python
+from pydantic import BaseModel, Field
+from crewai import Agent, Crew, Task
+from sgai_tools import extract
+
+class Company(BaseModel):
+    name: str = Field(description="Company name")
+    tagline: str = Field(description="One-line description of what they do")
+
+agent = Agent(
+    role="Web Researcher",
+    goal="Extract company facts from homepages",
+    backstory="You extract clean, structured company info.",
+    tools=[extract],
+)
+
+task = Task(
+    description=(
+        "Call the extract tool on https://scrapegraphai.com with prompt "
+        "'Return an object with name and tagline describing the company'. "
+        "Return the final answer as a JSON object with `name` and `tagline`."
+    ),
+    expected_output="JSON object matching the Company schema.",
+    agent=agent,
+    output_pydantic=Company,
+)
+
+crew = Crew(agents=[agent], tasks=[task])
+result = crew.kickoff()
+company: Company = result.pydantic
+print(company)
+```
+
+## Multi-agent pipeline
+
+A classic CrewAI pattern: one agent searches, a second extracts structured data from the top hit. Tasks run sequentially and the second task receives the first's output as context.
+
+```python
+from crewai import Agent, Crew, Task, Process
+from sgai_tools import search, extract
+
+finder = Agent(
+    role="Search Specialist",
+    goal="Find the single most relevant URL for a query",
+    backstory="You triage search results and return only the best URL.",
+    tools=[search],
+)
+
+analyst = Agent(
+    role="Data Analyst",
+    goal="Extract concise summaries from a given URL",
+    backstory="You turn raw pages into 3-bullet summaries.",
+    tools=[extract],
+)
+
+find_task = Task(
+    description="Search for 'scrapegraphai documentation' and return only the top URL.",
+    expected_output="A single URL string.",
+    agent=finder,
+)
+
+summarise_task = Task(
+    description="Extract a 3-bullet summary of the page at the URL from the previous task.",
+    expected_output="Three bullet points summarising the page.",
+    agent=analyst,
+    context=[find_task],
+)
+
+crew = Crew(
+    agents=[finder, analyst],
+    tasks=[find_task, summarise_task],
+    process=Process.sequential,
+)
+print(crew.kickoff())
+```
 
 ## Support
 
-Need help with the integration?
-
 <CardGroup cols={2}>
   <Card
-    title="GitHub Repository"
+    title="Python SDK"
     icon="github"
-    href="https://github.com/scrapegraph/scrapegraph-tools"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py"
   >
-    Report bugs and request features
+    Source and issues for scrapegraph-py
   </Card>
   <Card
-    title="Discord Community"
+    title="Discord"
     icon="discord"
-    href="https://discord.gg/scrapegraph"
+    href="https://discord.gg/uJN7TYcpNa"
   >
     Get help from our community
   </Card>
