@@ -1,0 +1,120 @@
+---
+title: 'Extract'
+description: 'Natural-language structured extraction from a URL, HTML, or markdown.'
+---
+
+```http
+POST https://v2-api.scrapegraphai.com/api/extract
+```
+
+Replaces the v1 `smartscraper` endpoint. Provide a prompt (and optionally a JSON schema) and get typed JSON back — no selectors or post-processing needed.
+
+## Request body
+
+Exactly one of `url`, `html`, or `markdown` must be supplied as the source.
+
+<ParamField body="url" type="string">
+  URL of the page to extract from.
+</ParamField>
+
+<ParamField body="html" type="string">
+  Raw HTML content to extract from (max 2 MB).
+</ParamField>
+
+<ParamField body="markdown" type="string">
+  Markdown content to extract from (max 2 MB).
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  Natural-language description of what to extract.
+</ParamField>
+
+<ParamField body="schema" type="object">
+  JSON schema describing the desired output shape. When provided, the LLM is constrained to match it.
+</ParamField>
+
+<ParamField body="mode" type="string">
+  HTML pre-processing mode: `"normal"`, `"reader"`, or `"prune"`.
+</ParamField>
+
+<ParamField body="fetchConfig" type="object">
+  Fetch-time options. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body) for the full field list (`mode`, `stealth`, `headers`, `cookies`, `scrolls`, `wait`, `timeout`, `country`). Ignored when `html` or `markdown` is supplied.
+</ParamField>
+
+## Example request
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "prompt": "What is the title of this page?"
+  }'
+```
+
+## Example response
+
+```json
+{
+  "id": "8c34fc03-17be-4fcc-a7ce-6ebcab23ad43",
+  "raw": null,
+  "json": {
+    "title": "Example Domain"
+  },
+  "usage": {
+    "promptTokens": 361,
+    "completionTokens": 92
+  },
+  "metadata": {
+    "chunker": { "chunks": [{ "size": 33 }] },
+    "fetch": {}
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | UUID for this extract call. |
+| `json` | Structured output matching the schema (or free-form JSON when no schema is supplied). |
+| `raw` | Raw model output before JSON parsing, when available. |
+| `usage.promptTokens` / `usage.completionTokens` | LLM token accounting. |
+| `metadata.chunker` | How the source content was split before extraction. |
+| `metadata.fetch` | Fetch diagnostics (populated when the page was fetched by the API). |
+
+## With a schema
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "prompt": "Extract the page title and description",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "title":       { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["title"]
+    }
+  }'
+```
+
+## Extract from HTML or markdown
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/extract \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "html": "<html><body><h1>Widget</h1><p>$9.99</p></body></html>",
+    "prompt": "Extract product name and price"
+  }'
+```
+
+## Related
+
+- Service overview: [Extract](/services/extract)
+- SDK wrappers: [Python](/sdks/python) · [JavaScript](/sdks/javascript)

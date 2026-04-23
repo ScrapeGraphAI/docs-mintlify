@@ -205,45 +205,42 @@
                 ]
               },
               {
-                "group": "SmartScraper",
+                "group": "Scrape",
                 "pages": [
-                  "api-reference/endpoint/smartscraper/start",
-                  "api-reference/endpoint/smartscraper/get-status"
+                  "api-reference/endpoint/scrape"
                 ]
               },
               {
-                "group": "SearchScraper",
+                "group": "Extract",
                 "pages": [
-                  "api-reference/endpoint/searchscraper/start",
-                  "api-reference/endpoint/searchscraper/get-status"
+                  "api-reference/endpoint/extract"
                 ]
               },
               {
-                "group": "Markdownify",
+                "group": "Search",
                 "pages": [
-                  "api-reference/endpoint/markdownify/start",
-                  "api-reference/endpoint/markdownify/get-status"
+                  "api-reference/endpoint/search"
                 ]
               },
               {
-                "group": "SmartCrawler",
+                "group": "Crawl",
                 "pages": [
-                  "api-reference/endpoint/smartcrawler/start",
-                  "api-reference/endpoint/smartcrawler/get-status"
+                  "api-reference/endpoint/crawl/start",
+                  "api-reference/endpoint/crawl/get-status",
+                  "api-reference/endpoint/crawl/manage"
                 ]
               },
               {
-                "group": "Sitemap",
+                "group": "Monitor",
                 "pages": [
-                  "api-reference/endpoint/sitemap/start",
-                  "api-reference/endpoint/sitemap/get-status"
+                  "api-reference/endpoint/monitor/create",
+                  "api-reference/endpoint/monitor/manage"
                 ]
               },
               {
-                "group": "User",
+                "group": "Account",
                 "pages": [
-                  "api-reference/endpoint/user/get-credits",
-                  "api-reference/endpoint/user/submit-feedback"
+                  "api-reference/endpoint/credits"
                 ]
               }
             ]
