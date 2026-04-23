@@ -1,0 +1,62 @@
+---
+title: 'Get crawl status'
+description: 'Poll a running or finished crawl job.'
+---
+
+```http
+GET https://v2-api.scrapegraphai.com/api/crawl/:id
+```
+
+Returns progress and per-page results for a crawl job started with [`POST /api/crawl`](/api-reference/endpoint/crawl/start).
+
+## Path parameters
+
+<ParamField path="id" type="string" required>
+  The crawl job UUID returned by `POST /api/crawl`.
+</ParamField>
+
+## Example request
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/crawl/79694e03-f2ea-43f2-93cc-7c6fc26f999a \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "completed",
+  "total": 3,
+  "finished": 1,
+  "pages": [
+    {
+      "url": "https://example.com",
+      "depth": 0,
+      "title": "",
+      "status": "completed",
+      "parentUrl": null,
+      "contentType": "text/html",
+      "links": ["https://iana.org/domains/example"],
+      "scrapeRefId": "83a911ed-c0bc-4a8c-ad62-8efeeb93f33a"
+    }
+  ]
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `status` | `"running"`, `"completed"`, `"failed"`, or `"stopped"`. |
+| `total` / `finished` | Progress counters. |
+| `pages[]` | Per-page results, ordered by crawl time. |
+| `pages[].scrapeRefId` | UUID of the underlying Scrape call — use it to fetch the full formatted content. |
+
+<Note>
+Poll at a reasonable cadence (every 1–5 seconds) until `status` is `"completed"`, `"failed"`, or `"stopped"`. Or use [Monitor](/services/monitor) with a webhook to avoid polling entirely.
+</Note>
+
+## Related
+
+- Start a job: [`POST /api/crawl`](/api-reference/endpoint/crawl/start)
+- Stop / resume / delete: [Manage crawl jobs](/api-reference/endpoint/crawl/manage)

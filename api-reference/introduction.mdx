@@ -1,94 +1,83 @@
 ---
 title: 'Introduction'
-description: 'Complete reference for the ScrapeGraphAI REST API'
+description: 'REST API reference for ScrapeGraphAI v2'
 ---
 
 ## Overview
 
-The ScrapeGraphAI API provides powerful endpoints for AI-powered web scraping and content extraction. Our RESTful API allows you to extract structured data from any website, perform AI-powered web searches, and convert web pages to clean markdown.
+The ScrapeGraphAI v2 API exposes five core services behind a single host. All endpoints accept JSON, return JSON, and are authenticated with an API key header.
 
-## Authentication
+- **Scrape** — fetch a URL in one or more formats (markdown, HTML, screenshot, JSON extraction, …) in a single call.
+- **Extract** — structured data extraction from a URL, raw HTML, or markdown using a natural-language prompt.
+- **Search** — web search with page content returned inline and optional AI extraction across results.
+- **Crawl** — async multi-page traversal with URL patterns, depth limits, and per-page formats.
+- **Monitor** — cron-scheduled watches with change detection and optional webhooks.
 
-All API requests require authentication using an API key. You can get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
-
-```bash
-SGAI-APIKEY: your-api-key-here
-```
-
-<Note>
-Keep your API key secure and never expose it in client-side code. Use environment variables to manage your keys safely.
-</Note>
+Prefer using an SDK? See the [Python SDK](/sdks/python) or [JavaScript SDK](/sdks/javascript) — both wrap this same API.
 
 ## Base URL
 
 ```bash
-https://api.scrapegraphai.com/v1
+https://v2-api.scrapegraphai.com
 ```
 
-## Available Services
+All endpoints are prefixed with `/api/`, e.g. `POST https://v2-api.scrapegraphai.com/api/scrape`.
 
-<CardGroup cols={2}>
-  <Card title="SmartScraper" icon="robot" href="/api-reference/endpoint/smartscraper/start">
-    Extract structured data from any website using AI
-  </Card>
-  <Card title="SearchScraper" icon="magnifying-glass" href="/api-reference/endpoint/searchscraper/start">
-    Perform AI-powered web searches with structured results
-  </Card>
-  <Card title="Markdownify" icon="markdown" href="/api-reference/endpoint/markdownify/start">
-    Convert web content to clean markdown
-  </Card>
-  <Card title="User" icon="user" href="/api-reference/endpoint/user/get-credits">
-    Manage credits and submit feedback
-  </Card>
-</CardGroup>
+<Warning>
+The v1 host (`https://api.scrapegraphai.com/v1`) and its endpoint names (`smartscraper`, `searchscraper`, `markdownify`, `smartcrawler`) are deprecated. See the [v1 → v2 transition guide](/transition-from-v1-to-v2) for the endpoint mapping.
+</Warning>
 
-## SDKs & Integration
+## Authentication
 
-We provide official SDKs to help you integrate quickly:
+All requests require an API key in the `SGAI-APIKEY` header. Get yours from the [dashboard](https://scrapegraphai.com/dashboard).
 
-<CardGroup cols={2}>
-  <Card title="Python SDK" icon="python" href="/sdks/python">
-    Perfect for data science and backend applications
-  </Card>
-  <Card title="JavaScript SDK" icon="js" href="/sdks/javascript">
-    Ideal for web applications and Node.js
-  </Card>
-</CardGroup>
-
-### AI Framework Integration
-
-<CardGroup cols={2}>
-  <Card title="LangChain" icon="link" href="/integrations/langchain">
-    Use our services in your LLM workflows
-  </Card>
-  <Card title="LlamaIndex" icon="database" href="/integrations/llamaindex">
-    Build powerful search and QA systems
-  </Card>
-</CardGroup>
-
-## Error Handling
-
-Our API uses conventional HTTP response codes:
-
-- `200` - Success
-- `400` - Bad Request
-- `401` - Unauthorized
-- `429` - Too Many Requests
-- `500` - Server Error
+```bash
+SGAI-APIKEY: sgai-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
 
 <Note>
-Check our [error handling guide](/api-reference/errors) for detailed information about error responses and how to handle them.
+Keep your API key secret. Never ship it in client-side code — load it from an environment variable or a server-side secret store.
 </Note>
 
-## Support
-
-Need help with the API? We're here to assist:
+## Endpoints
 
 <CardGroup cols={2}>
-  <Card title="Discord Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
-    Get help from our community
+  <Card title="Scrape" icon="code" href="/api-reference/endpoint/scrape">
+    `POST /api/scrape` — multi-format page fetch.
   </Card>
-  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
-    Contact our technical team
+  <Card title="Extract" icon="robot" href="/api-reference/endpoint/extract">
+    `POST /api/extract` — structured data with an LLM prompt.
+  </Card>
+  <Card title="Search" icon="magnifying-glass" href="/api-reference/endpoint/search">
+    `POST /api/search` — web search + content fetch.
+  </Card>
+  <Card title="Crawl · start" icon="spider" href="/api-reference/endpoint/crawl/start">
+    `POST /api/crawl` — start an async crawl job.
+  </Card>
+  <Card title="Crawl · status" icon="list-check" href="/api-reference/endpoint/crawl/get-status">
+    `GET /api/crawl/:id` — poll a crawl job.
+  </Card>
+  <Card title="Monitor · create" icon="clock" href="/api-reference/endpoint/monitor/create">
+    `POST /api/monitor` — schedule a recurring fetch.
+  </Card>
+  <Card title="Monitor · manage" icon="sliders" href="/api-reference/endpoint/monitor/manage">
+    List, pause, resume, update, delete monitors; fetch activity.
+  </Card>
+  <Card title="Credits" icon="coins" href="/api-reference/endpoint/credits">
+    `GET /api/credits` — remaining balance and job quotas.
   </Card>
 </CardGroup>
+
+## HTTP status codes
+
+| Code | Meaning |
+|------|---------|
+| `200` | Success |
+| `400` | Validation error — the request body didn't pass schema checks. |
+| `401` | Missing `SGAI-APIKEY` header. |
+| `403` | Invalid or deprecated API key. |
+| `402` | Insufficient credits. |
+| `429` | Rate limit exceeded. |
+| `500` | Server error. |
+
+See [Error handling](/api-reference/errors) for the full response shape and examples.

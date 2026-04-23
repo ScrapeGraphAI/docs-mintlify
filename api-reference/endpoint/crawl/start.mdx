@@ -1,0 +1,86 @@
+---
+title: 'Start crawl'
+description: 'Kick off an async multi-page crawl and return a job id.'
+---
+
+```http
+POST https://v2-api.scrapegraphai.com/api/crawl
+```
+
+Starts an asynchronous crawl. The response returns a job `id` immediately; poll [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status) or manage the job via the [control endpoints](/api-reference/endpoint/crawl/manage).
+
+## Request body
+
+<ParamField body="url" type="string" required>
+  Starting URL to crawl.
+</ParamField>
+
+<ParamField body="formats" type="array">
+  Output formats captured for each crawled page. Same shape as the [Scrape `formats` array](/api-reference/endpoint/scrape#request-body).
+</ParamField>
+
+<ParamField body="maxPages" type="integer">
+  Maximum number of pages to crawl.
+</ParamField>
+
+<ParamField body="maxDepth" type="integer">
+  How many levels of links to follow from the starting URL.
+</ParamField>
+
+<ParamField body="maxLinksPerPage" type="integer">
+  Cap on links expanded per page.
+</ParamField>
+
+<ParamField body="includePatterns" type="array">
+  Glob-style URL patterns to include, e.g. `["/blog/*"]`.
+</ParamField>
+
+<ParamField body="excludePatterns" type="array">
+  Glob-style URL patterns to exclude, e.g. `["/admin/*"]`.
+</ParamField>
+
+<ParamField body="fetchConfig" type="object">
+  Fetch-time options applied to every page. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body).
+</ParamField>
+
+## Example request
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com/",
+    "formats": [{ "type": "markdown" }],
+    "maxPages": 5,
+    "maxDepth": 2,
+    "includePatterns": ["/blog/*"],
+    "excludePatterns": ["/admin/*"]
+  }'
+```
+
+## Example response
+
+```json
+{
+  "id": "79694e03-f2ea-43f2-93cc-7c6fc26f999a",
+  "status": "running",
+  "total": 3,
+  "finished": 0,
+  "pages": []
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Crawl job identifier used on every follow-up endpoint. |
+| `status` | Lifecycle state: `"running"`, `"completed"`, `"failed"`, or `"stopped"`. |
+| `total` | Total pages the crawler expects to process so far. |
+| `finished` | Pages completed. |
+| `pages` | Per-page results (empty until the job makes progress). |
+
+## Related
+
+- Poll progress: [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status)
+- Stop, resume, or delete: [Manage crawl jobs](/api-reference/endpoint/crawl/manage)
+- Service overview: [Crawl](/services/crawl)

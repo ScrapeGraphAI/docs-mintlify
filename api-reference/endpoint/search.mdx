@@ -1,0 +1,111 @@
+---
+title: 'Search'
+description: 'Run a web search and fetch the top results in one call.'
+---
+
+```http
+POST https://v2-api.scrapegraphai.com/api/search
+```
+
+Replaces the v1 `searchscraper` endpoint. Returns the top pages with their content inline, and optionally runs an AI extraction across all results.
+
+## Request body
+
+<ParamField body="query" type="string" required>
+  The search query.
+</ParamField>
+
+<ParamField body="numResults" type="integer">
+  Number of results to return and fetch (1–20). Default: `3`.
+</ParamField>
+
+<ParamField body="prompt" type="string">
+  Optional prompt for AI extraction across the fetched results. When provided, the response also includes a `json` field.
+</ParamField>
+
+<ParamField body="schema" type="object">
+  JSON schema for the extracted output. Requires `prompt`.
+</ParamField>
+
+<ParamField body="format" type="string">
+  Format used for each result's inline content: `"markdown"` (default) or `"html"`.
+</ParamField>
+
+<ParamField body="timeRange" type="string">
+  Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`.
+</ParamField>
+
+<ParamField body="locationGeoCode" type="string">
+  ISO 3166-1 alpha-2 country code for localized results (e.g. `"us"`, `"it"`).
+</ParamField>
+
+<ParamField body="fetchConfig" type="object">
+  Fetch-time options applied when crawling each result. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body) for the full field list.
+</ParamField>
+
+## Example request
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "scrapegraphai pricing",
+    "numResults": 3
+  }'
+```
+
+## Example response
+
+```json
+{
+  "id": "27783ace-462a-45d2-9ff1-cdf3a22adf87",
+  "results": [
+    {
+      "url": "https://scrapegraphai.com/pricing",
+      "title": "Pricing - ScrapeGraphAI",
+      "content": "// Choose the plan that fits your needs\n\n## Simple, transparent pricing ..."
+    }
+  ],
+  "metadata": {
+    "search": {},
+    "pages": {
+      "requested": 3,
+      "scraped": 3
+    }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | UUID for this search call. |
+| `results[]` | Ordered list of fetched results. |
+| `results[].url` / `.title` / `.content` | Result URL, title, and inline page content in the requested `format`. |
+| `metadata.pages.requested` / `.scraped` | Requested vs. successfully fetched count. |
+
+## Search + extraction
+
+Add `prompt` (and optionally `schema`) to roll all results into one structured payload:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "typescript best practices",
+    "numResults": 5,
+    "prompt": "Extract the main tips and recommendations",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "tips": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }'
+```
+
+## Related
+
+- Service overview: [Search](/services/search)
+- SDK wrappers: [Python](/sdks/python) · [JavaScript](/sdks/javascript)

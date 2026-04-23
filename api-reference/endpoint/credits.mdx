@@ -1,0 +1,55 @@
+---
+title: 'Credits'
+description: 'Check remaining credits, plan, and job quotas.'
+---
+
+```http
+GET https://v2-api.scrapegraphai.com/api/credits
+```
+
+Returns the current account balance, active plan, and per-job-type quotas (crawl, monitor).
+
+## Example request
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/credits \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Example response
+
+```json
+{
+  "remaining": 750000,
+  "used": 287,
+  "plan": "Pro Plan",
+  "jobs": {
+    "crawl":   { "used": 0, "limit": 50 },
+    "monitor": { "used": 0, "limit": 100 }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `remaining` | Credits available for request-based endpoints (`scrape`, `extract`, `search`, crawl pages). |
+| `used` | Credits consumed in the current billing cycle. |
+| `plan` | Active subscription plan name. |
+| `jobs.crawl.used` / `.limit` | Concurrent crawl jobs active vs. plan cap. |
+| `jobs.monitor.used` / `.limit` | Active monitors vs. plan cap. |
+
+<Note>
+This is the quickest way to verify your API key is healthy — the call costs no credits and returns `200` on success.
+</Note>
+
+## Credit costs
+
+| Endpoint | Cost |
+|----------|------|
+| `scrape` | Per-format base cost + `+5` with `stealth` |
+| `extract` | `5` + `+5` with `stealth` |
+| `search` | `2/result` (no prompt) or `5/result` (with prompt), times `numResults`, + `+5` with `stealth` |
+| `crawl` | `2` startup + per-page scrape cost |
+| `monitor` | Per-format base cost + `+5` on change detected |
+
+See [pricing](https://scrapegraphai.com/pricing) for the full breakdown.
