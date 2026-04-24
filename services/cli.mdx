@@ -58,17 +58,18 @@ The CLI needs a ScrapeGraph API key. Four ways to provide it (checked in order):
 | Variable | Description | Default |
 |---|---|---|
 | `SGAI_API_KEY` | ScrapeGraph API key | — |
-| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com` |
-| `SGAI_TIMEOUT_S` | Request timeout in seconds | `30` |
+| `SGAI_API_URL` | Override API base URL | `https://api.scrapegraphai.com/api/v2` |
+| `SGAI_TIMEOUT` | Request timeout in seconds | `120` |
+| `SGAI_DEBUG` | Set to `1` to log requests/responses | — |
 
-Legacy variables (`JUST_SCRAPE_API_URL`, `JUST_SCRAPE_TIMEOUT_S`, `JUST_SCRAPE_DEBUG`) are still bridged.
+Legacy variables are still bridged transparently: `JUST_SCRAPE_API_URL` → `SGAI_API_URL`, `JUST_SCRAPE_TIMEOUT_S` / `SGAI_TIMEOUT_S` → `SGAI_TIMEOUT`, `JUST_SCRAPE_DEBUG` → `SGAI_DEBUG`.
 
 ## JSON Mode
 
 All commands support `--json` for machine-readable output. Banner, spinners, and interactive prompts are suppressed — only minified JSON on stdout. Saves tokens when piped to AI agents.
 
 ```bash
-just-scrape credits --json | jq '.remainingCredits'
+just-scrape credits --json | jq '.remaining'
 just-scrape extract https://example.com -p "Extract data" --json > result.json
 ```
 
@@ -133,16 +134,6 @@ just-scrape scrape <url> --country <iso>
 | `summary` | AI-generated page summary. |
 | `json` | Structured JSON via `--prompt` (+ optional `--schema`). |
 
-### Markdownify
-
-Convert any webpage to clean markdown (convenience wrapper for `scrape --format markdown`). [Full docs →](/api-reference/scrape)
-
-```bash
-just-scrape markdownify <url>
-just-scrape markdownify <url> -m js --stealth
-just-scrape markdownify <url> --headers <json>
-```
-
 ### Crawl
 
 Crawl multiple pages. The CLI starts the crawl and polls until completion. [Full docs →](/api-reference/crawl)
@@ -159,7 +150,7 @@ just-scrape crawl <url> -m js --stealth
 
 ### Fetch Modes
 
-Use `-m / --mode` on `scrape`, `markdownify`, and `crawl` to choose how pages are fetched. Add `--stealth` to enable anti-bot bypass.
+Use `-m / --mode` on `scrape` and `crawl` to choose how pages are fetched. Add `--stealth` to enable anti-bot bypass.
 
 | Mode | Description |
 |---|---|
@@ -218,7 +209,7 @@ Check your credit balance.
 
 ```bash
 just-scrape credits
-just-scrape credits --json | jq '.remainingCredits'
+just-scrape credits --json | jq '.remaining'
 ```
 
 ## AI Agent Integration

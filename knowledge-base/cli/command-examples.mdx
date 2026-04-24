@@ -52,22 +52,6 @@ just-scrape search "Top 5 cloud providers pricing" \
   --schema '{"type":"object","properties":{"providers":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"free_tier":{"type":"string"}}}}}}'
 ```
 
-## markdownify
-
-Convert any webpage to clean markdown. Convenience wrapper around `scrape -f markdown`.
-
-```bash
-# Convert a blog post
-just-scrape markdownify https://blog.example.com/my-article
-
-# Save to file
-just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.results.markdown.data[0]' > api-docs.md
-
-# Bypass Cloudflare or anti-bot protections
-just-scrape markdownify https://protected.example.com -m js --stealth
-```
-
 ## scrape
 
 Fetch a page in one or more formats: `markdown`, `html`, `screenshot`, `branding`, `links`, `images`, `summary`, `json`.
@@ -99,19 +83,18 @@ just-scrape scrape https://store.example.com \
 Crawl multiple pages and extract data from each. The CLI starts the crawl and polls until completion.
 
 ```bash
-# Crawl a docs site and collect code examples
+# Crawl a docs site and collect each page as markdown
 just-scrape crawl https://docs.example.com \
-  -f json -p "Extract all code snippets with their language" \
-  --max-pages 20 --max-depth 3
+  -f markdown --max-pages 20 --max-depth 3
 
-# Crawl only blog pages
+# Crawl only blog pages (patterns are a JSON array of regexes)
 just-scrape crawl https://example.com \
   -f markdown \
-  --include-patterns "/blog/*" \
+  --include-patterns '["/blog/.*"]' \
   --max-pages 50
 
-# Raw markdown from all pages (no LLM extraction, cheaper)
-just-scrape crawl https://example.com -f markdown --max-pages 10
+# Multi-format per page (markdown + links)
+just-scrape crawl https://example.com -f markdown,links --max-pages 10
 ```
 
 ## monitor
@@ -120,7 +103,8 @@ Schedule recurring scrape/extract jobs.
 
 ```bash
 # Create a monitor that runs every hour
-just-scrape monitor create https://example.com/pricing \
+just-scrape monitor create \
+  --url https://example.com/pricing \
   --interval "0 * * * *" \
   -f markdown
 
@@ -138,16 +122,29 @@ just-scrape history extract
 
 # Export last 100 crawl jobs as JSON
 just-scrape history crawl --json --page-size 100 \
-  | jq '.requests[] | {id: .request_id, status}'
+  | jq '.[] | {id, status}'
+
+# Fetch one specific request by id
+just-scrape history scrape <request-id> --json
 ```
 
-Services: `scrape`, `extract`, `schema`, `search`, `monitor`, `crawl`.
+Services: `scrape`, `extract`, `search`, `monitor`, `crawl`.
 
 ## credits
 
-Check your remaining credit balance.
+Check your credit balance and per-job quotas.
 
 ```bash
 just-scrape credits
 just-scrape credits --json | jq '.remaining'
+just-scrape credits --json | jq '.jobs.monitor'
+```
+
+## validate
+
+Health-check your API key.
+
+```bash
+just-scrape validate
+just-scrape validate --json | jq -e '.status == "ok"'
 ```
