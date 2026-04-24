@@ -39,7 +39,7 @@ just-scrape history extract --json | jq '.requests[] | {id: .request_id, status}
 ### Convert a page to markdown and save it
 
 ```bash
-just-scrape markdownify https://docs.example.com/api \
+just-scrape scrape https://docs.example.com/api \
   --json | jq -r '.results.markdown.data[0]' > api-docs.md
 ```
 
@@ -61,7 +61,7 @@ done < urls.txt
 # GitHub Actions example
 - name: Extract changelog
   run: |
-    just-scrape markdownify https://github.com/org/repo/releases \
+    just-scrape scrape https://github.com/org/repo/releases \
       --json | jq -r '.results.markdown.data[0]' > CHANGELOG.md
 ```
 
@@ -70,9 +70,11 @@ done < urls.txt
 The JSON output mirrors the v2 API response for each command. Common shapes:
 
 - **`extract`** — `{ id, json, raw, usage, metadata }`
-- **`scrape` / `markdownify`** — `{ id, results: { markdown: { data: [...] }, ... }, metadata }`
+- **`scrape`** — `{ id, results: { markdown: { data: [...] }, ... }, metadata }`
 - **`search`** — `{ id, results: [...], json, metadata }`
-- **`crawl` start** — `{ id }`; poll with `history crawl <id>` or let the CLI wait for completion
+- **`crawl`** — the CLI polls until the job reaches a terminal state, then prints `{ id, status, finished, total, ... }`
+- **`credits`** — `{ remaining, used, plan, jobs: { crawl: {used, limit}, monitor: {used, limit} } }`
+- **`validate`** — `{ status, uptime }`
 
 For credits:
 
@@ -80,7 +82,11 @@ For credits:
 {
   "remaining": 4820,
   "used": 180,
-  "plan": "Starter"
+  "plan": "Starter",
+  "jobs": {
+    "crawl": { "used": 0, "limit": 50 },
+    "monitor": { "used": 1, "limit": 100 }
+  }
 }
 ```
 

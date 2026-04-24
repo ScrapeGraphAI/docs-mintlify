@@ -61,9 +61,9 @@ The API key is set via the SGAI_API_KEY environment variable.
 Available commands (always use --json flag):
 - `just-scrape extract <url> -p <prompt> --json` — AI structured extraction from a URL
 - `just-scrape search <query> --json` — search the web and extract data from results
-- `just-scrape markdownify <url> --json` — convert a page to markdown
-- `just-scrape crawl <url> -f json -p <prompt> --json` — crawl multiple pages
-- `just-scrape scrape <url> -f html --json` — get raw HTML (or any other format)
+- `just-scrape scrape <url> --json` — fetch a page (markdown default; also html, screenshot, branding, links, images, summary, json)
+- `just-scrape crawl <url> --json` — crawl multiple pages (polls until done)
+- `just-scrape credits --json` / `just-scrape validate --json` — balance and key health
 
 Use --schema to enforce a JSON schema on the output.
 Use --stealth (with -m js if needed) for sites with anti-bot protection.

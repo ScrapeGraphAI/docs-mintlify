@@ -42,25 +42,15 @@ just-scrape search "React vs Vue comparison" \
   -p "Summarize the key differences"
 ```
 
-## markdownify
-
-```bash
-# Convert a blog post to markdown
-just-scrape markdownify https://blog.example.com/my-article
-
-# Save to a file
-just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.markdown' > api-docs.md
-
-# Bypass Cloudflare
-just-scrape markdownify https://protected.example.com -m js --stealth
-```
-
 ## scrape
 
 ```bash
-# Get markdown (default format)
-just-scrape scrape https://example.com
+# Convert a page to markdown (the default format — replaces legacy markdownify)
+just-scrape scrape https://blog.example.com/my-article
+
+# Save markdown to a file
+just-scrape scrape https://docs.example.com/api \
+  --json | jq -r '.results.markdown.data[0]' > api-docs.md
 
 # Get raw HTML with reader-mode extraction
 just-scrape scrape https://blog.example.com -f html --html-mode reader
@@ -97,6 +87,12 @@ just-scrape crawl https://example.com \
 # Allow external links
 just-scrape crawl https://example.com \
   --max-pages 50 --allow-external
+
+# Only crawl blog posts, skip tag archives
+just-scrape crawl https://example.com \
+  --include-patterns '["/blog/.*"]' \
+  --exclude-patterns '["/tag/.*"]' \
+  --max-pages 50
 
 # Anti-bot bypass for protected sites
 just-scrape crawl https://example.com -m js --stealth
@@ -136,8 +132,34 @@ just-scrape history extract
 
 # Export last 100 extract jobs as JSON
 just-scrape history extract --json --page-size 100 \
-  | jq '.[] | {id: .request_id, status}'
+  | jq '.[] | {id, status}'
 
 # Browse crawl history
 just-scrape history crawl --json
+
+# Fetch one specific request by id
+just-scrape history scrape 550e8400-e29b-41d4-a716-446655440000 --json
+```
+
+## credits
+
+```bash
+# Human-readable balance + job quotas
+just-scrape credits
+
+# Just the remaining credit count
+just-scrape credits --json | jq '.remaining'
+
+# Monitor quota usage
+just-scrape credits --json | jq '.jobs.monitor'
+```
+
+## validate
+
+```bash
+# Health-check your API key
+just-scrape validate
+
+# In a script — non-zero exit on failure
+just-scrape validate --json | jq -e '.status == "ok"'
 ```
