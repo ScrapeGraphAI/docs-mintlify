@@ -1,0 +1,220 @@
+---
+title: 'Make (Integromat)'
+description: 'Use ScrapeGraphAI inside Make.com scenarios to scrape, extract, search, crawl, and monitor web pages'
+---
+
+## Overview
+
+The ScrapeGraphAI app for Make.com lets you connect any automation scenario to ScrapeGraph's v2 API — no code required. Fetch pages, extract structured data with an AI prompt, run web searches, kick off multi-page crawls, and schedule monitors, all as native Make modules.
+
+<CardGroup cols={2}>
+  <Card title="ScrapeGraphAI on Make" icon="puzzle-piece" href="https://www.make.com/en/integrations/scrapegraphai">
+    Install the app from Make's marketplace
+  </Card>
+  <Card title="ScrapeGraphAI Dashboard" icon="key" href="https://scrapegraphai.com/dashboard">
+    Get your API key
+  </Card>
+</CardGroup>
+
+## Installation
+
+1. Open your Make.com workspace and go to **Connections**.
+2. Search for **ScrapeGraphAI** and click **Install**.
+3. When prompted, paste your `SGAI-APIKEY` from the [dashboard](https://scrapegraphai.com/dashboard).
+4. Click **Save** — the connection is shared across all modules in your scenario.
+
+{/* Screenshot placeholder: Make.com connection dialog with SGAI-APIKEY field */}
+<Frame>
+  <img src="/integrations/images/make-connection.png" alt="ScrapeGraphAI connection dialog in Make" />
+</Frame>
+
+## Modules
+
+### Scrape
+
+Fetch a URL and return its content in one or more formats: Markdown, HTML, links, images, a plain-text summary, or branding elements.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| URL | The page to fetch |
+| Format | Output format — Markdown, HTML, Links, Images, Summary, Branding |
+| Mode | Rendering mode for Markdown/HTML — Normal, Reader, Prune |
+
+{/* Screenshot placeholder: Scrape module configuration in Make */}
+<Frame>
+  <img src="/integrations/images/make-scrape.png" alt="Scrape module configuration" />
+</Frame>
+
+---
+
+### Extract
+
+Send a URL, raw HTML, or Markdown to ScrapeGraph and get back structured JSON — driven by a natural-language prompt and an optional JSON schema.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| URL / HTML / Markdown | Source content (one required) |
+| Prompt | Natural-language instruction, e.g. "Extract product name and price" |
+| Schema | Optional JSON schema to enforce output shape |
+| Mode | `fetch` (default) or `playwright` for JS-heavy pages |
+
+{/* Screenshot placeholder: Extract module configuration in Make */}
+<Frame>
+  <img src="/integrations/images/make-extract.png" alt="Extract module configuration" />
+</Frame>
+
+---
+
+### Search
+
+Run a web search and get page content returned inline — optionally with AI extraction applied to each result.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| Query | Search query string |
+| Num Results | Number of results to return (default 5) |
+| Format | Content format for each result |
+| Prompt | Optional AI extraction prompt applied to each page |
+
+{/* Screenshot placeholder: Search module configuration in Make */}
+<Frame>
+  <img src="/integrations/images/make-search.png" alt="Search module configuration" />
+</Frame>
+
+---
+
+### Start Crawl
+
+Start an async multi-page crawl from an entry URL. Returns a `Crawl Job ID` to pass into **Get Crawl Status**.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| URL | Entry point for the crawl |
+| Format | Output format per page |
+| Max Pages | Cap on total pages crawled (1–1000) |
+| Max Depth | How many link levels deep to traverse |
+| Include / Exclude Patterns | URL glob patterns, e.g. `/blog/*` |
+
+{/* Screenshot placeholder: Start Crawl module configuration in Make */}
+<Frame>
+  <img src="/integrations/images/make-start-crawl.png" alt="Start Crawl module configuration" />
+</Frame>
+
+---
+
+### Get Crawl Status
+
+Poll the status and results of a crawl job started by **Start Crawl**.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| Crawl Job ID | The `id` output from Start Crawl — map it with `{{1.id}}` |
+
+Returns `status` (`pending` / `processing` / `completed` / `failed`) and a `pages` array with per-page content when completed.
+
+{/* Screenshot placeholder: Get Crawl Status chained after Start Crawl in a scenario */}
+<Frame>
+  <img src="/integrations/images/make-get-crawl-status.png" alt="Get Crawl Status module" />
+</Frame>
+
+<Tip>
+Use Make's **Repeater** + **Sleep** modules to poll Get Crawl Status until `status` equals `completed` before processing results.
+</Tip>
+
+---
+
+### Create Monitor
+
+Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect changes between runs. Optionally send a webhook on each tick.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| URL | Page to watch |
+| Interval | Cron expression — e.g. `0 * * * *` (hourly), `0 9 * * *` (daily at 09:00 UTC) |
+| Format | Content format to capture |
+| Webhook URL | Optional URL to POST results to on each tick |
+
+{/* Screenshot placeholder: Create Monitor module configuration in Make */}
+<Frame>
+  <img src="/integrations/images/make-create-monitor.png" alt="Create Monitor module configuration" />
+</Frame>
+
+**Common cron expressions**
+
+| Schedule | Cron |
+|----------|------|
+| Every hour | `0 * * * *` |
+| Every 6 hours | `0 */6 * * *` |
+| Daily at 09:00 UTC | `0 9 * * *` |
+| Weekly on Monday | `0 9 * * 1` |
+
+---
+
+### Get Monitor Activity
+
+Fetch the latest activity ticks from an existing monitor — what changed, when, and the diff.
+
+**Key fields**
+
+| Field | Description |
+|-------|-------------|
+| Monitor ID | The `id` returned by Create Monitor |
+| Limit | Number of ticks to return (1–100, default 20) |
+
+Returns a `ticks` array where each entry has `changed` (boolean), `diffs` (per-format change data), `status`, and `createdAt`.
+
+{/* Screenshot placeholder: Get Monitor Activity output in Make */}
+<Frame>
+  <img src="/integrations/images/make-monitor-activity.png" alt="Get Monitor Activity output" />
+</Frame>
+
+---
+
+## Example scenario: Scrape a page and save to Google Sheets
+
+{/* Screenshot placeholder: Full Make scenario — Scrape → Google Sheets */}
+<Frame>
+  <img src="/integrations/images/make-scenario-scrape-sheets.png" alt="Make scenario: Scrape to Google Sheets" />
+</Frame>
+
+1. Add a **Schedule** trigger (e.g. every day at 08:00).
+2. Add the **Scrape** module — enter your target URL, select **Markdown** format.
+3. Add a **Google Sheets: Add a Row** module — map `{{2.content}}` to the cell.
+4. Save and enable the scenario.
+
+---
+
+## Example scenario: Monitor a page for changes and notify on Slack
+
+{/* Screenshot placeholder: Full Make scenario — Create Monitor → Get Monitor Activity → Slack */}
+<Frame>
+  <img src="/integrations/images/make-scenario-monitor-slack.png" alt="Make scenario: Monitor to Slack" />
+</Frame>
+
+1. Add a **Webhook** trigger — copy the URL.
+2. In ScrapeGraphAI, use **Create Monitor** with the webhook URL as the target.
+3. Add a **Slack: Send a Message** module — map `{{1.ticks[].changed}}` to filter only changed ticks.
+
+---
+
+## Deprecated modules
+
+The following modules from the v1 integration are still visible but no longer functional. Use the v2 modules above instead.
+
+| Deprecated | Replacement |
+|------------|-------------|
+| [Deprecated] SmartScrape | Scrape |
+| [Deprecated] Markdownify | Scrape (Markdown format) |
+| [Deprecated] Generate JSON Schema | Extract |

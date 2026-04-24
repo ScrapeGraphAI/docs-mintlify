@@ -111,6 +111,12 @@
                 ]
               },
               {
+                "group": "No-code",
+                "pages": [
+                  "integrations/make"
+                ]
+              },
+              {
                 "group": "Contribute",
                 "pages": [
                   "contribute/opensource"
