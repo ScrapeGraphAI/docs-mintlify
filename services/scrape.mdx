@@ -252,6 +252,35 @@ if (res.status === "success") {
 
 </CodeGroup>
 
+#### Using a Pydantic schema (Python)
+
+`JsonFormatConfig.schema` accepts any JSON Schema dict, so a Pydantic `BaseModel` works via `model_json_schema()`:
+
+```python
+from pydantic import BaseModel
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
+
+class Company(BaseModel):
+    company_name: str
+    tagline: str | None = None
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(
+    "https://scrapegraphai.com",
+    formats=[
+        JsonFormatConfig(
+            prompt="Extract the company name and tagline",
+            schema=Company.model_json_schema(),
+        ),
+    ],
+)
+
+if res.status == "success":
+    parsed = Company.model_validate(res.data.results["json"]["data"])
+    print(parsed.company_name, parsed.tagline)
+```
+
 ## FetchConfig
 
 Control how pages are fetched — JS rendering, stealth, custom headers, etc.

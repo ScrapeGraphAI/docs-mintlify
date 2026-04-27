@@ -140,7 +140,7 @@ if res.status == "success":
 | `MarkdownFormatConfig`    | `mode`: `"normal" \| "reader" \| "prune"`                      |
 | `HtmlFormatConfig`        | `mode`: same as above                                          |
 | `ScreenshotFormatConfig`  | `full_page`, `width` (320–3840), `height` (200–2160), `quality`|
-| `JsonFormatConfig`        | `prompt` (1–10k chars), `schema`, `mode`                       |
+| `JsonFormatConfig`        | `prompt` (1–10k chars), `schema` (JSON Schema dict — pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`), `mode` |
 | `LinksFormatConfig`       | —                                                              |
 | `ImagesFormatConfig`      | —                                                              |
 | `SummaryFormatConfig`     | —                                                              |
@@ -184,6 +184,37 @@ if res.status == "success":
     print(f"Tokens: {res.data.usage.prompt_tokens} / {res.data.usage.completion_tokens}")
 ```
 
+##### Using a Pydantic model as the schema
+
+`schema=` is a JSON Schema `dict`. Any Pydantic `BaseModel` produces one via `model_json_schema()`, so you can define the desired shape once and reuse it to validate the response client-side.
+
+```python
+from pydantic import BaseModel, Field
+from scrapegraph_py import ScrapeGraphAI
+
+class Product(BaseModel):
+    name: str
+    price: str | None = None
+
+class Products(BaseModel):
+    products: list[Product] = Field(default_factory=list)
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(
+    "Extract product names and prices",
+    url="https://example.com",
+    schema=Products.model_json_schema(),
+)
+
+if res.status == "success":
+    parsed = Products.model_validate(res.data.json_data)
+    for p in parsed.products:
+        print(p.name, p.price)
+```
+
+The same pattern works for `JsonFormatConfig(schema=...)` in `scrape()` and for `search(schema=...)`.
+
 #### `extract()` parameters
 
 | Parameter      | Type          | Required | Description                                                                       |
@@ -192,7 +223,7 @@ if res.status == "success":
 | `url`          | `str`         | Yes\*    | Page URL                                                                          |
 | `html`         | `str`         | Yes\*    | Raw HTML (alternative to `url`)                                                   |
 | `markdown`     | `str`         | Yes\*    | Raw markdown (alternative to `url`)                                               |
-| `schema`       | `dict`        | No       | JSON Schema for the structured output                                             |
+| `schema`       | `dict`        | No       | JSON Schema for the structured output. Pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`. |
 | `mode`         | `str`         | No       | `"normal"` (default), `"reader"`, `"prune"`                                       |
 | `content_type` | `str`         | No       | Override detected content type                                                    |
 | `fetch_config` | `FetchConfig` | No       | Fetch configuration                                                               |
@@ -233,7 +264,7 @@ if res.status == "success":
 | `format`            | `str`         | No       | `"markdown"` (default) or `"html"`                                        |
 | `mode`              | `str`         | No       | HTML processing: `"prune"` (default), `"normal"`, `"reader"`              |
 | `prompt`            | `str`         | No       | Required when `schema` is set                                             |
-| `schema`            | `dict`        | No       | JSON Schema for structured output                                         |
+| `schema`            | `dict`        | No       | JSON Schema for structured output. Pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`. |
 | `location_geo_code` | `str`         | No       | Two-letter country code (e.g. `"us"`, `"it"`)                             |
 | `time_range`        | `str`         | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | `fetch_config`      | `FetchConfig` | No       | Fetch configuration                                                       |
