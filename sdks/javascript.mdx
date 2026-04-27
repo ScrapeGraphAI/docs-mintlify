@@ -20,14 +20,18 @@ icon: "js"
 </CardGroup>
 
 <Note>
-These docs cover **`scrapegraph-js` ≥ 2.0.1**. The v2 SDK is **ESM-only** and requires **Node ≥ 22**. Earlier `0.x`/`1.x` releases expose a different, deprecated API.
+These docs cover **`scrapegraph-js` ≥ 2.1.0**. The v2 SDK is **ESM-only** and requires **Node ≥ 22**. Earlier `0.x`/`1.x` releases expose a different, deprecated API.
 </Note>
+
+<Warning>
+**Breaking in 2.1.0 (types only):** all exported TypeScript types and Zod schemas dropped the `Api` prefix and now match `scrapegraph-py` 1:1 (`ApiScrapeRequest` → `ScrapeRequest`, `ApiFetchConfig` → `FetchConfig`, `apiScrapeRequestSchema` → `scrapeRequestSchema`, etc.). Monitor input types are also renamed: `ApiMonitorCreateInput` → `MonitorCreateRequest`, `ApiMonitorUpdateInput` → `MonitorUpdateRequest`, `ApiMonitorActivityParams` → `MonitorActivityRequest`. `ApiResult<T>` is the only type that keeps the prefix. Runtime JS code is unchanged — only TypeScript consumers need to rename imports.
+</Warning>
 
 ## Installation
 
 ```bash
 # npm
-npm i scrapegraph-js@latest     # pins a version >= 2.0.1
+npm i scrapegraph-js@latest     # pins a version >= 2.1.0
 
 # pnpm
 pnpm add scrapegraph-js@latest
@@ -117,12 +121,12 @@ const res = await sgai.scrape({
 
 #### Parameters
 
-| Parameter     | Type            | Required | Description                                                   |
-| ------------- | --------------- | -------- | ------------------------------------------------------------- |
-| `url`         | `string`        | Yes      | URL to scrape                                                 |
-| `formats`     | `FormatEntry[]` | No       | Defaults to `[{ type: "markdown" }]`                          |
-| `contentType` | `string`        | No       | Override detected content type (e.g. `"application/pdf"`)     |
-| `fetchConfig` | `FetchConfig`   | No       | Fetch configuration                                           |
+| Parameter     | Type             | Required | Description                                                   |
+| ------------- | ---------------- | -------- | ------------------------------------------------------------- |
+| `url`         | `string`         | Yes      | URL to scrape                                                 |
+| `formats`     | `FormatConfig[]` | No       | Defaults to `[{ type: "markdown" }]`                          |
+| `contentType` | `string`         | No       | Override detected content type (e.g. `"application/pdf"`)     |
+| `fetchConfig` | `FetchConfig`    | No       | Fetch configuration                                           |
 
 **Formats:**
 - `markdown` — Clean markdown (modes: `normal`, `reader`, `prune`)
@@ -290,18 +294,18 @@ await sgai.crawl.delete(crawlId);
 
 #### `crawl.start()` parameters
 
-| Parameter          | Type            | Required | Description                                              |
-| ------------------ | --------------- | -------- | -------------------------------------------------------- |
-| `url`              | `string`        | Yes      | Starting URL                                             |
-| `formats`          | `FormatEntry[]` | No       | Defaults to `[{ type: "markdown" }]`                     |
-| `maxDepth`         | `number`        | No       | Maximum crawl depth. Default: `2`                        |
-| `maxPages`         | `number`        | No       | Maximum pages (1–1000). Default: `50`                    |
-| `maxLinksPerPage`  | `number`        | No       | Links followed per page. Default: `10`                   |
-| `allowExternal`    | `boolean`       | No       | Allow crossing domains. Default: `false`                 |
-| `includePatterns`  | `string[]`      | No       | URL patterns to include                                  |
-| `excludePatterns`  | `string[]`      | No       | URL patterns to exclude                                  |
-| `contentTypes`     | `string[]`      | No       | Allowed content types                                    |
-| `fetchConfig`      | `FetchConfig`   | No       | Fetch configuration                                      |
+| Parameter          | Type             | Required | Description                                              |
+| ------------------ | ---------------- | -------- | -------------------------------------------------------- |
+| `url`              | `string`         | Yes      | Starting URL                                             |
+| `formats`          | `FormatConfig[]` | No       | Defaults to `[{ type: "markdown" }]`                     |
+| `maxDepth`         | `number`         | No       | Maximum crawl depth. Default: `2`                        |
+| `maxPages`         | `number`         | No       | Maximum pages (1–1000). Default: `50`                    |
+| `maxLinksPerPage`  | `number`         | No       | Links followed per page. Default: `10`                   |
+| `allowExternal`    | `boolean`        | No       | Allow crossing domains. Default: `false`                 |
+| `includePatterns`  | `string[]`       | No       | URL patterns to include                                  |
+| `excludePatterns`  | `string[]`       | No       | URL patterns to exclude                                  |
+| `contentTypes`     | `string[]`       | No       | Allowed content types                                    |
+| `fetchConfig`      | `FetchConfig`    | No       | Fetch configuration                                      |
 
 ### `sgai.monitor.*`
 

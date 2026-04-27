@@ -1,0 +1,94 @@
+---
+title: 'Create monitor'
+description: 'Schedule a recurring fetch with change detection.'
+---
+
+```http
+POST https://v2-api.scrapegraphai.com/api/monitor
+```
+
+Watches a page on a cron schedule, captures it in the formats you specify, and records change diffs between runs. Optionally ships each tick to a webhook.
+
+## Request body
+
+<ParamField body="url" type="string" required>
+  The URL to monitor.
+</ParamField>
+
+<ParamField body="name" type="string" required>
+  Human-readable monitor name.
+</ParamField>
+
+<ParamField body="interval" type="string" required>
+  5-field cron expression (e.g. `"*/10 * * * *"`, `"0 9 * * 1"`).
+</ParamField>
+
+<ParamField body="formats" type="array">
+  Formats to capture on each tick. Same shape as the [Scrape `formats` array](/api-reference/endpoint/scrape#request-body).
+</ParamField>
+
+<ParamField body="webhookUrl" type="string">
+  URL that will receive the payload on every tick (POST).
+</ParamField>
+
+<ParamField body="fetchConfig" type="object">
+  Fetch-time options. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body).
+</ParamField>
+
+## Example request
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/monitor \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "name": "Homepage watch",
+    "interval": "*/30 * * * *",
+    "formats": [{ "type": "markdown" }]
+  }'
+```
+
+## Example response
+
+```json
+{
+  "cronId": "f0b171db-b288-4380-9cad-1bcac916348e",
+  "scheduleId": "scd_4u8PPLytsJ2niWBVEAPkLHkfjVge",
+  "interval": "*/30 * * * *",
+  "status": "active",
+  "config": {
+    "url": "https://example.com",
+    "name": "Doc test monitor",
+    "formats": [{ "mode": "normal", "type": "markdown" }],
+    "interval": "*/30 * * * *"
+  },
+  "createdAt": "2026-04-23T11:11:37.487Z",
+  "updatedAt": "2026-04-23T11:11:37.487Z"
+}
+```
+
+`config.fetchConfig` appears only when you pass `fetchConfig` in the request — otherwise the server uses its defaults and omits the field from the response.
+
+| Field | Description |
+|-------|-------------|
+| `cronId` | Monitor identifier — use it on all management endpoints. |
+| `scheduleId` | Internal schedule reference. |
+| `status` | `"active"` \| `"paused"`. |
+| `config` | Normalized copy of the request body, including defaulted fetch options. |
+
+## Common cron expressions
+
+| Expression | Schedule |
+|-----------|----------|
+| `*/10 * * * *` | Every 10 minutes |
+| `*/30 * * * *` | Every 30 minutes |
+| `0 */6 * * *` | Every 6 hours |
+| `0 9 * * *` | Daily at 09:00 UTC |
+| `0 9 * * 1` | Every Monday at 09:00 UTC |
+| `0 0 1 * *` | First day of every month |
+
+## Related
+
+- List, update, pause, resume, delete, fetch activity: [Manage monitors](/api-reference/endpoint/monitor/manage)
+- Service overview: [Monitor](/services/monitor)

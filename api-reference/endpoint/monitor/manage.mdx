@@ -1,0 +1,122 @@
+---
+title: 'Manage monitors'
+description: 'List, inspect, update, pause, resume, delete monitors and fetch tick activity.'
+---
+
+All endpoints take the monitor `cronId` returned by [`POST /api/monitor`](/api-reference/endpoint/monitor/create).
+
+## List monitors
+
+```http
+GET https://v2-api.scrapegraphai.com/api/monitor
+```
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/monitor \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+Returns an array of monitor summaries (`cronId`, `status`, `config`, timestamps).
+
+## Get one monitor
+
+```http
+GET https://v2-api.scrapegraphai.com/api/monitor/:cronId
+```
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-... \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+Returns the full monitor record, including the resolved `config`.
+
+## Update
+
+```http
+PATCH https://v2-api.scrapegraphai.com/api/monitor/:cronId
+```
+
+Body accepts any subset of the [create parameters](/api-reference/endpoint/monitor/create#request-body) — commonly `interval`, `formats`, `webhookUrl`, or `fetchConfig`.
+
+```bash
+curl -X PATCH https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-... \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "interval": "0 */6 * * *" }'
+```
+
+## Pause / resume
+
+```http
+POST https://v2-api.scrapegraphai.com/api/monitor/:cronId/pause
+POST https://v2-api.scrapegraphai.com/api/monitor/:cronId/resume
+```
+
+Pausing halts future ticks but preserves the monitor record. Resuming puts it back on schedule immediately.
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-.../pause \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+
+curl -X POST https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-.../resume \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Delete
+
+```http
+DELETE https://v2-api.scrapegraphai.com/api/monitor/:cronId
+```
+
+Permanently removes the monitor and its tick history.
+
+```bash
+curl -X DELETE https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-... \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Activity (tick history)
+
+```http
+GET https://v2-api.scrapegraphai.com/api/monitor/:cronId/activity
+```
+
+Returns recent ticks with captured data and change flags.
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/monitor/d9a09a07-.../activity \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+Response (shape):
+
+```json
+{
+  "ticks": [
+    {
+      "id": "fb7ada6e-97d2-4e66-9fee-ebf598a5d16a",
+      "status": "completed",
+      "createdAt": "2026-04-23T11:11:37.619Z",
+      "elapsedMs": 14,
+      "changed": true,
+      "diffs": {}
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `ticks[].id` | UUID of the tick — use it to fetch the captured payload via the underlying Scrape reference. |
+| `ticks[].status` | `"completed"`, `"failed"`, or `"running"`. |
+| `ticks[].elapsedMs` | How long the fetch took, in milliseconds. |
+| `ticks[].changed` | Whether the capture differs from the previous tick. |
+| `ticks[].diffs` | Per-format diffs vs. the previous tick (empty on the first tick). |
+| `nextCursor` | Pagination cursor — pass it back on a follow-up request to get older ticks. `null` when there are no more. |
+
+## Related
+
+- Create a monitor: [`POST /api/monitor`](/api-reference/endpoint/monitor/create)
+- Service overview: [Monitor](/services/monitor)

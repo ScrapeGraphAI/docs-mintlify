@@ -31,7 +31,7 @@ just-scrape extract https://store.example.com \
 ### Extract a specific field with jq
 
 ```bash
-just-scrape credits --json | jq '.remainingCredits'
+just-scrape credits --json | jq '.remaining'
 
 just-scrape history extract --json | jq '.[].status'
 ```
@@ -39,8 +39,8 @@ just-scrape history extract --json | jq '.[].status'
 ### Convert a page to markdown and save it
 
 ```bash
-just-scrape markdownify https://docs.example.com/api \
-  --json | jq -r '.markdown' > api-docs.md
+just-scrape scrape https://docs.example.com/api \
+  --json | jq -r '.results.markdown.data[0]' > api-docs.md
 ```
 
 ### Chain commands in a shell script
@@ -54,22 +54,52 @@ while IFS= read -r url; do
 done < urls.txt
 ```
 
-## Response structure
+## Response shapes
 
-| Field | Description |
-|---|---|
-| `result` | Extracted data or markdown content |
-| `status` | Job status: `completed` or `failed` |
-| `request_id` | Unique ID for the request |
-| `error` | Error message if the request failed |
+Each command prints the SDK response as minified JSON. Common shapes:
 
-Credits response:
+**`scrape`** — returned `data` keyed by requested format:
 
 ```json
 {
-  "remainingCredits": 4820,
-  "totalCredits": 5000
+  "id": "25554af4-8c01-4d9a-890e-d7658d57dc93",
+  "results": {
+    "markdown": { "data": ["# Example Domain\n..."] }
+  },
+  "metadata": { "contentType": "text/html" }
 }
+```
+
+**`extract`** — structured `json` payload plus token usage:
+
+```json
+{
+  "id": "515233e0-b26c-42f3-b4c9-2e993af15546",
+  "raw": null,
+  "json": { "title": "Example Domain" },
+  "usage": { "promptTokens": 359, "completionTokens": 113 },
+  "metadata": {}
+}
+```
+
+**`credits`** — balance and per-job quotas:
+
+```json
+{
+  "remaining": 749575,
+  "used": 712,
+  "plan": "Pro Plan",
+  "jobs": {
+    "crawl": { "used": 0, "limit": 50 },
+    "monitor": { "used": 1, "limit": 100 }
+  }
+}
+```
+
+**`validate`** — health check:
+
+```json
+{ "status": "ok", "uptime": 256372 }
 ```
 
 <Tip>

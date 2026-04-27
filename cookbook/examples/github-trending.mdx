@@ -8,14 +8,7 @@ description: 'Monitor trending repositories and developers'
   src="/cookbook/images/github-banner.png"
 />
 
-Learn how to extract trending repository information from GitHub using ScrapeGraphAI's SmartScraper. This example demonstrates how to gather repository statistics, descriptions, and popularity metrics.
-
-<Note>
-Try it yourself in our interactive notebooks:
-- [SDK Implementation](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_sdk.ipynb)
-- [LangChain Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_langchain.ipynb)
-- [LlamaIndex Integration](https://github.com/ScrapeGraphAI/scrapegraph-sdk/blob/main/cookbook/github-trending/scrapegraph_llama_index.ipynb)
-</Note>
+Learn how to extract trending repository information from GitHub using ScrapeGraphAI's Extract service. This example demonstrates how to gather repository statistics, descriptions, and popularity metrics.
 
 ## The Goal
 
@@ -35,7 +28,7 @@ We'll extract the following repository information:
 ```python
 from pydantic import BaseModel, Field
 from typing import List
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
 # Schema for Trending Repositories
 class RepositorySchema(BaseModel):
@@ -50,13 +43,16 @@ class RepositorySchema(BaseModel):
 class ListRepositoriesSchema(BaseModel):
     repositories: List[RepositorySchema] = Field(description="List of github trending repositories")
 
-client = Client(api_key="your-api-key")
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
 
-response = client.smartscraper(
-    website_url="https://github.com/trending",
-    user_prompt="Extract trending repository information",
-    output_schema=ListRepositoriesSchema
+res = sgai.extract(
+    "Extract trending repository information",
+    url="https://github.com/trending",
+    schema=ListRepositoriesSchema.model_json_schema(),
 )
+
+if res.status == "success":
+    print(res.data.json_data)
 ```
 
 ## Example Output
@@ -94,9 +90,9 @@ response = client.smartscraper(
 
 <CardGroup cols={2}>
   <Card
-    title="SmartScraper"
+    title="Extract"
     icon="robot"
-    href="/services/smartscraper"
+    href="/services/extract"
   >
     Learn more about our AI-powered extraction service
   </Card>

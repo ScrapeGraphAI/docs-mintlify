@@ -12,6 +12,10 @@ Crawl traverses a site starting from a URL, follows links up to a depth you set,
 Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Pricing
+
+A Crawl job costs **2 credits** to start, plus the per-page Scrape cost for every page processed (1 credit for `markdown`, 2 for `screenshot`, 25 for `branding`; multiple formats are summed). Enabling `stealth` in `fetchConfig` adds 5 credits per page; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+
 ## Getting Started
 
 ### Quick Start
@@ -20,17 +24,17 @@ Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/da
 
 ```python Python
 import time
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-start = sgai.crawl.start(CrawlRequest(
-    url="https://scrapegraphai.com/",
+start = sgai.crawl.start(
+    "https://scrapegraphai.com/",
     formats=[MarkdownFormatConfig()],
     max_pages=5,
     max_depth=2,
-))
+)
 
 if start.status != "success":
     print("Failed:", start.error)
@@ -176,34 +180,34 @@ await sgai.crawl.delete(crawlId);
 ### URL patterns and fetch config
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, CrawlRequest, MarkdownFormatConfig, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.crawl.start(CrawlRequest(
-    url="https://example.com",
+res = sgai.crawl.start(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
     max_depth=2,
     max_pages=10,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
     fetch_config=FetchConfig(mode="js", stealth=True, wait=1000),
-))
+)
 ```
 
 ### Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, CrawlRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        start = await sgai.crawl.start(CrawlRequest(
-            url="https://example.com",
+        start = await sgai.crawl.start(
+            "https://example.com",
             max_pages=5,
             max_depth=2,
-        ))
+        )
         status = await sgai.crawl.get(start.data.id)
         print("Status:", status.data.status)
 
@@ -231,7 +235,7 @@ asyncio.run(main())
 
 ### Official SDKs
 - [Python SDK](/sdks/python)
-- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.1.0, Node ≥ 22)
 
 ### AI Framework Integrations
 - [LangChain Integration](/integrations/langchain)

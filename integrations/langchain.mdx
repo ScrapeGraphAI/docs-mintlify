@@ -1,298 +1,295 @@
 ---
 title: '🦜 LangChain'
-description: 'Supercharge your LangChain agents with AI-powered web scraping'
+description: 'Wrap ScrapeGraph endpoints as vanilla LangChain tools'
 ---
 
 ## Overview
 
-The LangChain integration enables your agents to extract structured data from websites using natural language. This powerful combination allows you to build sophisticated AI agents that can understand and process web content intelligently.
-
-<Card
-  title="Official LangChain Documentation"
-  icon="book"
-  href="https://python.langchain.com/docs/integrations/providers/scrapegraph/"
->
-  View the integration in LangChain's official documentation
-</Card>
-
-## Installation
-
-Install the package using pip:
-
-```bash
-pip install langchain-scrapegraph
-```
-
-## Available Tools
-
-### ExtractTool
-
-Extract structured data from any webpage using natural language prompts:
-
-```python
-from langchain_scrapegraph.tools import ExtractTool
-
-# Initialize the tool (uses SGAI_API_KEY from environment)
-tool = ExtractTool()
-
-# Extract information using natural language
-result = tool.invoke({
-    "url": "https://www.example.com",
-    "prompt": "Extract the main heading and first paragraph"
-})
-```
-
-<Accordion title="Using Output Schemas" icon="code">
-Define the structure of the output using Pydantic models:
-
-```python
-from pydantic import BaseModel, Field
-from langchain_scrapegraph.tools import ExtractTool
-
-class WebsiteInfo(BaseModel):
-    title: str = Field(description="The main title of the page")
-    description: str = Field(description="The main description")
-
-# Initialize with output schema
-tool = ExtractTool(llm_output_schema=WebsiteInfo)
-
-result = tool.invoke({
-    "url": "https://example.com",
-    "prompt": "Extract the title and description"
-})
-```
-</Accordion>
-
-### SearchTool
-
-Search the web and extract structured results using AI:
-
-```python
-from langchain_scrapegraph.tools import SearchTool
-
-tool = SearchTool()
-result = tool.invoke({
-    "query": "Find the best restaurants in San Francisco",
-})
-```
-
-### ScrapeTool
-
-Scrape a webpage and return it in the desired format:
-
-```python
-from langchain_scrapegraph.tools import ScrapeTool
-
-tool = ScrapeTool()
-
-# Scrape as markdown (default)
-result = tool.invoke({"url": "https://example.com"})
-
-# Scrape as HTML
-result = tool.invoke({"url": "https://example.com", "format": "html"})
-```
-
-### MarkdownifyTool
-
-Convert any webpage into clean, formatted markdown:
-
-```python
-from langchain_scrapegraph.tools import MarkdownifyTool
-
-tool = MarkdownifyTool()
-markdown = tool.invoke({"website_url": "https://example.com"})
-```
-
-### Crawl Tools
-
-Start and manage crawl jobs with `CrawlStartTool`, `CrawlStatusTool`, `CrawlStopTool`, and `CrawlResumeTool`:
-
-```python
-import time
-from langchain_scrapegraph.tools import CrawlStartTool, CrawlStatusTool
-
-start_tool = CrawlStartTool()
-status_tool = CrawlStatusTool()
-
-# Start a crawl job
-result = start_tool.invoke({
-    "url": "https://example.com",
-    "depth": 2,
-    "max_pages": 5,
-    "format": "markdown",
-})
-print("Crawl started:", result)
-
-# Check status
-crawl_id = result.get("id")
-if crawl_id:
-    time.sleep(5)
-    status = status_tool.invoke({"crawl_id": crawl_id})
-    print("Crawl status:", status)
-```
-
-### Monitor Tools
-
-Create and manage monitors (replaces scheduled jobs) with `MonitorCreateTool`, `MonitorListTool`, `MonitorGetTool`, `MonitorPauseTool`, `MonitorResumeTool`, and `MonitorDeleteTool`:
-
-```python
-from langchain_scrapegraph.tools import MonitorCreateTool, MonitorListTool
-
-create_tool = MonitorCreateTool()
-list_tool = MonitorListTool()
-
-# Create a monitor
-result = create_tool.invoke({
-    "name": "Price Monitor",
-    "url": "https://example.com/products",
-    "prompt": "Extract current product prices",
-    "cron": "0 9 * * *",  # Daily at 9 AM
-})
-print("Monitor created:", result)
-
-# List all monitors
-monitors = list_tool.invoke({})
-print("All monitors:", monitors)
-```
-
-### HistoryTool
-
-Retrieve request history:
-
-```python
-from langchain_scrapegraph.tools import HistoryTool
-
-tool = HistoryTool()
-history = tool.invoke({})
-```
-
-### GetCreditsTool
-
-Check your remaining API credits:
-
-```python
-from langchain_scrapegraph.tools import GetCreditsTool
-
-tool = GetCreditsTool()
-credits = tool.invoke({})
-```
-
-## Example Agent
-
-Create a research agent that can gather and analyze web data:
-
-```python
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain_core.messages import SystemMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_openai import ChatOpenAI
-from langchain_scrapegraph.tools import ExtractTool, GetCreditsTool, SearchTool
-
-# Initialize the tools
-tools = [
-    ExtractTool(),
-    GetCreditsTool(),
-    SearchTool(),
-]
-
-# Create the prompt template
-prompt = ChatPromptTemplate.from_messages([
-    SystemMessage(
-        content=(
-            "You are a helpful AI assistant that can analyze websites and extract information. "
-            "You have access to tools that can help you scrape and process web content. "
-            "Always explain what you're doing before using a tool."
-        )
-    ),
-    MessagesPlaceholder(variable_name="chat_history", optional=True),
-    ("user", "{input}"),
-    MessagesPlaceholder(variable_name="agent_scratchpad"),
-])
-
-# Initialize the LLM
-llm = ChatOpenAI(temperature=0)
-
-# Create the agent
-agent = create_openai_functions_agent(llm, tools, prompt)
-agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-# Example usage
-response = agent_executor.invoke({
-    "input": "Extract the main products from https://www.scrapegraphai.com/"
-})
-print(response["output"])
-```
-
-## Migration from v1
-
-If you're upgrading from v1, here are the key changes:
-
-| v1 Tool | v2 Tool |
-|---------|---------|
-| `SmartScraperTool` | `ExtractTool` |
-| `SearchScraperTool` | `SearchTool` |
-| `SmartCrawlerTool` | `CrawlStartTool` / `CrawlStatusTool` / `CrawlStopTool` / `CrawlResumeTool` |
-| `CreateScheduledJobTool` | `MonitorCreateTool` |
-| `GetScheduledJobsTool` | `MonitorListTool` |
-| `GetScheduledJobTool` | `MonitorGetTool` |
-| `PauseScheduledJobTool` | `MonitorPauseTool` |
-| `ResumeScheduledJobTool` | `MonitorResumeTool` |
-| `DeleteScheduledJobTool` | `MonitorDeleteTool` |
-| `MarkdownifyTool` | `MarkdownifyTool` (unchanged) |
-| `GetCreditsTool` | `GetCreditsTool` (unchanged) |
-| `AgenticScraperTool` | Removed |
-| -- | `HistoryTool` (new) |
-
-## Configuration
-
-Set your ScrapeGraph API key in your environment:
-
-```bash
-export SGAI_API_KEY="your-api-key-here"
-```
-
-Or set it programmatically:
-
-```python
-import os
-os.environ["SGAI_API_KEY"] = "your-api-key-here"
-```
-
-<Note>
-Get your API key from the [dashboard](https://scrapegraphai.com/dashboard)
-</Note>
-
-## Use Cases
+Every ScrapeGraph v2 endpoint is one method on the official [`scrapegraph-py`](https://pypi.org/project/scrapegraph-py/) SDK. Wrap each one with LangChain's built-in `@tool` decorator and you get a fully typed toolkit — no extra dependency, no third-party integration package, full control over arguments and return shapes.
 
 <CardGroup cols={2}>
-  <Card title="Research Agents" icon="magnifying-glass">
-    Create agents that gather and analyze web data
+  <Card
+    title="LangChain tool docs"
+    icon="book"
+    href="https://python.langchain.com/docs/how_to/custom_tools/"
+  >
+    How LangChain's `@tool` decorator works
   </Card>
-  <Card title="Data Collection" icon="database">
-    Automate structured data extraction from websites
-  </Card>
-  <Card title="Content Processing" icon="file-lines">
-    Convert web content into markdown for further processing
-  </Card>
-  <Card title="Information Extraction" icon="filter">
-    Extract specific data points using natural language
+  <Card
+    title="scrapegraph-py on PyPI"
+    icon="cube"
+    href="https://pypi.org/project/scrapegraph-py/"
+  >
+    The official Python SDK for ScrapeGraph v2
   </Card>
 </CardGroup>
 
-## Support
+## Installation
 
-Need help with the integration?
+```bash
+pip install langchain langchain-openai scrapegraph-py
+```
+
+Set your keys:
+
+```bash
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
+```
+
+<Note>
+Get your ScrapeGraph API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Build the toolkit
+
+Save this once as `sgai_tools.py` — every example below imports from it.
+
+```python sgai_tools.py
+from typing import Optional
+from langchain_core.tools import tool
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, JsonFormatConfig
+
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+def _unwrap(result):
+    """Return the SDK response payload as a plain dict."""
+    if result.error:
+        raise RuntimeError(f"ScrapeGraph error: {result.error}")
+    data = result.data
+    return data.model_dump() if hasattr(data, "model_dump") else data
+
+# --- content endpoints -------------------------------------------------------
+
+@tool
+def scrape(url: str) -> dict:
+    """Fetch a web page and return its content as markdown."""
+    return _unwrap(sgai.scrape(url=url, formats=[MarkdownFormatConfig()]))
+
+@tool
+def extract(url: str, prompt: str) -> dict:
+    """Extract structured data from a web page using a natural-language prompt."""
+    return _unwrap(sgai.extract(prompt=prompt, url=url))
+
+@tool
+def search(query: str, num_results: int = 3) -> dict:
+    """Run an AI web search; returns ranked results with fetched content."""
+    return _unwrap(sgai.search(query=query, num_results=num_results))
+
+# --- crawl (async job) -------------------------------------------------------
+
+@tool
+def crawl_start(url: str, max_depth: int = 2, max_pages: int = 10) -> dict:
+    """Start a multi-page crawl job. Returns a dict including the crawl `id`."""
+    return _unwrap(sgai.crawl.start(
+        url=url, max_depth=max_depth, max_pages=max_pages,
+        formats=[MarkdownFormatConfig()],
+    ))
+
+@tool
+def crawl_get(crawl_id: str) -> dict:
+    """Fetch the status and result of a crawl job."""
+    return _unwrap(sgai.crawl.get(crawl_id))
+
+@tool
+def crawl_stop(crawl_id: str) -> dict:
+    """Stop a running crawl."""
+    return _unwrap(sgai.crawl.stop(crawl_id))
+
+@tool
+def crawl_resume(crawl_id: str) -> dict:
+    """Resume a stopped crawl."""
+    return _unwrap(sgai.crawl.resume(crawl_id))
+
+@tool
+def crawl_delete(crawl_id: str) -> dict:
+    """Delete a crawl job."""
+    return _unwrap(sgai.crawl.delete(crawl_id))
+
+# --- monitor (scheduled jobs) ------------------------------------------------
+
+@tool
+def monitor_create(url: str, interval: str, name: Optional[str] = None, prompt: Optional[str] = None) -> dict:
+    """Create a scheduled monitor. If `prompt` is given each tick stores JSON
+    extraction; otherwise it stores markdown. `interval` is cron syntax,
+    e.g. "0 9 * * *" for daily at 9am."""
+    formats = [JsonFormatConfig(prompt=prompt)] if prompt else [MarkdownFormatConfig()]
+    return _unwrap(sgai.monitor.create(url=url, interval=interval, name=name, formats=formats))
+
+@tool
+def monitor_list() -> list:
+    """List all monitors."""
+    return _unwrap(sgai.monitor.list())
+
+@tool
+def monitor_get(monitor_id: str) -> dict:
+    """Get one monitor by id."""
+    return _unwrap(sgai.monitor.get(monitor_id))
+
+@tool
+def monitor_pause(monitor_id: str) -> dict:
+    """Pause a monitor."""
+    return _unwrap(sgai.monitor.pause(monitor_id))
+
+@tool
+def monitor_resume(monitor_id: str) -> dict:
+    """Resume a paused monitor."""
+    return _unwrap(sgai.monitor.resume(monitor_id))
+
+@tool
+def monitor_delete(monitor_id: str) -> dict:
+    """Delete a monitor."""
+    _unwrap(sgai.monitor.delete(monitor_id))
+    return {"deleted": monitor_id}
+
+@tool
+def monitor_activity(monitor_id: str) -> dict:
+    """Get the recent runs of a monitor."""
+    return _unwrap(sgai.monitor.activity(monitor_id))
+
+# --- account / history -------------------------------------------------------
+
+@tool
+def history_list(service: Optional[str] = None, page: int = 1, limit: int = 20) -> dict:
+    """List recent API request history, optionally filtered by service."""
+    return _unwrap(sgai.history.list(service=service, page=page, limit=limit))
+
+@tool
+def history_get(request_id: str) -> dict:
+    """Get a single history entry by request id."""
+    return _unwrap(sgai.history.get(request_id))
+
+@tool
+def credits() -> dict:
+    """Check remaining ScrapeGraph API credits."""
+    return _unwrap(sgai.credits())
+
+ALL_TOOLS = [
+    scrape, extract, search,
+    crawl_start, crawl_get, crawl_stop, crawl_resume, crawl_delete,
+    monitor_create, monitor_list, monitor_get,
+    monitor_pause, monitor_resume, monitor_delete, monitor_activity,
+    history_list, history_get, credits,
+]
+```
+
+## Endpoint → tool reference
+
+| ScrapeGraph endpoint | SDK call | LangChain tool |
+|---|---|---|
+| `POST /scrape` | `sgai.scrape(url=...)` | `scrape` |
+| `POST /extract` | `sgai.extract(prompt=..., url=...)` | `extract` |
+| `POST /search` | `sgai.search(query=...)` | `search` |
+| `POST /crawl` | `sgai.crawl.start(url=...)` | `crawl_start` |
+| `GET /crawl/{id}` | `sgai.crawl.get(id)` | `crawl_get` |
+| `POST /crawl/{id}/stop` | `sgai.crawl.stop(id)` | `crawl_stop` |
+| `POST /crawl/{id}/resume` | `sgai.crawl.resume(id)` | `crawl_resume` |
+| `DELETE /crawl/{id}` | `sgai.crawl.delete(id)` | `crawl_delete` |
+| `POST /monitor` | `sgai.monitor.create(url=..., interval=...)` | `monitor_create` |
+| `GET /monitor` | `sgai.monitor.list()` | `monitor_list` |
+| `GET /monitor/{id}` | `sgai.monitor.get(id)` | `monitor_get` |
+| `POST /monitor/{id}/pause` | `sgai.monitor.pause(id)` | `monitor_pause` |
+| `POST /monitor/{id}/resume` | `sgai.monitor.resume(id)` | `monitor_resume` |
+| `DELETE /monitor/{id}` | `sgai.monitor.delete(id)` | `monitor_delete` |
+| `GET /monitor/{id}/activity` | `sgai.monitor.activity(id)` | `monitor_activity` |
+| `GET /history` | `sgai.history.list(...)` | `history_list` |
+| `GET /history/{id}` | `sgai.history.get(id)` | `history_get` |
+| `GET /credits` | `sgai.credits()` | `credits` |
+
+---
+
+## Direct invocation
+
+Call any tool by itself without an LLM — useful for scripts, tests, or as a building block inside chains.
+
+```python
+from sgai_tools import scrape, extract, search, credits, crawl_start, crawl_get
+
+print(credits.invoke({}))
+print(scrape.invoke({"url": "https://example.com"}))
+print(extract.invoke({
+    "url": "https://scrapegraphai.com",
+    "prompt": "Extract the company name and a short description",
+}))
+print(search.invoke({"query": "best AI scraping tools 2026", "num_results": 3}))
+
+job = crawl_start.invoke({"url": "https://scrapegraphai.com", "max_depth": 1, "max_pages": 5})
+print(crawl_get.invoke({"crawl_id": job["id"]}))
+```
+
+## Tool-calling agent
+
+Give the LLM the whole toolkit and let it pick. LangChain v1's `create_agent` works with any chat model that supports tool calling (`ChatOpenAI`, `ChatAnthropic`, etc.).
+
+```python
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+from sgai_tools import ALL_TOOLS
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+agent = create_agent(
+    model=llm,
+    tools=ALL_TOOLS,
+    system_prompt="You are a web research agent. Use ScrapeGraph tools to gather and extract web data.",
+)
+
+result = agent.invoke({
+    "messages": [("user", "Find the pricing page of scrapegraphai.com and list the plan names and prices.")],
+})
+print(result["messages"][-1].content)
+```
+
+<Note>
+`create_agent` returns a compiled LangGraph under the hood — see the [LangGraph page](/integrations/langgraph) for advanced patterns (custom `StateGraph`, `ToolNode`, checkpointing).
+</Note>
+
+## Structured output with Pydantic
+
+`extract` already returns structured JSON under the `json_data` key. Validate it into a Pydantic model for type safety downstream.
+
+```python
+from pydantic import BaseModel, Field
+from sgai_tools import extract
+
+class Company(BaseModel):
+    name: str = Field(description="Company name")
+    tagline: str = Field(description="One-line description of what they do")
+
+result = extract.invoke({
+    "url": "https://scrapegraphai.com",
+    "prompt": "Return an object with 'name' and 'tagline' describing the company",
+})
+company = Company(**result["json_data"])
+print(company)
+```
+
+## Chain pattern
+
+Compose tools with LCEL when the sequence is fixed.
+
+```python
+from sgai_tools import search, extract
+
+def _search_then_extract(query: str) -> dict:
+    hits = search.invoke({"query": query, "num_results": 1})
+    top_url = hits["results"][0]["url"]
+    return extract.invoke({"url": top_url, "prompt": "Summarise this page in 3 bullet points"})
+
+print(_search_then_extract("scrapegraphai documentation"))
+```
+
+## Support
 
 <CardGroup cols={2}>
   <Card
-    title="GitHub Issues"
+    title="Python SDK"
     icon="github"
-    href="https://github.com/ScrapeGraphAI/langchain-scrapegraph/issues"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-py"
   >
-    Report bugs and request features
+    Source and issues for scrapegraph-py
   </Card>
   <Card
-    title="Discord Community"
+    title="Discord"
     icon="discord"
     href="https://discord.gg/uJN7TYcpNa"
   >

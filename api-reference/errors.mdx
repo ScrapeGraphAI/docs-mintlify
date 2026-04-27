@@ -1,168 +1,140 @@
 ---
-title: 'Error Handling'
-description: 'Understanding and handling ScrapeGraphAI API errors'
+title: 'Error handling'
+description: 'Error payload shape and HTTP status codes returned by the v2 API'
 ---
 
-## Error Format
+## Error payload
 
-All API errors follow a simple format:
+Every error response is a JSON object with an `error` field containing a typed error object:
 
 ```json
 {
-  "error": "Detailed error message"
+  "error": {
+    "type": "validation",
+    "message": "Validation failed",
+    "details": [
+      {
+        "code": "invalid_format",
+        "format": "url",
+        "path": ["url"],
+        "message": "Invalid URL"
+      }
+    ]
+  }
 }
 ```
 
-## HTTP Status Codes
+| Field | Description |
+|-------|-------------|
+| `type` | Machine-readable error code (see table below). |
+| `message` | Human-readable summary. |
+| `details` | Optional array of field-level validation issues (present for `type: "validation"`). |
 
-### 400 Bad Request
-Indicates that the request was malformed or invalid.
+## Authentication errors
 
 <AccordionGroup>
-  <Accordion title="Invalid Parameters" icon="circle-xmark">
+  <Accordion title="401 — auth_missing_key" icon="key">
     ```json
     {
-      "error": "Invalid URL format"
+      "error": {
+        "type": "auth_missing_key",
+        "message": "API key required"
+      }
     }
     ```
-    The request contains invalid parameters.
+    The `SGAI-APIKEY` header was not sent. Add it to every request.
   </Accordion>
 
-  <Accordion title="Invalid Schema" icon="table">
+  <Accordion title="403 — auth_invalid_key" icon="ban">
     ```json
     {
-      "error": "Invalid schema format"
+      "error": {
+        "type": "auth_invalid_key",
+        "message": "Invalid or deprecated API key"
+      }
     }
     ```
-    The provided output schema is invalid or malformed.
-  </Accordion>
-
-  <Accordion title="Invalid HTML" icon="code">
-    ```json
-    {
-      "error": "Invalid HTML content"
-    }
-    ```
-    Applies to SmartScraper when the provided HTML is invalid.
+    The key was recognized as malformed, revoked, or issued against the legacy v1 surface. Rotate it from the [dashboard](https://scrapegraphai.com/dashboard).
   </Accordion>
 </AccordionGroup>
 
-### 401 Unauthorized
-Authentication-related errors.
+## Validation errors (400)
 
-<AccordionGroup>
-  <Accordion title="Invalid API Key" icon="key">
-    ```json
-    {
-      "error": "Invalid API key"
-    }
-    ```
-    The API key is invalid, revoked, or not provided.
-  </Accordion>
+Returned when the request body fails schema validation. The `details` array names each offending field.
 
-  <Accordion title="Insufficient Credits" icon="coins">
-    ```json
-    {
-      "error": "Insufficient credits"
-    }
-    ```
-    Your account doesn't have enough credits to perform the operation.
-  </Accordion>
-</AccordionGroup>
-
-### 429 Too Many Requests
-Rate limiting errors.
-
-<AccordionGroup>
-  <Accordion title="Rate Limit Exceeded" icon="gauge-high">
-    ```json
-    {
-      "error": "Too many requests"
-    }
-    ```
-    You've exceeded the rate limit. Wait before retrying.
-  </Accordion>
-</AccordionGroup>
-
-### 500 Server Error
-Internal server errors.
-
-<AccordionGroup>
-  <Accordion title="Processing Error" icon="triangle-exclamation">
-    ```json
-    {
-      "error": "An error occurred while processing your request"
-    }
-    ```
-    An unexpected error occurred while processing the request.
-  </Accordion>
-
-  <Accordion title="Service Unavailable" icon="server">
-    ```json
-    {
-      "error": "Service temporarily unavailable"
-    }
-    ```
-    The service is temporarily unavailable. Try again later.
-  </Accordion>
-</AccordionGroup>
-
-## Error Handling Best Practices
-
-### Retry Strategy
-
-<Note>
-Our SDKs implement automatic retries for certain errors. For direct API usage, implement your own retry logic.
-</Note>
-
-1. **Retryable Errors**
-   - Rate limit exceeded (429)
-   - Service unavailable (500, 503)
-   - Network timeouts
-
-2. **Non-Retryable Errors**
-   - Invalid parameters (400)
-   - Authentication errors (401)
-   - Invalid schemas (400)
-
-### Example Error Handling
-
-<CodeGroup>
-```python Python
-try:
-    response = client.smartscraper(
-        website_url="https://example.com",
-        user_prompt="Extract data"
-    )
-except APIError as e:
-    print(f"Error: {e.message}")
-```
-
-```javascript JavaScript
-import { extract } from 'scrapegraph-js';
-
-const result = await extract('your-api-key', {
-  url: 'https://example.com',
-  prompt: 'Extract data',
-});
-
-if (result.status === 'success') {
-  console.log('Data:', result.data);
-} else {
-  console.error('Error:', result.error);
+```json
+{
+  "error": {
+    "type": "validation",
+    "message": "Validation failed",
+    "details": [
+      {
+        "code": "invalid_format",
+        "format": "url",
+        "path": ["url"],
+        "message": "Invalid URL"
+      },
+      {
+        "code": "custom",
+        "path": ["url"],
+        "message": "Private or internal URLs are not allowed"
+      }
+    ]
+  }
 }
 ```
-</CodeGroup>
 
-## Support
+Common `code` values: `invalid_format`, `invalid_type`, `too_small`, `too_big`, `custom`.
 
-If you encounter any errors not documented here or need assistance:
+## Quota and rate limit errors
 
-<CardGroup cols={2}>
-  <Card title="Discord Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
-    Get help from our community
-  </Card>
-  <Card title="Email Support" icon="envelope" href="mailto:support@scrapegraphai.com">
-    Contact our technical team
-  </Card>
-</CardGroup> 
+<AccordionGroup>
+  <Accordion title="402 — insufficient_credits" icon="coins">
+    ```json
+    {
+      "error": {
+        "type": "insufficient_credits",
+        "message": "Not enough credits to complete this request"
+      }
+    }
+    ```
+    Top up or upgrade your plan. Check balance with `GET /api/credits`.
+  </Accordion>
+
+  <Accordion title="429 — rate_limited" icon="gauge-high">
+    ```json
+    {
+      "error": {
+        "type": "rate_limited",
+        "message": "Too many requests"
+      }
+    }
+    ```
+    Back off and retry with exponential delay. Per-minute request limits depend on your plan.
+  </Accordion>
+</AccordionGroup>
+
+## Server errors (5xx)
+
+```json
+{
+  "error": {
+    "type": "internal_error",
+    "message": "An error occurred while processing your request"
+  }
+}
+```
+
+Transient — retry with exponential backoff. If errors persist, check the [status page](https://status.scrapegraphai.com) or contact support.
+
+## Retry strategy
+
+| Error | Retryable? | Recommended action |
+|-------|------------|--------------------|
+| `validation` (400) | No | Fix the request body. |
+| `auth_missing_key` / `auth_invalid_key` (401/403) | No | Fix the header or rotate the key. |
+| `insufficient_credits` (402) | No | Top up credits. |
+| `rate_limited` (429) | Yes | Exponential backoff, honor any `Retry-After` header. |
+| `internal_error` (5xx) | Yes | Exponential backoff; 3–5 attempts max. |
+
+The [Python](/sdks/python) and [JavaScript](/sdks/javascript) SDKs implement retries and typed error classes out of the box.

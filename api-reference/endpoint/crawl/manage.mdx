@@ -1,0 +1,51 @@
+---
+title: 'Manage crawl jobs'
+description: 'Stop, resume, and delete running crawl jobs.'
+---
+
+Every management endpoint takes the crawl job `id` returned by [`POST /api/crawl`](/api-reference/endpoint/crawl/start). All three return `{ "ok": true }` on success.
+
+## Stop
+
+```http
+POST https://v2-api.scrapegraphai.com/api/crawl/:id/stop
+```
+
+Stops an in-flight crawl. Already-fetched pages remain available; no further URLs will be expanded.
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl/79694e03-.../stop \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Resume
+
+```http
+POST https://v2-api.scrapegraphai.com/api/crawl/:id/resume
+```
+
+Resumes a stopped job from its last frontier.
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl/79694e03-.../resume \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Delete
+
+```http
+DELETE https://v2-api.scrapegraphai.com/api/crawl/:id
+```
+
+Permanently removes the crawl record and its stored pages. Cannot be undone.
+
+```bash
+curl -X DELETE https://v2-api.scrapegraphai.com/api/crawl/79694e03-... \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+## Related
+
+- Start a job: [`POST /api/crawl`](/api-reference/endpoint/crawl/start)
+- Poll progress: [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status)
+- Service overview: [Crawl](/services/crawl)

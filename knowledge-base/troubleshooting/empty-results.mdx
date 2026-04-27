@@ -7,9 +7,20 @@ If ScrapeGraphAI returns an empty result or a response with `null` fields, there
 
 ## 1. The page requires JavaScript rendering
 
-Many modern websites load their content dynamically via JavaScript after the initial HTML is delivered. If the content is not in the raw HTML, ScrapeGraphAI may not be able to extract it.
+Many modern websites load their content dynamically via JavaScript after the initial HTML is delivered. If the content is not in the raw HTML, the default fetch mode may miss it.
 
-**Fix:** Use the `headless_mode` or rendering options if available for your service tier, or try using [SmartCrawler](/services/smartcrawler) which handles JavaScript-rendered pages.
+**Fix:** Set `mode="js"` in `FetchConfig` and optionally add a `wait` time. See the [JavaScript rendering guide](/knowledge-base/scraping/javascript-rendering).
+
+```python
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
+
+sgai = ScrapeGraphAI()
+res = sgai.extract(
+    "Extract all product cards",
+    url="https://example.com/products",
+    fetch_config=FetchConfig(mode="js", wait=2000),
+)
+```
 
 ## 2. Your prompt is too vague
 
@@ -19,38 +30,40 @@ A prompt like `"get the data"` gives the LLM no guidance on what to look for.
 
 ```python
 # Too vague
-user_prompt = "get the data"
+prompt = "get the data"
 
 # Better
-user_prompt = "Extract the product name, current price, and stock availability from the product page"
+prompt = "Extract the product name, current price, and stock availability from the product page"
 ```
 
 ## 3. The target element does not exist on that URL
 
 Double-check that the data you want to extract actually appears on the URL you are passing. Some pages require login, cookies, or a specific session to show content.
 
-**Fix:** Open the URL in an incognito browser window and verify the content is visible without authentication.
+**Fix:** Open the URL in an incognito browser window and verify the content is visible without authentication. If it requires a session, pass cookies via [`FetchConfig`](/knowledge-base/scraping/custom-headers).
 
 ## 4. The website blocks scrapers
 
 Some websites detect and block automated requests, returning a captcha page or empty HTML.
 
-**Fix:** Try using a proxy via the [`proxy`](/services/additional-parameters/proxy) parameter, or add custom headers that mimic a real browser with the [`headers`](/services/additional-parameters/headers) parameter.
+**Fix:** Enable stealth mode and custom headers with `FetchConfig(mode="js", stealth=True, headers={...})`. See the [proxy & fetch configuration guide](/knowledge-base/scraping/proxy#stealth-mode-for-protected-sites).
 
 ## 5. The output schema is too strict
 
-If you define an `output_schema` with required fields, the LLM will return `null` for fields it cannot find.
+If you pass a `schema` with required fields, the LLM will return `null` for fields it cannot find on the page.
 
-**Fix:** Make fields optional in your schema, or broaden the prompt to include fallback descriptions.
+**Fix:** Make fields optional in your schema, or broaden the prompt to describe fallback behaviour.
 
 ## 6. Rate limiting or quota exceeded
 
-If you have exhausted your credits or are being rate-limited, the API may return an empty or error response.
+If you have exhausted your credits or are being rate-limited, the API may return an error.
 
-**Fix:** Check your [dashboard](https://scrapegraphai.com/dashboard) for remaining credits and current usage.
+**Fix:** Check your [dashboard](https://scrapegraphai.com/dashboard) for remaining credits and current usage. See the [rate limiting guide](/knowledge-base/troubleshooting/rate-limiting) for how to handle `429` responses.
 
 ## Debugging tips
 
-- Log the full API response — the `result` key contains the extracted data; `status` and `error` keys may contain useful information.
+- Check `res.status` — on failure, `res.error` contains the reason and `res.data` is `None`.
+- Log `res.data.json_data` (Python) / `res.data.json` (JS) to see exactly what the LLM produced.
 - Test the URL with a simple prompt like `"What is the main heading of this page?"` to verify that extraction works at all.
+- Call `sgai.scrape(url, formats=[HtmlFormatConfig()])` to see the raw HTML the extractor received — that often reveals blocking pages or missing content.
 - Use the [interactive playground](https://scrapegraphai.com/dashboard) to test your URL and prompt before integrating.

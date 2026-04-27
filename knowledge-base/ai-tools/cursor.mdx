@@ -13,31 +13,33 @@ See the [MCP Server setup for Cursor](/services/mcp-server/cursor) guide for ful
 
 ## Manual integration
 
-If you prefer to write code directly, use the Python or JavaScript SDK.
+If you prefer to write code directly, use the Python or JavaScript v2 SDK.
 
 ### Python
 
 Install the SDK:
 
 ```bash
-pip install scrapegraph-py
+pip install "scrapegraph-py>=2.1.0"
 ```
 
 Ask Cursor to write a scraping script using `Cmd+K` or open the chat with `Cmd+L`:
 
-> Write a Python function using scrapegraph_py that extracts the title, author, and date from any blog post URL.
+> Write a Python function using `scrapegraph_py` v2 that extracts the title, author, and date from any blog post URL.
 
 Cursor will generate:
 
 ```python
-from scrapegraph_py import Client
+from scrapegraph_py import ScrapeGraphAI
 
-def extract_blog_post(url: str) -> dict:
-    client = Client(api_key="your-api-key")
-    return client.smartscraper(
-        website_url=url,
-        user_prompt="Extract the title, author name, and publication date",
+sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env
+
+def extract_blog_post(url: str) -> dict | None:
+    res = sgai.extract(
+        "Extract the title, author name, and publication date",
+        url=url,
     )
+    return res.data.json_data if res.status == "success" else None
 ```
 
 ### JavaScript
@@ -45,30 +47,33 @@ def extract_blog_post(url: str) -> dict:
 Install the SDK:
 
 ```bash
-npm install scrapegraph-js
+npm i scrapegraph-js@latest
 ```
 
 Ask Cursor:
 
-> Write a JavaScript function using scrapegraph-js that extracts product details from an e-commerce page.
+> Write a JavaScript function using `scrapegraph-js` v2 that extracts product details from an e-commerce page.
 
 ```javascript
-import { extract } from "scrapegraph-js";
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-async function extractProduct(apiKey, url) {
-  return await extract(apiKey, {
+const sgai = ScrapeGraphAI(); // reads SGAI_API_KEY from env
+
+export async function extractProduct(url) {
+  const res = await sgai.extract({
     url,
     prompt: "Extract the product name, price, and availability",
   });
+  return res.status === "success" ? res.data?.json : null;
 }
 ```
 
 ## Tips for using Cursor with ScrapeGraphAI
 
 - **Paste error messages** into the Cursor chat to get instant fix suggestions.
-- **Ask Cursor to add output schemas** (`output_schema` with Pydantic or Zod) to get strongly-typed results.
+- **Ask Cursor to add a `schema`** (JSON Schema, Pydantic, or Zod) to get strongly-typed results out of `extract`.
 - **Use `@docs`** in Cursor chat to reference the ScrapeGraphAI docs directly while coding.
 
 <Note>
-  Store your API key in a `.env` file and load it via `python-dotenv` or `process.env` — never hardcode it in your source files.
+  Store your API key in a `.env` file as `SGAI_API_KEY` and load it via `python-dotenv` or `process.env` — the v2 SDKs pick it up automatically. Never hardcode it in source files.
 </Note>

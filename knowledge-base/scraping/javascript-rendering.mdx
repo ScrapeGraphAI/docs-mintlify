@@ -7,60 +7,105 @@ Many modern websites — single-page apps, React or Vue frontends, lazy-loaded c
 
 ## How ScrapeGraphAI handles JS pages
 
-ScrapeGraphAI uses a headless browser internally to render JavaScript before extracting content. For most sites this happens automatically.
+ScrapeGraphAI can render JavaScript with a headless browser before extracting content. Enable it with `FetchConfig(mode="js")` — the default `auto` mode will also pick the browser when needed.
 
-## Use `wait_ms` for delayed content
+## Use `wait` for delayed content
 
-If the content loads after a short delay (lazy loading, carousels, infinite scroll), add a wait time before extraction starts:
+If the content loads after a short delay (lazy loading, carousels, infinite scroll), add a wait time (ms) before extraction starts:
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
 
-client = Client(api_key="your-api-key")
+```python Python
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
-response = client.smartscraper(
-    website_url="https://example.com/products",
-    user_prompt="Extract all product names and prices",
-    wait_ms=2000,  # wait 2 seconds for JS to finish loading
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(
+    "Extract all product names and prices",
+    url="https://example.com/products",
+    fetch_config=FetchConfig(mode="js", wait=2000),
 )
+
+if res.status == "success":
+    print(res.data.json_data)
 ```
 
-```javascript
-import { extract } from "scrapegraph-js";
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const result = await extract("your-api-key", {
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.extract({
   url: "https://example.com/products",
   prompt: "Extract all product names and prices",
-  fetchConfig: { wait: 2000 },
+  fetchConfig: { mode: "js", wait: 2000 },
 });
 ```
 
-See the [wait_ms parameter documentation](/services/additional-parameters/wait-ms) for more details.
+</CodeGroup>
 
 ## Tips for specific scenarios
 
-### Infinite scroll / paginated lists
+### Infinite scroll / lazy loading
 
-Infinite scroll pages only show a subset of items on initial load. Use the [pagination parameter](/services/additional-parameters/pagination) to iterate through pages, or use [SmartCrawler](/services/smartcrawler) to follow paginated links automatically.
+Use the `scrolls` option in `FetchConfig` to scroll the page a given number of times before extracting, triggering lazy-loaded items:
 
-### Login-gated content
+<CodeGroup>
 
-If the data requires authentication:
-1. Pass the required cookies or session tokens via the [`headers`](/services/additional-parameters/headers) parameter.
-2. Alternatively, export a logged-in session cookie from your browser and include it in the `Cookie` header.
-
-```python
-response = client.smartscraper(
-    website_url="https://example.com/dashboard",
-    user_prompt="Extract my account balance",
-    headers={"Cookie": "session=abc123; auth_token=xyz"},
+```python Python
+res = sgai.extract(
+    "Extract all product cards",
+    url="https://example.com/feed",
+    fetch_config=FetchConfig(mode="js", scrolls=5, wait=1000),
 )
 ```
 
+```javascript JavaScript
+const res = await sgai.extract({
+  url: "https://example.com/feed",
+  prompt: "Extract all product cards",
+  fetchConfig: { mode: "js", scrolls: 5, wait: 1000 },
+});
+```
+
+</CodeGroup>
+
+For sites that truly split content across multiple URLs, use [`crawl.start`](/services/crawl) to follow paginated links automatically.
+
+### Login-gated content
+
+If the data requires authentication, pass the required cookies or session tokens via `FetchConfig`:
+
+<CodeGroup>
+
+```python Python
+res = sgai.extract(
+    "Extract my account balance",
+    url="https://example.com/dashboard",
+    fetch_config=FetchConfig(
+        mode="js",
+        cookies={"session": "abc123", "auth_token": "xyz"},
+    ),
+)
+```
+
+```javascript JavaScript
+const res = await sgai.extract({
+  url: "https://example.com/dashboard",
+  prompt: "Extract my account balance",
+  fetchConfig: {
+    mode: "js",
+    cookies: { session: "abc123", auth_token: "xyz" },
+  },
+});
+```
+
+</CodeGroup>
+
 ### Single Page Applications (SPAs)
 
-SPAs render content client-side after the initial load. Increasing `wait_ms` usually resolves extraction issues. If not, check whether the data is available through the site's own API (network tab in DevTools) — that may be easier to call directly.
+SPAs render content client-side after the initial load. Increasing `wait` usually resolves extraction issues. If not, check whether the data is available through the site's own API (Network tab in DevTools) — that may be easier to call directly.
 
 ## Verifying the rendered HTML
 
-To debug, use a tool like [httpbin](https://httpbin.org) or your browser's DevTools to verify what HTML is actually delivered before JavaScript runs vs. after.
+To debug, call [`sgai.scrape()`](/services/scrape) with `HtmlFormatConfig` (Python) or `{ type: "html" }` (JS) to see the exact HTML delivered after rendering, then compare to the raw HTML.

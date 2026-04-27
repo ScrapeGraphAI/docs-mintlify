@@ -28,13 +28,13 @@ Once installed, your coding agent can:
 Agents invoke the skill in `--json` mode so output is clean and token-efficient:
 
 ```bash
-just-scrape smart-scraper https://api.example.com/docs \
+just-scrape extract https://api.example.com/docs \
   -p "Extract all endpoint names, methods, and descriptions" \
   --json
 ```
 
 ```bash
-just-scrape search-scraper "latest release notes for react-query" \
+just-scrape search "latest release notes for react-query" \
   --num-results 3 --json
 ```
 
@@ -59,15 +59,14 @@ This project uses `just-scrape` (ScrapeGraph AI CLI) for web scraping.
 The API key is set via the SGAI_API_KEY environment variable.
 
 Available commands (always use --json flag):
-- `just-scrape smart-scraper <url> -p <prompt> --json` — AI extraction from a URL
-- `just-scrape search-scraper <prompt> --json` — search the web and extract data
-- `just-scrape markdownify <url> --json` — convert a page to markdown
-- `just-scrape crawl <url> -p <prompt> --json` — crawl multiple pages
-- `just-scrape scrape <url> --json` — get raw HTML
-- `just-scrape sitemap <url> --json` — get all URLs from a sitemap
+- `just-scrape extract <url> -p <prompt> --json` — AI structured extraction from a URL
+- `just-scrape search <query> --json` — search the web and extract data from results
+- `just-scrape scrape <url> --json` — fetch a page (markdown default; also html, screenshot, branding, links, images, summary, json)
+- `just-scrape crawl <url> --json` — crawl multiple pages (polls until done)
+- `just-scrape credits --json` / `just-scrape validate --json` — balance and key health
 
 Use --schema to enforce a JSON schema on the output.
-Use --stealth for sites with anti-bot protection.
+Use --stealth (with -m js if needed) for sites with anti-bot protection.
 ```
 
 ### Example prompts
@@ -96,7 +95,7 @@ Alternatively, add a script to your project that Cursor can call:
 ```bash
 # .cursor/scrape.sh
 #!/bin/bash
-just-scrape smart-scraper "$1" -p "$2" --json
+just-scrape extract "$1" -p "$2" --json
 ```
 
 Then tell Cursor: *"Run `.cursor/scrape.sh <url> <prompt>` to scrape a page."*
@@ -108,7 +107,7 @@ Then tell Cursor: *"Run `.cursor/scrape.sh <url> <prompt>` to scrape a page."*
 - Pass `--schema` with a JSON schema to get typed, predictable output that agents can parse reliably.
 
 ```bash
-just-scrape smart-scraper https://example.com \
+just-scrape extract https://example.com \
   -p "Extract company info" \
   --schema '{"type":"object","properties":{"name":{"type":"string"},"founded":{"type":"number"},"employees":{"type":"string"}}}' \
   --json

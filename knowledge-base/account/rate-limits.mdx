@@ -23,7 +23,7 @@ For full pricing details, see [Plans & Pricing](/knowledge-base/account/pricing)
 
 ## What counts as a request?
 
-Each API call to any endpoint (SmartScraper, SearchScraper, Markdownify, etc.) counts as one request toward your rate limit. Polling the status endpoint for async jobs does **not** count toward the limit.
+Each API call to any v2 endpoint (`/api/extract`, `/api/scrape`, `/api/search`, `/api/crawl`, `/api/monitor`, …) counts as one request toward your rate limit. Polling a crawl or monitor status endpoint does **not** count toward the limit.
 
 ## Rate limit headers
 
@@ -41,24 +41,28 @@ X-RateLimit-Reset: 1709123456
 
 ## Handling the 429 response
 
-When you exceed the rate limit, the API returns HTTP `429 Too Many Requests`. Implement exponential backoff in your code:
+When you exceed the rate limit, the API returns HTTP `429 Too Many Requests`. In the v2 SDK this surfaces as `res.status === "error"` — the SDK does not raise. Retry with exponential backoff:
 
 ```python
 import time
+from scrapegraph_py import ScrapeGraphAI
 
-def scrape_with_backoff(client, url, prompt, max_retries=5):
+sgai = ScrapeGraphAI()
+
+def extract_with_backoff(url, prompt, max_retries=5):
     for i in range(max_retries):
-        try:
-            return client.smartscraper(website_url=url, user_prompt=prompt)
-        except Exception as e:
-            if "429" in str(e):
-                wait = 2 ** i
-                print(f"Rate limited — retrying in {wait}s")
-                time.sleep(wait)
-            else:
-                raise
-    raise Exception("Exceeded max retries")
+        res = sgai.extract(prompt, url=url)
+        if res.status == "success":
+            return res
+        if "rate_limit" not in (res.error or "").lower():
+            return res  # non-rate-limit error — don't retry
+        wait = 2 ** i
+        print(f"Rate limited — retrying in {wait}s")
+        time.sleep(wait)
+    raise RuntimeError("Exceeded max retries")
 ```
+
+See the [rate limiting troubleshooting guide](/knowledge-base/troubleshooting/rate-limiting) for a JavaScript example and more tips.
 
 ## Increasing your limits
 

@@ -1,0 +1,150 @@
+---
+title: 'Scrape'
+description: 'Fetch a URL and return its content in one or more formats.'
+---
+
+```http
+POST https://v2-api.scrapegraphai.com/api/scrape
+```
+
+Returns markdown, HTML, links, images, summary, JSON extraction, branding, or screenshots — any combination in a single call. Replaces the v1 `markdownify` endpoint.
+
+## Request body
+
+<ParamField body="url" type="string" required>
+  The URL of the page to fetch. Public URLs only — private and internal addresses are rejected.
+</ParamField>
+
+<ParamField body="formats" type="array" required>
+  One or more output formats. Each element is an object with a `type` and optional per-format options.
+
+  | `type` | Options | Description |
+  |--------|---------|-------------|
+  | `markdown` | `mode`: `"normal"` \| `"reader"` \| `"prune"` | Clean markdown conversion. |
+  | `html` | `mode`: `"normal"` \| `"reader"` \| `"prune"` | Raw or processed HTML. |
+  | `links` | — | All outgoing links. |
+  | `images` | — | All image URLs. |
+  | `summary` | — | AI-generated short summary. |
+  | `json` | `prompt`, `schema` | Structured JSON extraction. |
+  | `branding` | — | Brand colors, typography, and logos. |
+  | `screenshot` | `fullPage`, `width`, `height`, `quality` | Screenshot image URL. |
+</ParamField>
+
+<ParamField body="contentType" type="string">
+  Override auto-detected content type. Common values: `"text/html"`, `"application/pdf"`.
+</ParamField>
+
+<ParamField body="fetchConfig" type="object">
+  Fetch-time options. All fields are optional.
+
+  | Field | Type | Description |
+  |-------|------|-------------|
+  | `mode` | string | `"auto"` (default), `"fast"`, or `"js"`. |
+  | `stealth` | bool | Residential proxy + anti-bot headers. |
+  | `headers` | object | Custom HTTP headers. |
+  | `cookies` | object | Cookies to send with the request. |
+  | `scrolls` | int | Number of scrolls for infinite-scroll pages (0–100). |
+  | `wait` | int | Milliseconds to wait after load (0–30000). |
+  | `timeout` | int | Request timeout in milliseconds (1000–60000). |
+  | `country` | string | ISO 3166-1 alpha-2 country code for geo-targeted proxy. |
+</ParamField>
+
+## Example request
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "formats": [{ "type": "markdown" }]
+  }'
+```
+
+## Example response
+
+```json
+{
+  "id": "7bc67b9e-e539-4d7f-b378-ceb4d86910bc",
+  "results": {
+    "markdown": {
+      "data": [
+        "# Example Domain\n\nThis domain is for use in documentation examples without needing permission. Avoid use in operations.\n\n[Learn more](https://iana.org/domains/example)\n"
+      ]
+    }
+  },
+  "metadata": {
+    "contentType": "text/html"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | UUID for this scrape call. |
+| `results` | Object keyed by format type; each value has a `data` field shaped per format. |
+| `metadata.contentType` | The detected (or overridden) content type. |
+
+## Multi-format request
+
+Request any combination of formats in one call:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com",
+    "formats": [
+      { "type": "markdown" },
+      { "type": "links" },
+      { "type": "screenshot", "width": 1280, "height": 720 }
+    ]
+  }'
+```
+
+```json
+{
+  "id": "201a5efb-398f-474b-9d58-9639f98b43c9",
+  "results": {
+    "markdown": { "data": ["# Example Domain\n..."] },
+    "links":    { "data": ["https://iana.org/domains/example"], "metadata": { "count": 1 } },
+    "screenshot": { "data": { "url": "https://sgai-api-prod.../screenshots/....jpg?X-Amz-..." } }
+  },
+  "metadata": { "contentType": "text/html" }
+}
+```
+
+Screenshot URLs are pre-signed and expire after 1 hour — download the image if you need to keep it.
+
+## Structured extraction during scrape
+
+Use the `json` format to run an LLM extraction on the same fetched page:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com",
+    "formats": [{
+      "type": "json",
+      "prompt": "Extract the company name and tagline",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "companyName": { "type": "string" },
+          "tagline":     { "type": "string" }
+        },
+        "required": ["companyName"]
+      }
+    }]
+  }'
+```
+
+The response exposes the typed output under `results.json.data`.
+
+## Related
+
+- Service overview: [Scrape](/services/scrape)
+- Run the same call from Python or JS: [SDKs](/sdks/python)

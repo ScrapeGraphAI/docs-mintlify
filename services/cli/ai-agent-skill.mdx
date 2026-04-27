@@ -79,15 +79,15 @@ The API key is set via the SGAI_API_KEY environment variable.
 Available commands (always use --json flag):
 - `just-scrape extract <url> -p <prompt> --json` — AI extraction from a URL
 - `just-scrape search <query> --json` — search the web and extract data
-- `just-scrape markdownify <url> --json` — convert a page to markdown
+- `just-scrape scrape <url> --json` — get page content (markdown is default; also html, screenshot, branding, links, images, summary, json)
 - `just-scrape crawl <url> --json` — crawl multiple pages
-- `just-scrape scrape <url> --json` — get page content (markdown, html, screenshot, branding, links, images, summary, json)
-- `just-scrape credits --json` — check credit balance
+- `just-scrape credits --json` — check credit balance and per-job quotas
+- `just-scrape validate --json` — verify the API key
 
 Use --schema to enforce a JSON schema on the output.
-Use --mode direct+stealth or --mode js+stealth for sites with anti-bot protection.
+Use -m js --stealth for sites with anti-bot protection (fetch modes: auto, fast, js).
 Use -f to pick scrape format(s), e.g. -f markdown,links,images for multi-format.
-Use --location-geo-code and --time-range with search for geo/time filtering.
+Use --country and --time-range with search for geo/time filtering.
 ```
 
 ### Example prompts for Claude Code

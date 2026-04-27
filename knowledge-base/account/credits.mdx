@@ -43,20 +43,30 @@ Log in to the [dashboard](https://scrapegraphai.com/dashboard) to see:
 
 You can also query your balance programmatically:
 
-```python
-from scrapegraph_py import Client
+<CodeGroup>
 
-client = Client(api_key="your-api-key")
-credits = client.get_credits()
-print(f"Remaining credits: {credits['remaining']}")
+```python Python
+from scrapegraph_py import ScrapeGraphAI
+
+sgai = ScrapeGraphAI()
+
+res = sgai.credits()
+if res.status == "success":
+    print(f"Remaining credits: {res.data.remaining}")
 ```
 
-```javascript
-import { getCredits } from "scrapegraph-js";
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
 
-const credits = await getCredits("your-api-key");
-console.log(`Remaining credits: ${credits.remaining}`);
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.credits();
+if (res.status === "success") {
+  console.log(`Remaining credits: ${res.data?.remaining}`);
+}
 ```
+
+</CodeGroup>
 
 ## What happens when you run out of credits?
 
@@ -74,5 +84,5 @@ Upgrade your plan or purchase additional credits from the [dashboard](https://sc
 ## Tips to reduce credit usage
 
 - **Cache results** for URLs that don't change frequently to avoid re-scraping.
-- **Use Markdownify** instead of SmartScraper when you only need the page content in a readable format and don't need structured extraction.
-- **Limit crawl depth** in SmartCrawler by setting `max_pages` to avoid accidentally crawling more pages than needed.
+- **Use `scrape` with `MarkdownFormatConfig`** instead of `extract` when you only need the page content in a readable format and don't need structured extraction — it's 1 credit vs. 5.
+- **Limit crawl scope** in `crawl.start` by setting `max_depth` and `max_pages` to avoid accidentally crawling more pages than needed.

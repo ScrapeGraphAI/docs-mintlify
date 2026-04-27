@@ -12,6 +12,10 @@ Extract uses an LLM to pull structured data from a URL, HTML, or markdown. Provi
 Try Extract instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Pricing
+
+Each Extract call costs **5 credits**. Enabling `stealth` in `fetchConfig` adds 5 credits; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+
 ## Getting Started
 
 ### Quick Start
@@ -19,15 +23,15 @@ Try Extract instantly in our [interactive playground](https://scrapegraphai.com/
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "What does the company do? Extract name and description.",
     url="https://scrapegraphai.com",
-    prompt="What does the company do? Extract name and description.",
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -73,7 +77,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/extract \
 | `html` | string | Cond. | Raw HTML to extract from. |
 | `markdown` | string | Cond. | Markdown content to extract from. |
 | `prompt` | string | Yes | Natural-language description of what to extract. |
-| `schema` | object | No | JSON schema describing the desired output shape. |
+| `schema` | object | No | JSON schema describing the desired output shape. In Python you can pass a Pydantic model via `MyModel.model_json_schema()`. |
 | `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"`. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
@@ -109,13 +113,13 @@ Pass a JSON schema to pin down the exact output shape.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract structured information about this page",
     url="https://example.com",
-    prompt="Extract structured information about this page",
     schema={
         "type": "object",
         "properties": {
@@ -125,7 +129,7 @@ res = sgai.extract(ExtractRequest(
         },
         "required": ["title"],
     },
-))
+)
 
 if res.status == "success":
     print(res.data.json_data)
@@ -174,19 +178,52 @@ curl -X POST https://v2-api.scrapegraphai.com/api/extract \
 
 </CodeGroup>
 
+## With a Pydantic Schema (Python)
+
+If you already model your data with [Pydantic](https://docs.pydantic.dev), use the same `BaseModel` to drive the extraction. `model_json_schema()` produces the JSON Schema dict the API expects, and `model_validate()` parses the response back into typed objects.
+
+```python
+from pydantic import BaseModel, Field
+from scrapegraph_py import ScrapeGraphAI
+
+class Product(BaseModel):
+    name: str = Field(description="Product name")
+    price: str | None = Field(default=None, description="Listed price, if any")
+
+class Products(BaseModel):
+    products: list[Product] = Field(default_factory=list)
+
+sgai = ScrapeGraphAI()
+
+res = sgai.extract(
+    "Extract product names and prices",
+    url="https://example.com",
+    schema=Products.model_json_schema(),
+)
+
+if res.status == "success":
+    parsed = Products.model_validate(res.data.json_data)
+    for p in parsed.products:
+        print(p.name, p.price)
+```
+
+<Note>
+The wire format is JSON Schema either way — `model_json_schema()` is just the standard Pydantic v2 helper that produces it. Field descriptions are forwarded to the LLM and improve extraction quality on ambiguous fields.
+</Note>
+
 ## Extract from HTML or Markdown
 
 Skip the fetch and extract from content you already have.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest
+from scrapegraph_py import ScrapeGraphAI
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract product name and price",
     html="<html><body><h1>Widget</h1><p>$9.99</p></body></html>",
-    prompt="Extract product name and price",
-))
+)
 ```
 
 ## FetchConfig
@@ -194,29 +231,29 @@ res = sgai.extract(ExtractRequest(
 Control how the page is fetched before extraction (JS rendering, stealth, headers, etc). See the full options in [Scrape · FetchConfig](/services/scrape#fetchconfig).
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, ExtractRequest, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.extract(ExtractRequest(
+res = sgai.extract(
+    "Extract the main content",
     url="https://example.com",
-    prompt="Extract the main content",
     fetch_config=FetchConfig(mode="js", stealth=True, wait=2000),
-))
+)
 ```
 
 ## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, ExtractRequest
+from scrapegraph_py import AsyncScrapeGraphAI
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.extract(ExtractRequest(
+        res = await sgai.extract(
+            "Summarize what this product does",
             url="https://scrapegraphai.com",
-            prompt="Summarize what this product does",
-        ))
+        )
         if res.status == "success":
             print(res.data.json_data)
 
@@ -244,7 +281,7 @@ asyncio.run(main())
 
 ### Official SDKs
 - [Python SDK](/sdks/python)
-- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.1.0, Node ≥ 22)
 
 ### AI Framework Integrations
 - [LangChain Integration](/integrations/langchain)

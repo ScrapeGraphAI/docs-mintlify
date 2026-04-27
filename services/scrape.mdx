@@ -12,6 +12,16 @@ The Scrape service fetches a web page and returns content in one or more formats
 Try the Scrape service instantly in our [interactive playground](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Pricing
+
+| Format | Credits |
+|--------|---------|
+| `markdown` | 1 |
+| `screenshot` | 2 |
+| `branding` | 25 |
+
+When a request includes multiple formats, the per-format costs are summed. Enabling `stealth` in `fetchConfig` adds 5 credits; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+
 ## Getting Started
 
 ### Quick Start
@@ -19,18 +29,19 @@ Try the Scrape service instantly in our [interactive playground](https://scrapeg
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
-))
+)
 
 if res.status == "success":
-    print(res.data.results["markdown"]["data"][0])
+    md = res.data.results.get("markdown", {}).get("data", [])
+    print(md[0] if md else None)
 else:
     print("Failed:", res.error)
 ```
@@ -118,7 +129,6 @@ Pass an array of format objects. Each entry has a `type` and optional per-format
 ```python Python
 from scrapegraph_py import (
     ScrapeGraphAI,
-    ScrapeRequest,
     MarkdownFormatConfig,
     LinksFormatConfig,
     ScreenshotFormatConfig,
@@ -126,20 +136,20 @@ from scrapegraph_py import (
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[
         MarkdownFormatConfig(mode="reader"),
         LinksFormatConfig(),
         ScreenshotFormatConfig(width=1280, height=720),
     ],
-))
+)
 
 if res.status == "success":
     results = res.data.results
-    print("Markdown preview:", results["markdown"]["data"][0][:200])
-    print("Links count:", len(results["links"]["data"]))
-    print("Screenshot URL:", results["screenshot"]["data"]["url"])
+    print("Markdown preview:", results.get("markdown", {}).get("data", [""])[0][:200])
+    print("Links count:", len(results.get("links", {}).get("data", [])))
+    print("Screenshot URL:", results.get("screenshot", {}).get("data", {}).get("url"))
 ```
 
 ```javascript JavaScript
@@ -187,12 +197,12 @@ Use the `json` format to extract structured data during the scrape.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, JsonFormatConfig
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://scrapegraphai.com",
+res = sgai.scrape(
+    "https://scrapegraphai.com",
     formats=[
         JsonFormatConfig(
             prompt="Extract the company name and tagline",
@@ -206,10 +216,10 @@ res = sgai.scrape(ScrapeRequest(
             },
         ),
     ],
-))
+)
 
 if res.status == "success":
-    print(res.data.results["json"]["data"])
+    print(res.data.results.get("json", {}).get("data"))
 ```
 
 ```javascript JavaScript
@@ -242,6 +252,35 @@ if (res.status === "success") {
 
 </CodeGroup>
 
+#### Using a Pydantic schema (Python)
+
+`JsonFormatConfig.schema` accepts any JSON Schema dict, so a Pydantic `BaseModel` works via `model_json_schema()`:
+
+```python
+from pydantic import BaseModel
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
+
+class Company(BaseModel):
+    company_name: str
+    tagline: str | None = None
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(
+    "https://scrapegraphai.com",
+    formats=[
+        JsonFormatConfig(
+            prompt="Extract the company name and tagline",
+            schema=Company.model_json_schema(),
+        ),
+    ],
+)
+
+if res.status == "success":
+    parsed = Company.model_validate(res.data.results["json"]["data"])
+    print(parsed.company_name, parsed.tagline)
+```
+
 ## FetchConfig
 
 Control how pages are fetched — JS rendering, stealth, custom headers, etc.
@@ -249,23 +288,22 @@ Control how pages are fetched — JS rendering, stealth, custom headers, etc.
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig, FetchConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig, FetchConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
     fetch_config=FetchConfig(
         mode="js",
         stealth=True,
         wait=2000,
         scrolls=3,
-        headers={"User-Agent": "MyBot"},
         cookies={"session": "abc123"},
         country="us",
     ),
-))
+)
 ```
 
 ```javascript JavaScript
@@ -281,7 +319,6 @@ const res = await sgai.scrape({
     stealth: true,
     wait: 2000,
     scrolls: 3,
-    headers: { "User-Agent": "MyBot" },
     cookies: { session: "abc123" },
     country: "us",
   },
@@ -305,16 +342,17 @@ const res = await sgai.scrape({
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, ScrapeRequest, MarkdownFormatConfig
+from scrapegraph_py import AsyncScrapeGraphAI, MarkdownFormatConfig
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.scrape(ScrapeRequest(
-            url="https://example.com",
+        res = await sgai.scrape(
+            "https://example.com",
             formats=[MarkdownFormatConfig()],
-        ))
+        )
         if res.status == "success":
-            print(res.data.results["markdown"]["data"][0])
+            md = res.data.results.get("markdown", {}).get("data", [])
+            print(md[0] if md else None)
 
 asyncio.run(main())
 ```
@@ -340,7 +378,7 @@ asyncio.run(main())
 
 ### Official SDKs
 - [Python SDK](/sdks/python) — perfect for automation and data processing
-- [JavaScript SDK](/sdks/javascript) — ideal for web applications and Node.js (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+- [JavaScript SDK](/sdks/javascript) — ideal for web applications and Node.js (`scrapegraph-js` ≥ 2.1.0, Node ≥ 22)
 
 ### AI Framework Integrations
 - [LangChain Integration](/integrations/langchain) — use Scrape in your content pipelines

@@ -19,28 +19,29 @@ Ask v0 to build a component, for example:
 
 ### 2. Add a Next.js API route
 
+Install the v2 SDK:
+
+```bash
+npm i scrapegraph-js@latest
+```
+
 Create `app/api/scrape/route.ts` in your Next.js project:
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI(); // reads SGAI_API_KEY from env
 
 export async function POST(req: NextRequest) {
   const { url, prompt } = await req.json();
 
-  const response = await fetch("https://api.scrapegraphai.com/v1/smartscraper", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "SGAI-APIKEY": process.env.SGAI_API_KEY ?? "",
-    },
-    body: JSON.stringify({
-      website_url: url,
-      user_prompt: prompt,
-    }),
-  });
+  const res = await sgai.extract({ url, prompt });
 
-  const data = await response.json();
-  return NextResponse.json(data);
+  if (res.status === "success") {
+    return NextResponse.json({ data: res.data?.json });
+  }
+  return NextResponse.json({ error: res.error }, { status: 502 });
 }
 ```
 
@@ -67,8 +68,8 @@ async function getScrapedData(url: string, prompt: string) {
 
 ## Tips
 
-- Use Server Components (`async function Page()`) to call the ScrapeGraphAI API directly without an API route, keeping your key secure on the server.
-- Define a Zod schema and pass it via `output_schema` to get typed, structured data back.
+- Use Server Components (`async function Page()`) or Server Actions to call `sgai.extract` directly without an API route — the key stays on the server.
+- Pass a `schema` (JSON Schema or Zod-compiled JSON Schema) to `sgai.extract({ url, prompt, schema })` to get typed, structured data back.
 
 <Note>
   Never pass `SGAI_API_KEY` to a client component. Keep it on the server side.

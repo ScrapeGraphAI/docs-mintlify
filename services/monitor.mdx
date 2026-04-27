@@ -12,6 +12,10 @@ Monitor watches a page on a cron schedule, fetches it in the formats you specify
 Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Pricing
+
+Each tick is billed at the underlying Scrape format cost (1 credit for `markdown`, 2 for `screenshot`, 25 for `branding`; multiple formats are summed). When a tick detects a change versus the previous run, **+5 credits** are added on top. Enabling `stealth` in `fetchConfig` adds 5 credits per tick; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+
 ## Getting Started
 
 ### Quick Start
@@ -19,17 +23,17 @@ Try Monitor in our [dashboard](https://scrapegraphai.com/dashboard).
 <CodeGroup>
 
 ```python Python
-from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
 
 # reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
 sgai = ScrapeGraphAI()
 
-res = sgai.monitor.create(MonitorCreateRequest(
-    url="https://example.com",
+res = sgai.monitor.create(
+    "https://example.com",
+    "*/30 * * * *",            # every 30 minutes
     name="Homepage watch",
-    interval="*/30 * * * *",   # every 30 minutes
     formats=[MarkdownFormatConfig()],
-))
+)
 
 if res.status == "success":
     print("Monitor id:", res.data.cron_id)
@@ -116,8 +120,7 @@ sgai.monitor.list()
 sgai.monitor.get(monitor_id)
 
 # Change schedule or formats
-from scrapegraph_py import MonitorUpdateRequest
-sgai.monitor.update(monitor_id, MonitorUpdateRequest(interval="0 */6 * * *"))
+sgai.monitor.update(monitor_id, interval="0 */6 * * *")
 
 # Pause / resume / delete
 sgai.monitor.pause(monitor_id)
@@ -151,14 +154,14 @@ for (const tick of activity.data?.ticks ?? []) {
 Use the `json` format inside a monitor to extract the same typed payload on each run — then `activity` will include diffs between runs.
 
 ```python
-from scrapegraph_py import ScrapeGraphAI, MonitorCreateRequest, JsonFormatConfig
+from scrapegraph_py import ScrapeGraphAI, JsonFormatConfig
 
 sgai = ScrapeGraphAI()
 
-res = sgai.monitor.create(MonitorCreateRequest(
-    url="https://time.is/",
+res = sgai.monitor.create(
+    "https://time.is/",
+    "*/10 * * * *",
     name="Time Monitor",
-    interval="*/10 * * * *",
     formats=[JsonFormatConfig(
         prompt="Extract the current time",
         schema={
@@ -167,23 +170,23 @@ res = sgai.monitor.create(MonitorCreateRequest(
             "required": ["time"],
         },
     )],
-))
+)
 ```
 
 ## Async Support (Python)
 
 ```python
 import asyncio
-from scrapegraph_py import AsyncScrapeGraphAI, MonitorCreateRequest, MarkdownFormatConfig
+from scrapegraph_py import AsyncScrapeGraphAI, MarkdownFormatConfig
 
 async def main():
     async with AsyncScrapeGraphAI() as sgai:
-        res = await sgai.monitor.create(MonitorCreateRequest(
-            url="https://example.com",
+        res = await sgai.monitor.create(
+            "https://example.com",
+            "0 * * * *",
             name="async watch",
-            interval="0 * * * *",
             formats=[MarkdownFormatConfig()],
-        ))
+        )
         if res.status == "success":
             print(res.data.cron_id)
 
@@ -222,7 +225,7 @@ asyncio.run(main())
 
 ### Official SDKs
 - [Python SDK](/sdks/python)
-- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.0.1, Node ≥ 22)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.1.0, Node ≥ 22)
 
 ## Support & Resources
 
