@@ -32,8 +32,8 @@ ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and fir
 
 | | Firecrawl | ScrapeGraph v2 |
 |---|---|---|
-| Python | `pip install firecrawl-py` | `pip install scrapegraph-py` (≥ 2.0.1) |
-| Node.js | `npm i @mendable/firecrawl-js` | `npm i scrapegraph-js` (≥ 2.0.1, Node ≥ 22) |
+| Python | `pip install firecrawl-py` | `pip install scrapegraph-py` (≥ 2.1.0, Python ≥ 3.12) |
+| Node.js | `npm i @mendable/firecrawl-js` | `npm i scrapegraph-js` (≥ 2.1.0, Node ≥ 22) |
 | CLI | `npm i -g firecrawl` | `npm i -g just-scrape` |
 | MCP server | Available | `pip install scrapegraph-mcp` |
 
@@ -49,8 +49,8 @@ pip uninstall firecrawl-py            # Python
 npm uninstall @mendable/firecrawl-js  # Node.js
 
 # Install ScrapeGraph
-pip install -U scrapegraph-py         # Python
-npm install scrapegraph-js@latest     # Node.js
+pip install -U "scrapegraph-py>=2.1.0"   # Python (3.12+)
+npm install scrapegraph-js@latest        # Node.js (22+)
 ```
 
 ### Update environment variables
@@ -104,13 +104,13 @@ Firecrawl's `scrape` fetches a page in one or more formats. ScrapeGraph's `scrap
 doc = fc.scrape("https://example.com", formats=["markdown"])
 print(doc.markdown)
 
-# After (ScrapeGraph v2)
-from scrapegraph_py import ScrapeRequest, MarkdownFormatConfig
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+from scrapegraph_py import MarkdownFormatConfig
 
-res = sgai.scrape(ScrapeRequest(
-    url="https://example.com",
+res = sgai.scrape(
+    "https://example.com",
     formats=[MarkdownFormatConfig()],
-))
+)
 if res.status == "success":
     print(res.data.results["markdown"]["data"][0])
 ```
@@ -146,16 +146,14 @@ result = fc.extract(
     schema={"type": "object", "properties": {"title": {"type": "string"}}},
 )
 
-# After (ScrapeGraph v2)
-from scrapegraph_py import ExtractRequest
-
-res = sgai.extract(ExtractRequest(
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+res = sgai.extract(
+    "Extract the main heading",
     url="https://example.com",
-    prompt="Extract the main heading",
     schema={"type": "object", "properties": {"title": {"type": "string"}}},
-))
+)
 if res.status == "success":
-    print(res.data.json)
+    print(res.data.json_data)
 ```
 
 ```javascript JavaScript
@@ -189,13 +187,11 @@ Firecrawl accepts a list of URLs or wildcards in one call. On ScrapeGraph, call 
 # Before (Firecrawl)
 hits = fc.search(query="best programming languages 2026", limit=5)
 
-# After (ScrapeGraph v2)
-from scrapegraph_py import SearchRequest
-
-res = sgai.search(SearchRequest(
-    query="best programming languages 2026",
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+res = sgai.search(
+    "best programming languages 2026",
     num_results=5,
-))
+)
 if res.status == "success":
     for r in res.data.results:
         print(r.title, "-", r.url)
@@ -231,15 +227,13 @@ job = fc.crawl("https://example.com", limit=50)
 started = fc.start_crawl("https://example.com", limit=50)
 status = fc.get_crawl_status(started.id)
 
-# After (ScrapeGraph v2)
-from scrapegraph_py import CrawlRequest
-
-start = sgai.crawl.start(CrawlRequest(
-    url="https://example.com",
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+start = sgai.crawl.start(
+    "https://example.com",
     max_depth=2,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
-))
+)
 status = sgai.crawl.get(start.data.id)
 print(status.data.status, status.data.finished, "/", status.data.total)
 ```
@@ -282,15 +276,15 @@ doc = fc.scrape(
     formats=["markdown", {"type": "changeTracking", "modes": ["git-diff"], "tag": "hourly"}],
 )
 
-# After (ScrapeGraph v2 — scheduled monitor)
-from scrapegraph_py import MonitorCreateRequest, MarkdownFormatConfig
+# After (ScrapeGraph v2 — scheduled monitor, scrapegraph-py ≥ 2.1.0)
+from scrapegraph_py import MarkdownFormatConfig
 
-res = sgai.monitor.create(MonitorCreateRequest(
-    url="https://example.com",
+res = sgai.monitor.create(
+    "https://example.com",
+    "*/30 * * * *",                 # cron expression (positional)
     name="Homepage watch",
-    interval="*/30 * * * *",  # cron expression
     formats=[MarkdownFormatConfig()],
-))
+)
 # Later (monitor IDs are returned as `cronId`):
 activity = sgai.monitor.activity(res.data.cron_id)
 ```
@@ -319,9 +313,9 @@ const activity = await sgai.monitor.activity(res.data?.cronId);
 The ScrapeGraph Python and JS SDKs wrap every response in an `ApiResult` — no exceptions to catch on HTTP errors. Check `status` before reading `data`:
 
 ```python
-result = sgai.extract(ExtractRequest(url="https://example.com", prompt="..."))
+result = sgai.extract("...", url="https://example.com")
 if result.status == "success":
-    data = result.data.json
+    data = result.data.json_data
 else:
     print(f"Error: {result.error}")
 ```
