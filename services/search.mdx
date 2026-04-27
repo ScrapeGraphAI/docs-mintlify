@@ -81,7 +81,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 | `query` | string | Yes | The search query. |
 | `numResults` / `num_results` | int | No | Number of results (1–20). Default: `3`. |
 | `prompt` | string | No | Prompt used for AI extraction across the fetched results. |
-| `schema` | object | No | JSON schema for structured output (requires `prompt`). |
+| `schema` | object | No | JSON schema for structured output (requires `prompt`). In Python you can pass a Pydantic model via `MyModel.model_json_schema()`. |
 | `format` | string | No | Output format for page content: `"markdown"` (default) or `"html"`. |
 | `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results (e.g. `"us"`, `"it"`). |
@@ -167,6 +167,36 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 ```
 
 </CodeGroup>
+
+#### Using a Pydantic schema (Python)
+
+Reuse a Pydantic `BaseModel` as both the schema and the response parser:
+
+```python
+from pydantic import BaseModel
+from scrapegraph_py import ScrapeGraphAI
+
+class Language(BaseModel):
+    name: str
+    reason: str
+
+class TopLanguages(BaseModel):
+    languages: list[Language]
+
+sgai = ScrapeGraphAI()
+
+res = sgai.search(
+    "best programming languages 2025",
+    num_results=3,
+    prompt="Summarize the top languages and why each is recommended.",
+    schema=TopLanguages.model_json_schema(),
+)
+
+if res.status == "success":
+    parsed = TopLanguages.model_validate(res.data.json_data)
+    for lang in parsed.languages:
+        print(lang.name, "—", lang.reason)
+```
 
 ## Async Support (Python)
 
