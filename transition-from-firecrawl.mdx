@@ -1,0 +1,355 @@
+---
+title: Transition from Firecrawl to ScrapeGraph v2
+description: A practical guide for migrating your scraping workflows from Firecrawl to ScrapeGraph v2
+---
+
+## Why switch?
+
+ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and first-class scheduled monitoring through a unified API. If you're coming from Firecrawl, this page maps every endpoint, SDK method, and concept to its ScrapeGraph equivalent so you can migrate quickly.
+
+## Feature comparison at a glance
+
+| Capability | Firecrawl | ScrapeGraph v2 |
+|---|---|---|
+| Single-page scrape (markdown, html, screenshot…) | `POST /v2/scrape` | `POST /api/scrape` |
+| Structured extraction (prompt + schema) | `POST /v2/extract` | `POST /api/extract` |
+| Web search with optional extraction | `POST /v2/search` | `POST /api/search` |
+| Async multi-page crawl | `POST /v2/crawl` → `GET /v2/crawl/{id}` | `POST /api/crawl` → `GET /api/crawl/{id}` |
+| URL discovery (sitemap + links) | `POST /v2/map` | Use `crawl.start` with patterns, or the legacy sitemap endpoint |
+| Batch scrape a list of URLs | `POST /v2/batch/scrape` | Loop over `scrape`, or use `crawl.start` with a URL list |
+| Change tracking | `changeTracking` format on `scrape`/`crawl` | First-class **monitor** resource with cron scheduling (`POST /api/monitor`) |
+| Browser interactions before scrape | `actions` array on `/v2/scrape` | `fetchConfig` (`mode="js"`, `stealth`, `wait`) on `scrape`/`extract` |
+
+## Authentication
+
+| | Firecrawl | ScrapeGraph v2 |
+|---|---|---|
+| Header | `Authorization: Bearer fc-...` | `SGAI-APIKEY: sgai-...` |
+| Env var | `FIRECRAWL_API_KEY` | `SGAI_API_KEY` |
+| Base URL | `https://api.firecrawl.dev/v2` | `https://v2-api.scrapegraphai.com/api` |
+
+## SDK installation
+
+| | Firecrawl | ScrapeGraph v2 |
+|---|---|---|
+| Python | `pip install firecrawl-py` | `pip install scrapegraph-py` (≥ 2.1.0, Python ≥ 3.12) |
+| Node.js | `npm i @mendable/firecrawl-js` | `npm i scrapegraph-js` (≥ 2.1.0, Node ≥ 22) |
+| CLI | `npm i -g firecrawl` | `npm i -g just-scrape` |
+| MCP server | Available | `pip install scrapegraph-mcp` |
+
+## Migration checklist
+
+<Steps>
+
+### Update dependencies
+
+```bash
+# Remove Firecrawl
+pip uninstall firecrawl-py            # Python
+npm uninstall @mendable/firecrawl-js  # Node.js
+
+# Install ScrapeGraph
+pip install -U "scrapegraph-py>=2.1.0"   # Python (3.12+)
+npm install scrapegraph-js@latest        # Node.js (22+)
+```
+
+### Update environment variables
+
+```bash
+# Replace
+# FIRECRAWL_API_KEY=fc-...
+
+# With
+SGAI_API_KEY=sgai-...
+```
+
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+
+### Update imports and client initialization
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl)
+from firecrawl import Firecrawl
+fc = Firecrawl(api_key="fc-...")
+
+# After (ScrapeGraph v2)
+from scrapegraph_py import ScrapeGraphAI
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+import Firecrawl from "@mendable/firecrawl-js";
+const fc = new Firecrawl({ apiKey: "fc-..." });
+
+// After (ScrapeGraph v2)
+import { ScrapeGraphAI } from "scrapegraph-js";
+// reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI({ apiKey: "..." })
+const sgai = ScrapeGraphAI();
+```
+
+</CodeGroup>
+
+### Scrape → `scrape`
+
+Firecrawl's `scrape` fetches a page in one or more formats. ScrapeGraph's `scrape` mirrors that, with typed format configs in Python and plain objects in JS.
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl)
+doc = fc.scrape("https://example.com", formats=["markdown"])
+print(doc.markdown)
+
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+from scrapegraph_py import MarkdownFormatConfig
+
+res = sgai.scrape(
+    "https://example.com",
+    formats=[MarkdownFormatConfig()],
+)
+if res.status == "success":
+    print(res.data.results["markdown"]["data"][0])
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+const doc = await fc.scrape("https://example.com", { formats: ["markdown"] });
+console.log(doc.markdown);
+
+// After (ScrapeGraph v2)
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [{ type: "markdown" }],
+});
+if (res.status === "success") {
+  console.log(res.data?.results.markdown?.data?.[0]);
+}
+```
+
+</CodeGroup>
+
+### Extract → `extract`
+
+Same shape: URL + natural-language prompt + optional JSON schema.
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl)
+result = fc.extract(
+    urls=["https://example.com"],
+    prompt="Extract the main heading",
+    schema={"type": "object", "properties": {"title": {"type": "string"}}},
+)
+
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+res = sgai.extract(
+    "Extract the main heading",
+    url="https://example.com",
+    schema={"type": "object", "properties": {"title": {"type": "string"}}},
+)
+if res.status == "success":
+    print(res.data.json_data)
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+const result = await fc.extract({
+  urls: ["https://example.com"],
+  prompt: "Extract the main heading",
+  schema: { type: "object", properties: { title: { type: "string" } } },
+});
+
+// After (ScrapeGraph v2)
+const res = await sgai.extract({
+  url: "https://example.com",
+  prompt: "Extract the main heading",
+  schema: { type: "object", properties: { title: { type: "string" } } },
+});
+if (res.status === "success") {
+  console.log(res.data?.json);
+}
+```
+
+</CodeGroup>
+
+Firecrawl accepts a list of URLs or wildcards in one call. On ScrapeGraph, call `extract` per URL or use `crawl.start` to discover pages first.
+
+### Search → `search`
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl)
+hits = fc.search(query="best programming languages 2026", limit=5)
+
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+res = sgai.search(
+    "best programming languages 2026",
+    num_results=5,
+)
+if res.status == "success":
+    for r in res.data.results:
+        print(r.title, "-", r.url)
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+const hits = await fc.search({ query: "best programming languages 2026", limit: 5 });
+
+// After (ScrapeGraph v2)
+const res = await sgai.search({
+  query: "best programming languages 2026",
+  numResults: 5,
+});
+if (res.status === "success") {
+  for (const r of res.data?.results ?? []) console.log(r.title, "-", r.url);
+}
+```
+
+</CodeGroup>
+
+### Crawl → `crawl.start` + `crawl.get`
+
+Firecrawl's `crawl()` blocks until completion; `start_crawl()` returns a job id. ScrapeGraph's crawl is always async — start, then poll (or stop/resume).
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl — blocking)
+job = fc.crawl("https://example.com", limit=50)
+
+# Or non-blocking:
+started = fc.start_crawl("https://example.com", limit=50)
+status = fc.get_crawl_status(started.id)
+
+# After (ScrapeGraph v2 — scrapegraph-py ≥ 2.1.0)
+start = sgai.crawl.start(
+    "https://example.com",
+    max_depth=2,
+    include_patterns=["/blog/*"],
+    exclude_patterns=["/admin/*"],
+)
+status = sgai.crawl.get(start.data.id)
+print(status.data.status, status.data.finished, "/", status.data.total)
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+const job = await fc.crawl("https://example.com", { limit: 50 });
+// Or non-blocking:
+const started = await fc.startCrawl("https://example.com", { limit: 50 });
+const status = await fc.getCrawlStatus(started.id);
+
+// After (ScrapeGraph v2)
+const start = await sgai.crawl.start({
+  url: "https://example.com",
+  maxDepth: 2,
+  includePatterns: ["/blog/*"],
+  excludePatterns: ["/admin/*"],
+});
+const status = await sgai.crawl.get(start.data.id);
+```
+
+</CodeGroup>
+
+### Map / batch scrape
+
+Firecrawl's `/map` returns a list of URLs quickly. ScrapeGraph doesn't have a one-shot `map`; use `crawl.start` with pattern filters to discover URLs, or call the legacy sitemap endpoint if that fits your use case.
+
+For batch scraping, iterate `scrape` calls (run them concurrently for speed), or `crawl.start` with a seed list.
+
+### Change tracking → `monitor`
+
+Firecrawl ships change tracking as a `changeTracking` **format** bolted onto `scrape`/`crawl`. ScrapeGraph makes monitoring a first-class resource with cron scheduling and history.
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl — add changeTracking to formats)
+doc = fc.scrape(
+    "https://example.com",
+    formats=["markdown", {"type": "changeTracking", "modes": ["git-diff"], "tag": "hourly"}],
+)
+
+# After (ScrapeGraph v2 — scheduled monitor, scrapegraph-py ≥ 2.1.0)
+from scrapegraph_py import MarkdownFormatConfig
+
+res = sgai.monitor.create(
+    "https://example.com",
+    "*/30 * * * *",                 # cron expression (positional)
+    name="Homepage watch",
+    formats=[MarkdownFormatConfig()],
+)
+# Later (monitor IDs are returned as `cronId`):
+activity = sgai.monitor.activity(res.data.cron_id)
+```
+
+```javascript JavaScript
+// Before (Firecrawl)
+const doc = await fc.scrape("https://example.com", {
+  formats: ["markdown", { type: "changeTracking", modes: ["git-diff"], tag: "hourly" }],
+});
+
+// After (ScrapeGraph v2)
+const res = await sgai.monitor.create({
+  url: "https://example.com",
+  name: "Homepage watch",
+  interval: "*/30 * * * *",
+  formats: [{ type: "markdown" }],
+});
+// monitor IDs are returned as `cronId`
+const activity = await sgai.monitor.activity(res.data?.cronId);
+```
+
+</CodeGroup>
+
+### Handle the `ApiResult` wrapper
+
+The ScrapeGraph Python and JS SDKs wrap every response in an `ApiResult` — no exceptions to catch on HTTP errors. Check `status` before reading `data`:
+
+```python
+result = sgai.extract("...", url="https://example.com")
+if result.status == "success":
+    data = result.data.json_data
+else:
+    print(f"Error: {result.error}")
+```
+
+```javascript
+const result = await sgai.extract({ url: "https://example.com", prompt: "..." });
+if (result.status === "success") {
+  console.log(result.data?.json);
+} else {
+  console.error(result.error);
+}
+```
+
+Direct HTTP callers (curl, fetch) receive the unwrapped response body — the envelope is applied client-side by the SDKs.
+
+### Test and verify
+
+Run your existing test suite and compare outputs. ScrapeGraph returns equivalent data structures — the main differences are the `ApiResult` envelope in the SDKs, the split `crawl.start`/`crawl.get` flow, and the dedicated `monitor` resource in place of change-tracking formats.
+
+</Steps>
+
+## Quick cURL sanity check
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","formats":[{"type":"markdown"}]}'
+```
+
+## Full SDK documentation
+
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript)
+- [CLI (just-scrape)](/services/cli/introduction)
+- [MCP Server](/services/mcp-server/introduction)
+- [API Reference](/api-reference/introduction)
