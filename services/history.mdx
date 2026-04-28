@@ -1,0 +1,230 @@
+---
+title: 'History'
+description: 'Look up past requests and fetch the full results — including content from crawled pages.'
+icon: 'clock-rotate-left'
+---
+
+## Overview
+
+History keeps a record of every API call your account makes (`scrape`, `extract`, `search`, monitor ticks, crawl jobs, schema generations) and lets you fetch the full result back later by ID. The most common use case is **retrieving the formatted content of a crawled page** — the [Crawl](/services/crawl) service returns each page as a `scrapeRefId`, and History is what you call with that ID to get the markdown, HTML, JSON extraction, or screenshot the underlying scrape produced.
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI
+
+# reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI(api_key="...")
+sgai = ScrapeGraphAI()
+
+# List recent scrape calls
+page = sgai.history.list(service="scrape", limit=5)
+for entry in page.data.data:
+    print(entry.id, entry.service, entry.status, entry.elapsed_ms)
+
+# Fetch one entry, including the full result
+one = sgai.history.get("9701fc04-23de-4684-a48f-7e8fa287550b")
+if one.status == "success":
+    print(one.data.result)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+// List recent scrape calls
+const list = await sgai.history.list({ service: "scrape", limit: 5 });
+if (list.status === "success") {
+  for (const entry of list.data?.data ?? []) {
+    console.log(entry.id, entry.service, entry.status);
+  }
+}
+
+// Fetch one entry, including the full result
+const one = await sgai.history.get("9701fc04-23de-4684-a48f-7e8fa287550b");
+if (one.status === "success") {
+  console.log(one.data?.result);
+}
+```
+
+```bash cURL
+# List
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=5" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+
+# Get one
+curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f-7e8fa287550b \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+</CodeGroup>
+
+#### Parameters
+
+**List** (`GET /api/history`)
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `page` | integer | No | Page number (1-indexed). Default: `1`. |
+| `limit` | integer | No | Entries per page. Default: `20`. |
+| `service` | string | No | Filter by service: `scrape`, `extract`, `search`, `monitor`, `crawl`, `schema`. |
+
+**Get** (`GET /api/history/:id`)
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | UUID of the request. Same UUID returned by the originating endpoint, or any `scrapeRefId` from a crawl. |
+
+<Note>
+Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## Fetching crawled page content
+
+This is the canonical pattern: start a crawl, poll until done, then call History for each page.
+
+<CodeGroup>
+
+```python Python
+import time
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
+
+sgai = ScrapeGraphAI()
+
+start = sgai.crawl.start(
+    "https://scrapegraphai.com/",
+    formats=[MarkdownFormatConfig()],
+    max_pages=5,
+    max_depth=2,
+)
+crawl_id = start.data.id
+
+while True:
+    time.sleep(2)
+    status = sgai.crawl.get(crawl_id)
+    if status.data.status in ("completed", "failed"):
+        break
+
+# Pull the formatted content for every completed page
+for page in status.data.pages:
+    if page.status != "completed":
+        continue
+    entry = sgai.history.get(page.scrape_ref_id)
+    md = entry.data.result.results.get("markdown", {}).get("data", [None])[0]
+    print(page.url, "->", md[:80] if md else "(empty)")
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const start = await sgai.crawl.start({
+  url: "https://scrapegraphai.com/",
+  formats: [{ type: "markdown" }],
+  maxPages: 5,
+  maxDepth: 2,
+});
+const crawlId = start.data.id;
+
+let status = start.data.status;
+let pages = [];
+while (status === "running") {
+  await new Promise((r) => setTimeout(r, 2000));
+  const res = await sgai.crawl.get(crawlId);
+  status = res.data.status;
+  pages = res.data.pages;
+}
+
+for (const page of pages) {
+  if (page.status !== "completed") continue;
+  const entry = await sgai.history.get(page.scrapeRefId);
+  const md = entry.data?.result?.results?.markdown?.data?.[0];
+  console.log(page.url, "->", md?.slice(0, 80) ?? "(empty)");
+}
+```
+
+</CodeGroup>
+
+### Linking children to a parent crawl
+
+Every child scrape entry produced by a crawl has `requestParentId` set to the parent crawl's `id`. So you can also list all pages from a single crawl by filtering on the client:
+
+```python
+page = sgai.history.list(service="scrape", limit=100)
+children = [e for e in page.data.data if e.request_parent_id == crawl_id]
+```
+
+## Entry shape
+
+| Field | Description |
+|-------|-------------|
+| `id` | Entry UUID — same UUID the originating endpoint returned. |
+| `service` | `scrape` \| `extract` \| `search` \| `monitor` \| `crawl` \| `schema`. |
+| `status` | `running` \| `completed` \| `failed`. |
+| `params` | The request body that produced this entry. |
+| `result` | The full response payload (shaped per the originating service). `null` while running. |
+| `error` | Error object if `status === "failed"`, otherwise `null`. |
+| `elapsedMs` | How long the request took, in milliseconds. |
+| `requestParentId` | Parent UUID if this entry was created by another request (e.g. a scrape from a crawl). `null` for top-level. |
+| `createdAt` | ISO-8601 timestamp. |
+
+## Async Support (Python)
+
+```python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI
+
+async def main():
+    async with AsyncScrapeGraphAI() as sgai:
+        page = await sgai.history.list(service="scrape", limit=10)
+        if page.status == "success":
+            for entry in page.data.data:
+                print(entry.id, entry.created_at)
+
+asyncio.run(main())
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Crawl Page Content" icon="spider">
+    Resolve `scrapeRefId`s from crawl results to fetch each page's formatted content.
+  </Card>
+  <Card title="Replay Past Requests" icon="clock-rotate-left">
+    Fetch the full result of any past call without re-running it (no extra credits).
+  </Card>
+  <Card title="Service Filtering" icon="filter">
+    Narrow by `scrape`, `extract`, `search`, `monitor`, `crawl`, or `schema`.
+  </Card>
+  <Card title="Parent Linking" icon="link">
+    `requestParentId` ties child requests back to the crawl or workflow that spawned them.
+  </Card>
+</CardGroup>
+
+## Integration Options
+
+### Official SDKs
+- [Python SDK](/sdks/python)
+- [JavaScript SDK](/sdks/javascript) (`scrapegraph-js` ≥ 2.1.0, Node ≥ 22)
+
+## Support & Resources
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api-reference/endpoint/history">
+    Detailed endpoint documentation
+  </Card>
+  <Card title="Crawl Service" icon="spider" href="/services/crawl">
+    The most common source of `scrapeRefId`s
+  </Card>
+  <Card title="Community" icon="discord" href="https://discord.gg/uJN7TYcpNa">
+    Join our Discord community
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/ScrapeGraphAI">
+    Check out our open-source projects
+  </Card>
+</CardGroup>

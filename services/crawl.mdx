@@ -156,6 +156,41 @@ Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 ```
 </Accordion>
 
+## Fetching page content
+
+The crawl response returns each page as lightweight metadata (`url`, `depth`, `scrapeRefId`, …) — not the full body. Use the [History](/services/history) service with each `scrapeRefId` to pull the formatted content the underlying scrape produced.
+
+<CodeGroup>
+
+```python Python
+# After the crawl completes, fetch the markdown for each page
+for page in status.data.pages:
+    if page.status != "completed":
+        continue
+    entry = sgai.history.get(page.scrape_ref_id)
+    md = entry.data.result.results.get("markdown", {}).get("data", [None])[0]
+    print(page.url, "->", md[:80] if md else "(empty)")
+```
+
+```javascript JavaScript
+for (const page of status.data.pages) {
+  if (page.status !== "completed") continue;
+  const entry = await sgai.history.get(page.scrapeRefId);
+  const md = entry.data?.result?.results?.markdown?.data?.[0];
+  console.log(page.url, "->", md?.slice(0, 80) ?? "(empty)");
+}
+```
+
+```bash cURL
+# Pick any scrapeRefId from the pages[] array of the crawl status response
+curl -X GET https://v2-api.scrapegraphai.com/api/history/<scrapeRefId> \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+</CodeGroup>
+
+See the [History service](/services/history) for the full entry shape and the `requestParentId` linkage that ties each child scrape back to its parent crawl.
+
 ## Managing Crawl Jobs
 
 ```python

@@ -84,7 +84,20 @@ Returned when the request body fails schema validation. The `details` array name
 }
 ```
 
-Common `code` values: `invalid_format`, `invalid_type`, `too_small`, `too_big`, `custom`.
+Common `code` values: `invalid_format`, `invalid_type`, `too_small`, `too_big`, `invalid_value`, `custom`.
+
+## Not found (404)
+
+```json
+{
+  "error": {
+    "type": "not_found",
+    "message": "Request not found"
+  }
+}
+```
+
+The resource ID is well-formed but does not exist for this account. Returned by lookup endpoints such as `GET /api/history/:id`, `GET /api/crawl/:id`, and `GET /api/monitor/:cronId` when the UUID does not correspond to a record on your account.
 
 ## Quota and rate limit errors
 
@@ -132,6 +145,7 @@ Transient — retry with exponential backoff. If errors persist, check the [stat
 | Error | Retryable? | Recommended action |
 |-------|------------|--------------------|
 | `validation` (400) | No | Fix the request body. |
+| `not_found` (404) | No | Verify the ID is correct and belongs to this account. |
 | `auth_missing_key` / `auth_invalid_key` (401/403) | No | Fix the header or rotate the key. |
 | `insufficient_credits` (402) | No | Top up credits. |
 | `rate_limited` (429) | Yes | Exponential backoff, honor any `Retry-After` header. |
