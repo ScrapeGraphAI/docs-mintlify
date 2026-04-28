@@ -52,6 +52,7 @@
                   "services/search",
                   "services/crawl",
                   "services/monitor",
+                  "services/history",
                   {
                     "group": "Additional Parameters",
                     "pages": [
@@ -237,6 +238,12 @@
                 "pages": [
                   "api-reference/endpoint/monitor/create",
                   "api-reference/endpoint/monitor/manage"
+                ]
+              },
+              {
+                "group": "History",
+                "pages": [
+                  "api-reference/endpoint/history"
                 ]
               },
               {

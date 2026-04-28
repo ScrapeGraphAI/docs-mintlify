@@ -50,13 +50,26 @@ curl -X GET https://v2-api.scrapegraphai.com/api/crawl/79694e03-f2ea-43f2-93cc-7
 | `status` | `"running"`, `"completed"`, `"failed"`, or `"stopped"`. |
 | `total` / `finished` | Progress counters. |
 | `pages[]` | Per-page results, ordered by crawl time. |
-| `pages[].scrapeRefId` | UUID of the underlying Scrape call — use it to fetch the full formatted content. |
+| `pages[].scrapeRefId` | UUID of the underlying Scrape call — pass to `GET /api/history/:id` to fetch the formatted content (markdown, HTML, JSON, screenshot, etc.). |
 
 <Note>
 Poll at a reasonable cadence (every 1–5 seconds) until `status` is `"completed"`, `"failed"`, or `"stopped"`. Or use [Monitor](/services/monitor) with a webhook to avoid polling entirely.
 </Note>
 
+## Fetching page content
+
+The crawl response intentionally returns lightweight metadata (`url`, `depth`, `scrapeRefId`, etc.) rather than embedding every page's full body. Use [`GET /api/history/:id`](/api-reference/endpoint/history) with each `scrapeRefId` to fetch the formatted content the underlying scrape produced:
+
+```bash
+# Pick a scrapeRefId from the pages[] array above
+curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f-7e8fa287550b \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+The response is a `HistoryEntry` with the full `result` payload, e.g. `result.results.markdown.data[0]` for markdown. See the [History endpoint reference](/api-reference/endpoint/history) for the entry shape and a complete crawl-to-content example.
+
 ## Related
 
 - Start a job: [`POST /api/crawl`](/api-reference/endpoint/crawl/start)
 - Stop / resume / delete: [Manage crawl jobs](/api-reference/endpoint/crawl/manage)
+- Fetch each page's content: [History](/api-reference/endpoint/history)

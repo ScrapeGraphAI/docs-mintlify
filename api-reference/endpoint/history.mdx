@@ -1,0 +1,192 @@
+---
+title: 'History'
+description: 'Look up past requests by ID, or list recent requests with optional filters.'
+---
+
+```http
+GET https://v2-api.scrapegraphai.com/api/history
+GET https://v2-api.scrapegraphai.com/api/history/:id
+```
+
+History stores every API call your account makes (scrape, extract, search, monitor ticks, crawl jobs, schema generations) and lets you fetch them back later by ID. The most common use case is **retrieving the content of a crawled page** — `GET /api/crawl/:id` returns each page's `scrapeRefId`, and you call `GET /api/history/:scrapeRefId` to get the formatted content (markdown, HTML, JSON extraction, screenshots, etc.) that the underlying scrape produced.
+
+## List history
+
+```http
+GET https://v2-api.scrapegraphai.com/api/history
+```
+
+Returns a paginated list of recent entries, newest first.
+
+### Query parameters
+
+<ParamField query="page" type="integer" default="1">
+  Page number to fetch (1-indexed).
+</ParamField>
+
+<ParamField query="limit" type="integer" default="20">
+  Entries per page.
+</ParamField>
+
+<ParamField query="service" type="string">
+  Filter by service. One of `"scrape"`, `"extract"`, `"search"`, `"monitor"`, `"crawl"`, `"schema"`.
+</ParamField>
+
+### Example request
+
+```bash
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=5" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+### Example response
+
+```json
+{
+  "data": [
+    {
+      "id": "9701fc04-23de-4684-a48f-7e8fa287550b",
+      "userId": "4406e370-2405-4927-b7b3-b85c0a769b63",
+      "service": "scrape",
+      "status": "completed",
+      "params": {
+        "url": "https://scrapegraphai.com/",
+        "formats": [{ "mode": "normal", "type": "markdown" }]
+      },
+      "result": {
+        "results": { "markdown": { "data": ["# ScrapeGraphAI..."] } },
+        "metadata": { "contentType": "text/html" }
+      },
+      "error": null,
+      "elapsedMs": 533,
+      "requestParentId": "06aa21dd-9a3a-417b-b2dd-0cd0943b7ded",
+      "createdAt": "2026-04-28T09:00:02.907Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 5, "total": 178 }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `data[]` | Ordered list of history entries (newest first). See [Entry shape](#entry-shape). |
+| `pagination.page` / `.limit` | Echo of the request's `page` and `limit`. |
+| `pagination.total` | Total entry count matching the filter (across all pages). |
+
+## Get one entry
+
+```http
+GET https://v2-api.scrapegraphai.com/api/history/:id
+```
+
+Returns the full record for a single request — including the full `result` payload (markdown, HTML, JSON extraction, screenshots, etc.).
+
+### Path parameters
+
+<ParamField path="id" type="string" required>
+  The UUID of a request. This is the same UUID returned by the originating endpoint:
+
+  - From `POST /api/scrape` → top-level `id`
+  - From `POST /api/extract` → top-level `id`
+  - From `POST /api/search` → top-level `id`
+  - From `GET /api/crawl/:id` → each `pages[].scrapeRefId`
+  - From `GET /api/monitor/:cronId/activity` → each `ticks[].id`
+</ParamField>
+
+### Example request
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f-7e8fa287550b \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+### Example response
+
+```json
+{
+  "id": "9701fc04-23de-4684-a48f-7e8fa287550b",
+  "userId": "4406e370-2405-4927-b7b3-b85c0a769b63",
+  "service": "scrape",
+  "status": "completed",
+  "params": {
+    "url": "https://scrapegraphai.com/",
+    "formats": [{ "mode": "normal", "type": "markdown" }]
+  },
+  "result": {
+    "results": {
+      "markdown": {
+        "data": ["# ScrapeGraphAI\n\nThe scraper for the AI Era..."]
+      }
+    },
+    "metadata": { "contentType": "text/html" }
+  },
+  "error": null,
+  "elapsedMs": 533,
+  "requestParentId": "06aa21dd-9a3a-417b-b2dd-0cd0943b7ded",
+  "createdAt": "2026-04-28T09:00:02.907Z"
+}
+```
+
+## Entry shape
+
+Every entry — both in `GET /history` and `GET /history/:id` — has the same shape:
+
+| Field | Description |
+|-------|-------------|
+| `id` | Entry UUID. Same UUID as the originating endpoint returned. |
+| `userId` | The account that issued the request. |
+| `service` | `"scrape"` \| `"extract"` \| `"search"` \| `"monitor"` \| `"crawl"` \| `"schema"`. |
+| `status` | Lifecycle: `"running"` \| `"completed"` \| `"failed"`. |
+| `params` | The request body that produced this entry (URL, prompt, formats, etc.). |
+| `result` | The full response payload, shaped per the originating endpoint. `null` while running, populated on completion. |
+| `error` | Error object if `status === "failed"`, otherwise `null`. |
+| `elapsedMs` | How long the request took, in milliseconds. |
+| `requestParentId` | If this entry was created as a child of another (e.g. a scrape run by a crawl), the parent's UUID. `null` for top-level requests. |
+| `createdAt` | ISO-8601 timestamp. |
+
+## Fetching crawled page content
+
+The canonical pattern: start a crawl, poll until completed, then for each page fetch its scrape result.
+
+```bash
+# 1. Start the crawl
+curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://example.com", "formats": [{ "type": "markdown" }], "maxPages": 5 }'
+# → { "id": "crawl-uuid", "status": "running", ... }
+
+# 2. Poll status until completed
+curl -X GET https://v2-api.scrapegraphai.com/api/crawl/crawl-uuid \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+# → { "status": "completed", "pages": [{ "url": "...", "scrapeRefId": "page-uuid", ... }] }
+
+# 3. Fetch each page's content via history
+curl -X GET https://v2-api.scrapegraphai.com/api/history/page-uuid \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+# → { "service": "scrape", "result": { "results": { "markdown": { "data": ["# ..."] } } }, ... }
+```
+
+The `requestParentId` on each child scrape entry equals the parent crawl's `id`, so you can also list every page produced by a single crawl with:
+
+```bash
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=100" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+# Then filter client-side by `requestParentId === crawl-uuid`.
+```
+
+## Errors
+
+| HTTP | `error.type` | When |
+|------|--------------|------|
+| `400` | `validation` | Malformed `id` (must be a UUID), or invalid `service` filter value. |
+| `404` | `not_found` | The `id` is well-formed but no matching entry exists for this account. |
+| `403` | `auth_invalid_key` | The API key is invalid or revoked. |
+
+See [Error handling](/api-reference/errors) for the full envelope.
+
+## Related
+
+- Crawl jobs that produce `scrapeRefId`s: [Get crawl status](/api-reference/endpoint/crawl/get-status)
+- Originating endpoints whose `id` you can pass to `GET /history/:id`: [Scrape](/api-reference/endpoint/scrape), [Extract](/api-reference/endpoint/extract), [Search](/api-reference/endpoint/search)
+- SDK wrappers: `sgai.history.list()` and `sgai.history.get(id)` — see [JavaScript SDK](/sdks/javascript) and [Python SDK](/sdks/python)
