@@ -1,0 +1,244 @@
+---
+title: 'Make (Integromat)'
+description: 'Use ScrapeGraphAI inside Make.com scenarios to scrape, extract, search, crawl, and monitor web pages'
+---
+
+## Overview
+
+The ScrapeGraphAI app for Make.com lets you connect any automation scenario to ScrapeGraph's v2 API — no code required. Fetch pages, extract structured data with an AI prompt, run web searches, kick off multi-page crawls, and schedule monitors, all as native Make modules.
+
+<CardGroup cols={2}>
+  <Card title="ScrapeGraphAI on Make" icon="puzzle-piece" href="https://www.make.com/en/integrations/scrapegraphai">
+    Install the app from Make's marketplace
+  </Card>
+  <Card title="ScrapeGraphAI Dashboard" icon="key" href="https://scrapegraphai.com/dashboard">
+    Get your API key
+  </Card>
+</CardGroup>
+
+## Installation
+
+1. Open your Make.com workspace and go to **Connections**.
+2. Search for **ScrapeGraphAI** and click **Install**.
+3. When prompted, enter your `SGAI-APIKEY` from the [dashboard](https://scrapegraphai.com/dashboard).
+4. Click **Save** — the connection is shared across all modules in your scenario.
+
+<Frame>
+  <img src="/integrations/images/make-connection.png" alt="ScrapeGraphAI connection dialog in Make" />
+</Frame>
+
+## Example: Extract product data into Google Sheets
+
+This scenario runs daily, extracts all products from an Amazon search page, and saves each one as a row in Google Sheets — no code required.
+
+**Full scenario flow:**
+
+<Frame>
+  <img src="/integrations/images/make-scenario-extract-sheets.png" alt="Full scenario: Schedule → Extract → Iterator → Google Sheets" />
+</Frame>
+
+**Step 1 — Schedule trigger**: Set the scenario to run daily (or any interval).
+
+**Step 2 — Extract module**: Configure with your target URL, an extraction prompt, and an output schema.
+
+<Frame>
+  <img src="/integrations/images/make-extract.png" alt="Extract module configuration" />
+</Frame>
+
+- **URL**: The product listing page to extract from
+- **Extraction Prompt**: `Extract all products on the page with their name, price, rating, and number of reviews`
+- **Output Schema (JSON)**:
+```json
+{
+  "type": "object",
+  "properties": {
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "price": {"type": "string"},
+          "rating": {"type": "number"},
+          "reviews": {"type": "number"}
+        }
+      }
+    }
+  }
+}
+```
+
+**Step 3 — Iterator**: Add a **Flow Control → Iterator** module and set the **Array** field to `{{2.json.products}}`. This loops through each product and passes it to the next module one at a time.
+
+<Frame>
+  <img src="/integrations/images/make-iterator.png" alt="Iterator module configuration" />
+</Frame>
+
+**Step 4 — Google Sheets: Add a Row**: Map each field from the Iterator output:
+- **Name** → `{{value.name}}`
+- **Price** → `{{value.price}}`
+- **Rating** → `{{value.rating}}`
+- **Reviews** → `{{value.reviews}}`
+
+<Frame>
+  <img src="/integrations/images/make-sheets-config.png" alt="Google Sheets module configuration" />
+</Frame>
+
+**Result**: Every product on the page is saved as a separate row.
+
+<Frame>
+  <img src="/integrations/images/make-sheets-result.png" alt="Google Sheets result with extracted product data" />
+</Frame>
+
+---
+
+## Modules
+
+### Scrape
+
+Fetch a URL and return its content in one or more formats: Markdown, HTML, links, images, a plain-text summary, or branding elements.
+
+<Frame>
+  <img src="/integrations/images/make-scrape.png" alt="Scrape module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| URL | The page to fetch |
+| Format | Output format — Markdown, HTML, Links, Images, Summary, Branding |
+| HTML Mode | Rendering mode — Normal, Reader, Prune |
+
+---
+
+### Extract
+
+Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-language prompt and an optional JSON schema.
+
+<Frame>
+  <img src="/integrations/images/make-extract.png" alt="Extract module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Website URL | Page to extract from |
+| Extraction Prompt | Natural-language instruction, e.g. `Extract product name and price` |
+| Output Schema (JSON) | Optional JSON schema to enforce output shape |
+| HTML Processing Mode | Normal, Reader, or Prune |
+
+---
+
+### Search
+
+Run a web search and get page content returned inline — optionally with AI extraction applied to each result.
+
+<Frame>
+  <img src="/integrations/images/make-search.png" alt="Search module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Query | Search query string |
+| Number of Results | 1–20, default 3 |
+| Format | Content format for each result |
+| Extraction Prompt | Optional AI extraction applied to each page |
+| Output Schema (JSON) | Optional schema — requires Extraction Prompt |
+| Country Code | 2-letter country code for localised results |
+
+---
+
+### Start Crawl
+
+Start an async multi-page crawl from an entry URL. Returns a **Crawl Job ID** to pass into **Get Crawl Status**.
+
+<Frame>
+  <img src="/integrations/images/make-start-crawl.png" alt="Start Crawl module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| URL | Entry point for the crawl |
+| Format | Output format per page |
+| Max Pages | Cap on total pages crawled (1–1000) |
+| Max Depth | How many link levels deep to traverse |
+| Max Links Per Page | Maximum links to follow per page |
+| Include / Exclude Patterns | URL glob patterns, e.g. `/blog/*` |
+
+---
+
+### Get Crawl Status
+
+Poll the status and results of a crawl job started by **Start Crawl**.
+
+<Frame>
+  <img src="/integrations/images/make-get-crawl-status.png" alt="Get Crawl Status module" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Crawl Job ID | The `id` output from Start Crawl — map with `{{1.id}}` |
+
+Returns `status` (`running` / `completed` / `failed`) and a `pages` array when completed.
+
+<Tip>
+Add a **Tools → Sleep** module (60 seconds) between Start Crawl and Get Crawl Status to give the crawl time to finish before polling. For large crawls, use two separate scenarios with a Make Data Store to persist the job ID.
+</Tip>
+
+---
+
+### Create Monitor
+
+Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect changes between runs.
+
+<Frame>
+  <img src="/integrations/images/make-create-monitor.png" alt="Create Monitor module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| URL | Page to watch |
+| Monitor Name | Optional display name |
+| Interval (cron) | Cron expression — see table below |
+| Format | Content format to capture |
+| Webhook URL | Optional URL to POST results to on each tick |
+
+**Common cron expressions**
+
+| Schedule | Cron |
+|----------|------|
+| Every hour | `0 * * * *` |
+| Every 6 hours | `0 */6 * * *` |
+| Daily at 09:00 UTC | `0 9 * * *` |
+| Weekly on Monday | `0 9 * * 1` |
+
+<Note>
+Run Create Monitor once manually to set up the monitor, then use Get Monitor Activity in a separate scheduled scenario to fetch what changed.
+</Note>
+
+---
+
+### Get Monitor Activity
+
+Fetch the latest activity ticks from an existing monitor.
+
+<Frame>
+  <img src="/integrations/images/make-monitor-activity.png" alt="Get Monitor Activity module" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Monitor ID | The `id` returned by Create Monitor |
+| Limit | Number of ticks to return (1–100, default 20) |
+
+Returns a `ticks` array where each entry has `changed` (boolean), `diffs`, `status`, and `createdAt`.
+
+---
+
+## Deprecated modules
+
+The following modules from the v1 integration are still visible but no longer functional. Use the v2 modules above instead.
+
+| Deprecated | Replacement |
+|------------|-------------|
+| [Deprecated] SmartScrape | Scrape |
+| [Deprecated] Markdownify | Scrape (Markdown format) |
+| [Deprecated] Generate JSON Schema | Extract |
