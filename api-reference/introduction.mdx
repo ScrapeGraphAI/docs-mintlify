@@ -12,6 +12,7 @@ The ScrapeGraphAI v2 API exposes five core services behind a single host. All en
 - **Search** — web search with page content returned inline and optional AI extraction across results.
 - **Crawl** — async multi-page traversal with URL patterns, depth limits, and per-page formats.
 - **Monitor** — cron-scheduled watches with change detection and optional webhooks.
+- **History** — look up past requests by ID, including the formatted content of crawled pages via each `scrapeRefId`.
 
 Prefer using an SDK? See the [Python SDK](/sdks/python) or [JavaScript SDK](/sdks/javascript) — both wrap this same API.
 
@@ -63,6 +64,9 @@ Keep your API key secret. Never ship it in client-side code — load it from an 
   <Card title="Monitor · manage" icon="sliders" href="/api-reference/endpoint/monitor/manage">
     List, pause, resume, update, delete monitors; fetch activity.
   </Card>
+  <Card title="History" icon="clock-rotate-left" href="/api-reference/endpoint/history">
+    `GET /api/history[/:id]` — list past requests or fetch a single result by ID (including content for crawled pages).
+  </Card>
   <Card title="Credits" icon="coins" href="/api-reference/endpoint/credits">
     `GET /api/credits` — remaining balance and job quotas.
   </Card>
@@ -75,8 +79,9 @@ Keep your API key secret. Never ship it in client-side code — load it from an 
 | `200` | Success |
 | `400` | Validation error — the request body didn't pass schema checks. |
 | `401` | Missing `SGAI-APIKEY` header. |
-| `403` | Invalid or deprecated API key. |
 | `402` | Insufficient credits. |
+| `403` | Invalid or deprecated API key. |
+| `404` | Not found — the resource ID does not exist for this account. |
 | `429` | Rate limit exceeded. |
 | `500` | Server error. |
 
