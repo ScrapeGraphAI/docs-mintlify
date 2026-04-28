@@ -32,11 +32,22 @@
     return null;
   }
 
+  function relaxClipping(node) {
+    var current = node;
+    for (var i = 0; i < 4 && current; i++) {
+      current.style.overflow = 'visible';
+      current.style.maxHeight = 'none';
+      current = current.parentElement;
+    }
+  }
+
   function inject() {
     if (document.getElementById(CTA_ID)) return;
     var host = findTocAside();
     if (!host) return;
-    host.appendChild(buildCta());
+    var cta = buildCta();
+    host.appendChild(cta);
+    relaxClipping(host);
   }
 
   function schedule() {

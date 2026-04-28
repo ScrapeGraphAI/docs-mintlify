@@ -74,7 +74,9 @@
 }
 
 .sgai-cta__btn {
-  display: block;
+  display: block !important;
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
   padding: 8px 10px;
   border-radius: 8px;
@@ -95,7 +97,7 @@
 .sgai-cta__btn--primary {
   background: #AC6DFF;
   color: #EFEFEF !important;
-  margin-bottom: 6px;
+  margin: 0 0 8px 0;
   box-shadow: 0 4px 14px -6px rgba(172, 109, 255, 0.6);
 }
 
@@ -103,6 +105,7 @@
   background: rgba(239, 239, 239, 0.04);
   border: 1px solid rgba(239, 239, 239, 0.12);
   color: #EFEFEF !important;
+  margin: 0;
 }
 
 .sgai-cta__btn--secondary:hover {
