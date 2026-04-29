@@ -1,0 +1,185 @@
+---
+title: 'n8n'
+description: 'Use ScrapeGraphAI inside n8n workflows — scrape, extract, crawl, monitor, and more, with no code'
+---
+
+## Overview
+
+The official [`n8n-nodes-scrapegraphai`](https://www.npmjs.com/package/n8n-nodes-scrapegraphai) community node exposes the full v2 API as a single node with seven resources: **Scrape**, **Extract**, **Search**, **Crawl**, **Monitor**, **History**, and **Credit**. Drop it into any n8n workflow, point it at a URL, and you get markdown, structured JSON, screenshots, or a recurring monitor — wired into the rest of your stack via the 400+ nodes n8n already ships with.
+
+<CardGroup cols={2}>
+  <Card
+    title="Package on npm"
+    icon="cube"
+    href="https://www.npmjs.com/package/n8n-nodes-scrapegraphai"
+  >
+    `n8n-nodes-scrapegraphai`
+  </Card>
+  <Card
+    title="Source on GitHub"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/n8n-nodes-scrapegraphai"
+  >
+    Issues, PRs, and the changelog
+  </Card>
+</CardGroup>
+
+## Installation
+
+Inside your n8n instance, open **Settings → Community Nodes → Install** and enter:
+
+```
+n8n-nodes-scrapegraphai
+```
+
+Acknowledge the risks prompt and install. The node appears as **ScrapeGraphAI** in the node panel.
+
+<Note>
+Self-hosted n8n only — n8n Cloud does not yet allow community nodes. If you don't have a host, follow the [self-hosting guide](https://docs.n8n.io/hosting/).
+</Note>
+
+## Credentials
+
+Add a new **ScrapeGraphAI API** credential and paste your API key. n8n will hit `GET /api/credits` to verify the key — a green banner confirms it works.
+
+<Note>
+Get your API key from the [ScrapeGraphAI dashboard](https://scrapegraphai.com/dashboard).
+</Note>
+
+## What's in the node
+
+| Resource | Operations | What it does |
+|---|---|---|
+| **Scrape** | `scrape` | Fetch a page in markdown, HTML, JSON (AI-extracted), screenshot, links, summary, branding, or any combination |
+| **Extract** | `extract` | Run a natural-language prompt over a URL, raw HTML, or markdown — optional JSON schema |
+| **Search** | `search` | AI web search with inline content; optional rollup prompt across results |
+| **Crawl** | `start`, `getStatus`, `stop`, `resume`, `delete` | Async multi-page crawls with patterns, depth, and per-page formats |
+| **Monitor** | `create`, `list`, `get`, `update`, `pause`, `resume`, `delete`, `activity` | Cron-scheduled fetches with diff detection and webhooks |
+| **History** | `get`, `list` | Look up past results by `scrapeRefId` — used to fetch full content for crawled pages |
+| **Credit** | `get` | Check remaining credits and plan |
+
+Every content-producing operation (Scrape / Extract / Search) exposes an **Output** parameter with three modes — Simplified, Raw, or Selected Fields — so the response shape stays predictable when chained into AI Agent tools or downstream nodes.
+
+## Example: crawl a site, save every page to Airtable
+
+This walkthrough uses **Crawl** to discover pages, **History** to fetch each page's full content, and an **Airtable** node to land the rows. The same pattern works for Notion, Google Sheets, Postgres, S3 — anywhere n8n can write.
+
+<img src="/integrations/images/n8n/workflow-canvas.png" alt="Full n8n workflow canvas: Manual Trigger → Crawl Start → Wait → Crawl Status → Split Out → History Get → Airtable" />
+
+### 1. Crawl → Start
+
+Kick off the crawl. The node returns a `cronId` (the crawl job ID) which the rest of the workflow chases.
+
+<img src="/integrations/images/n8n/crawl-start.png" alt="Crawl Start node parameters: URL, formats, max pages, max depth" />
+
+| Field | Value |
+|---|---|
+| Resource | `Crawl` |
+| Operation | `Start` |
+| URL | `https://scrapegraphai.com/` |
+| Formats | one entry, `Markdown` (mode `Normal`) |
+| Max Pages | `6` |
+| Max Depth | `2` |
+
+### 2. Wait
+
+Add a **Wait** node (~60 seconds). Crawls are asynchronous — give the worker time to fetch a few pages before polling.
+
+### 3. Crawl → Get Status
+
+Pull the job state. When `status` is `completed` (or `partial`), the response includes a `pages` array with one entry per crawled page — each carrying the page URL, depth, title, and a `scrapeRefId` pointer to the stored result.
+
+<img src="/integrations/images/n8n/crawl-status.png" alt="Crawl Get Status node parameters with the Resource Locator filled by an expression" />
+
+| Field | Value |
+|---|---|
+| Resource | `Crawl` |
+| Operation | `Get Status` |
+| Crawl ID | `={{ $('ScrapegraphAI').item.json.id }}` (Resource Locator, expression) |
+
+### 4. Split Out
+
+Split the `pages` array into one item per page so the next node runs once per crawled URL.
+
+<img src="/integrations/images/n8n/split-out.png" alt="Split Out node configured to fan out the pages array" />
+
+| Field | Value |
+|---|---|
+| Field To Split Out | `pages` |
+
+### 5. History → Get
+
+For each page, fetch the full content (markdown, HTML, JSON — whatever formats the crawl captured) using the `scrapeRefId` from Split Out.
+
+<img src="/integrations/images/n8n/history-get.png" alt="History Get node with the scrapeRefId expression in the Entry Resource Locator" />
+
+| Field | Value |
+|---|---|
+| Resource | `History` |
+| Operation | `Get` |
+| Entry | `={{ $json.scrapeRefId }}` (Resource Locator, expression) |
+| Simplify | off |
+
+### 6. Airtable → Create
+
+Map the page metadata + content into a row. Switch the **Base** and **Table** dropdowns to **By ID** mode and paste your IDs, then map fields with expressions:
+
+<img src="/integrations/images/n8n/airtable-config.png" alt="Airtable node parameters with five mapped column expressions" />
+
+| Column | Expression |
+|---|---|
+| URL | `={{ $('Split Out').item.json.url }}` |
+| Title | `={{ $('Split Out').item.json.title }}` |
+| Depth | `={{ $('Split Out').item.json.depth }}` |
+| ContentType | `={{ $json.metadata.contentType }}` |
+| Markdown | `={{ $json.result.results.markdown.data[0] }}` |
+
+### 7. Run it
+
+Hit **Test workflow**. The node fires once per crawled page and writes a row each time:
+
+<img src="/integrations/images/n8n/airtable-result.png" alt="Airtable base populated with one row per crawled page" />
+
+## Output modes for AI Agent tools
+
+When you attach the node as a tool to an n8n **AI Agent**, the **Output** parameter on Scrape / Extract / Search becomes load-bearing:
+
+- **Simplified** — flattened response with the most useful top-level fields (`id`, `json`, `results`, `usage`, …). Easiest for an LLM to reason over.
+- **Raw** — the full v2 API response, untouched.
+- **Selected Fields** — comma-separated allowlist of top-level keys.
+
+Pick the mode that matches what your agent needs to see.
+
+## Patterns that carry over
+
+| Pattern | Resource(s) | Notes |
+|---|---|---|
+| One-shot fetch | Scrape | Use `formats=[{type:"markdown"}]` for the cheapest pass |
+| Structured extraction | Extract or Scrape with JSON format | JSON schema is optional but locks the shape |
+| Multi-page archive | Crawl + History (this guide) | `History → Get` is how you retrieve the bytes a crawl captured |
+| Recurring fetch with diff | Monitor | Wire the `webhookUrl` field to an n8n Webhook node for instant deltas |
+| AI search rollup | Search with prompt | Single-call alternative to "search → scrape each result → summarize" |
+
+## Troubleshooting
+
+- **`Unknown field name: "id"` from Airtable** — your column names don't match. Switch the Airtable node's mapping to **Map Each Column Manually** and only fill the columns that exist in your table.
+- **Crawl Get Status returns `pages: []`** — the crawl is still running. Increase the Wait duration or poll until `status === "completed"`.
+- **History Get returns an old result** — `scrapeRefId` always points to the latest result for that pointer. Trigger a fresh crawl to refresh.
+- **Credentials test fails** — confirm the key is from the v2 dashboard. The node calls `https://v2-api.scrapegraphai.com/api/credits`; v1 keys won't validate.
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="GitHub repo" icon="github" href="https://github.com/ScrapeGraphAI/n8n-nodes-scrapegraphai">
+    Source code, issue tracker, and release notes
+  </Card>
+  <Card title="n8n Community Nodes" icon="puzzle-piece" href="https://docs.n8n.io/integrations/community-nodes/installation/">
+    How to install and trust community nodes in n8n
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Full v2 endpoint reference — every parameter the node sends
+  </Card>
+  <Card title="Dashboard" icon="key" href="https://scrapegraphai.com/dashboard">
+    Get an API key and check usage
+  </Card>
+</CardGroup>

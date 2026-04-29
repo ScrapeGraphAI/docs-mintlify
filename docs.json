@@ -112,6 +112,12 @@
                 ]
               },
               {
+                "group": "No-code",
+                "pages": [
+                  "integrations/n8n"
+                ]
+              },
+              {
                 "group": "Contribute",
                 "pages": [
                   "contribute/opensource"
