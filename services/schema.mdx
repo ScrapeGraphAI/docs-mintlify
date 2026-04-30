@@ -1,0 +1,172 @@
+---
+title: 'Schema'
+description: 'Generate or augment a JSON Schema from a natural-language prompt'
+icon: 'sitemap'
+---
+
+## Overview
+
+Schema turns a plain-English description of the data you want into a valid JSON Schema you can pass to **Extract**, **Search**, or **Monitor** as `output_schema`. Optionally seed it with an `existing_schema` to extend rather than start from scratch.
+
+Use it when you want strongly-typed output but don't want to hand-write the schema.
+
+## Pricing
+
+Each Schema call costs **1 credit**. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+
+## Getting Started
+
+### Quick Start
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI
+
+sgai = ScrapeGraphAI()
+
+res = sgai.schema(
+    prompt="A product listing on an e-commerce site. Include name, price (number), currency, in_stock (boolean), rating (0-5), and a list of review excerpts."
+)
+
+print(res.data.schema)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.schema({
+  prompt: "A product listing on an e-commerce site. Include name, price (number), currency, in_stock (boolean), rating (0-5), and a list of review excerpts.",
+});
+
+console.log(res.data?.schema);
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/schema \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A product listing on an e-commerce site. Include name, price (number), currency, in_stock (boolean), rating (0-5), and a list of review excerpts."
+  }'
+```
+
+</CodeGroup>
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `prompt` | string | Yes | Natural-language description of the schema to generate. |
+| `existing_schema` | object \| string | No | Existing JSON Schema (object or JSON string) to extend with the new fields described in `prompt`. |
+| `model` | string | No | Optional LLM model override. |
+
+#### Response
+
+```json
+{
+  "refinedPrompt": "Extract all product listings with their name, price, currency, stock status, rating, and review excerpts from the e-commerce site",
+  "schema": {
+    "$defs": {
+      "ItemSchema": {
+        "title": "ItemSchema",
+        "type": "object",
+        "properties": {
+          "name": { "title": "Name", "description": "Name of the product", "type": "string" },
+          "price": { "title": "Price", "description": "Price of the product as a number", "type": "number" },
+          "currency": { "title": "Currency", "description": "Currency code for the price (e.g., USD, EUR)", "type": "string" },
+          "in_stock": { "title": "In Stock", "description": "Whether the product is currently in stock", "type": "boolean" },
+          "rating": { "title": "Rating", "description": "Product rating on a scale from 0 to 5", "type": "number", "minimum": 0, "maximum": 5 },
+          "review_excerpts": { "title": "Review Excerpts", "description": "List of short review excerpts for the product", "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["name", "price", "currency", "in_stock", "rating", "review_excerpts"]
+      }
+    },
+    "title": "MainSchema",
+    "type": "object",
+    "properties": {
+      "items": {
+        "title": "Items",
+        "description": "Array of product listings",
+        "type": "array",
+        "items": { "$ref": "#/$defs/ItemSchema" }
+      }
+    },
+    "required": ["items"]
+  },
+  "usage": { "promptTokens": 1160, "completionTokens": 743 }
+}
+```
+
+## Extending an existing schema
+
+Pass `existing_schema` to grow a schema you already have rather than regenerating from scratch:
+
+<CodeGroup>
+
+```python Python
+existing = {
+    "title": "Product",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "price": {"type": "number"}
+    },
+    "required": ["name", "price"]
+}
+
+res = sgai.schema(
+    prompt="Add brand, sku, and a list of category tags.",
+    existing_schema=existing,
+)
+```
+
+```javascript JavaScript
+const existing = {
+  title: "Product",
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    price: { type: "number" }
+  },
+  required: ["name", "price"]
+};
+
+const res = await sgai.schema({
+  prompt: "Add brand, sku, and a list of category tags.",
+  existing_schema: existing,
+});
+```
+
+</CodeGroup>
+
+## Using the generated schema
+
+Pipe the returned schema directly into **Extract**, **Search**, or **Monitor** as `output_schema`:
+
+```python
+schema_res = sgai.schema(prompt="A blog post with title, author, published_at (ISO date), and tags[].")
+generated_schema = schema_res.data.schema
+
+extract_res = sgai.extract(
+    "Extract the post details.",
+    url="https://example.com/blog/post-slug",
+    output_schema=generated_schema,
+)
+print(extract_res.data.json_data)
+```
+
+## When to use Schema
+
+- ✅ You want structured output but don't have a hand-written schema yet
+- ✅ You're prototyping and want a quick starting point you'll refine
+- ✅ You have a partial schema and want to grow it
+- ❌ You already have a finalized JSON Schema — pass it directly to Extract/Search and skip Schema
+
+## See also
+
+- [Extract](/services/extract) — Use `output_schema` for typed extraction
+- [Search](/services/search) — Use `output_schema` for typed search results
+- [Monitor](/services/monitor) — Use `output_schema` on scheduled jobs

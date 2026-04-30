@@ -22,7 +22,7 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card title="18 Powerful Tools" icon="tools">
+  <Card title="17 Powerful Tools" icon="tools">
     Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs (with activity polling), and manage your account
   </Card>
   <Card title="Remote & Local" icon="server">
@@ -42,17 +42,16 @@ The MCP server exposes the following tools via API v2:
 
 | Tool | Description |
 |---|---|
-| **markdownify** | Convert webpages to clean markdown (POST /scrape) |
-| **scrape** | Fetch page content in any single format: markdown, html, screenshot, branding, links, images, summary (POST /scrape) |
-| **smartscraper** | AI-powered structured extraction from a URL (POST /extract) |
-| **searchscraper** | Search the web and extract structured results (POST /search) |
-| **smartcrawler_initiate** | Start async multi-page crawl — markdown, html, links, images, summary, branding, or screenshot (POST /crawl) |
-| **smartcrawler_fetch_results** | Poll crawl results (GET /crawl/:id) |
+| **scrape** | Fetch page content in any format: markdown (default), html, screenshot, branding, links, images, summary (POST /scrape) |
+| **extract** | AI-powered structured extraction from a URL (POST /extract) |
+| **search** | Search the web and extract structured results (POST /search) |
+| **crawl_start** | Start async multi-page crawl — markdown, html, links, images, summary, branding, or screenshot (POST /crawl) |
+| **crawl_get_status** | Poll crawl results (GET /crawl/:id) |
 | **crawl_stop** | Stop a running crawl job (POST /crawl/:id/stop) |
 | **crawl_resume** | Resume a stopped crawl job (POST /crawl/:id/resume) |
-| **generate_schema** | Generate or augment a JSON Schema from a prompt (POST /schema) |
+| **schema** | Generate or augment a JSON Schema from a prompt (POST /schema) |
 | **credits** | Check your credit balance (GET /credits) |
-| **sgai_history** | Browse request history with pagination (GET /history) |
+| **history** | Browse request history with pagination (GET /history) |
 | **monitor_create** | Create a scheduled extraction job (POST /monitor) |
 | **monitor_list** | List all monitors (GET /monitor) |
 | **monitor_get** | Get monitor details (GET /monitor/:id) |
@@ -62,7 +61,7 @@ The MCP server exposes the following tools via API v2:
 | **monitor_activity** | Poll tick history for a monitor with pagination (GET /monitor/:id/activity) |
 
 <Note>
-  Removed from v1: `sitemap`, `agentic_scrapper`, `markdownify_status`, `smartscraper_status` (no v2 API equivalents).
+  **Migrating from v2 (scrapegraph-mcp ≤ 2.x)?** Tools were renamed in v3.0.0 to match the v2 API canonical names: `smartscraper` → `extract`, `searchscraper` → `search`, `smartcrawler_initiate` → `crawl_start`, `smartcrawler_fetch_results` → `crawl_get_status`, `sgai_history` → `history`, `generate_schema` → `schema`. `markdownify` was removed — use `scrape` with `output_format="markdown"` instead. See the [v3.0.0 release notes](https://github.com/ScrapeGraphAI/scrapegraph-mcp/releases/tag/v3.0.0) for full details.
 </Note>
 
 ## Quick Start
@@ -131,7 +130,7 @@ Prefer running locally? You can install the Python package and run it via stdio.
 
 - Read the detailed setup guide for <a href="/services/mcp-server/cursor">Cursor</a>
 - Read the detailed setup guide for <a href="/services/mcp-server/claude">Claude Desktop</a>
-- Explore the full <a href="/services/mcp-server">MCP Server documentation</a> for advanced features
+- Browse the [GitHub repo](https://github.com/ScrapeGraphAI/scrapegraph-mcp) for source, advanced configuration, and release notes
 
 <Card title="Ready to Start?" icon="rocket" href="/services/mcp-server/cursor">
   Choose your client and start scraping with AI!
