@@ -53,6 +53,7 @@
                   "services/search",
                   "services/crawl",
                   "services/monitor",
+                  "services/schema",
                   "services/history",
                   {
                     "group": "Additional Parameters",
