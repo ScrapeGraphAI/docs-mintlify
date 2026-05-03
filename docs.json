@@ -116,6 +116,7 @@
               {
                 "group": "No-code",
                 "pages": [
+                  "integrations/n8n",
                   "integrations/make"
                 ]
               },
