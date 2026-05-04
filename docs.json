@@ -54,16 +54,7 @@
                   "services/crawl",
                   "services/monitor",
                   "services/schema",
-                  "services/history",
-                  {
-                    "group": "Additional Parameters",
-                    "pages": [
-                      "services/additional-parameters/headers",
-                      "services/additional-parameters/pagination",
-                      "services/additional-parameters/proxy",
-                      "services/additional-parameters/wait-ms"
-                    ]
-                  }
+                  "services/history"
                 ]
               },
               {
@@ -309,16 +300,7 @@
                       "v1/mcp-server/smithery"
                     ]
                   },
-                  "v1/toonify",
-                  {
-                    "group": "Additional Parameters",
-                    "pages": [
-                      "v1/additional-parameters/headers",
-                      "v1/additional-parameters/pagination",
-                      "v1/additional-parameters/proxy",
-                      "v1/additional-parameters/wait-ms"
-                    ]
-                  }
+                  "v1/toonify"
                 ]
               }
             ]
