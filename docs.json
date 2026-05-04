@@ -83,8 +83,7 @@
                       "services/mcp-server/claude",
                       "services/mcp-server/smithery"
                     ]
-                  },
-                  "services/toonify"
+                  }
                 ]
               },
               {
@@ -299,8 +298,7 @@
                       "v1/mcp-server/claude",
                       "v1/mcp-server/smithery"
                     ]
-                  },
-                  "v1/toonify"
+                  }
                 ]
               }
             ]
