@@ -94,12 +94,12 @@ This scenario runs daily, extracts all products from an Amazon search page, and 
 
 ## Modules
 
-### Scrape
+### Scrape a URL
 
 Fetch a URL and return its content in one or more formats: Markdown, HTML, links, images, a plain-text summary, or branding elements.
 
 <Frame>
-  <img src="/integrations/images/make-scrape.png" alt="Scrape module configuration" />
+  <img src="/integrations/images/make-scrape.png" alt="Scrape a URL module configuration" />
 </Frame>
 
 | Field | Description |
@@ -110,12 +110,12 @@ Fetch a URL and return its content in one or more formats: Markdown, HTML, links
 
 ---
 
-### Extract
+### Extract data from URL
 
 Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-language prompt and an optional JSON schema.
 
 <Frame>
-  <img src="/integrations/images/make-extract.png" alt="Extract module configuration" />
+  <img src="/integrations/images/make-extract.png" alt="Extract data from URL module configuration" />
 </Frame>
 
 | Field | Description |
@@ -127,12 +127,12 @@ Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-l
 
 ---
 
-### Search
+### Search web
 
 Run a web search and get page content returned inline — optionally with AI extraction applied to each result.
 
 <Frame>
-  <img src="/integrations/images/make-search.png" alt="Search module configuration" />
+  <img src="/integrations/images/make-search.png" alt="Search web module configuration" />
 </Frame>
 
 | Field | Description |
@@ -146,12 +146,12 @@ Run a web search and get page content returned inline — optionally with AI ext
 
 ---
 
-### Start Crawl
+### Crawl a website
 
-Start an async multi-page crawl from an entry URL. Returns a **Crawl Job ID** to pass into **Get Crawl Status**.
+Start a multi-page crawl from an entry URL. The module polls internally and returns the **completed** crawl in a single bundle — a `pages` array with one entry per crawled page, each carrying a `scrapeRefId` you can pass to **Get a past result** to fetch its full content.
 
 <Frame>
-  <img src="/integrations/images/make-start-crawl.png" alt="Start Crawl module configuration" />
+  <img src="/integrations/images/make-crawl.png" alt="Crawl a website module configuration" />
 </Frame>
 
 | Field | Description |
@@ -163,34 +163,26 @@ Start an async multi-page crawl from an entry URL. Returns a **Crawl Job ID** to
 | Max Links Per Page | Maximum links to follow per page |
 | Include / Exclude Patterns | URL glob patterns, e.g. `/blog/*` |
 
----
-
-### Get Crawl Status
-
-Poll the status and results of a crawl job started by **Start Crawl**.
+**Output:**
 
 <Frame>
-  <img src="/integrations/images/make-get-crawl-status.png" alt="Get Crawl Status module" />
+  <img src="/integrations/images/make-crawl-output.png" alt="Crawl a website module output bundle" />
 </Frame>
 
-| Field | Description |
-|-------|-------------|
-| Crawl Job ID | The `id` output from Start Crawl — map with `{{1.id}}` |
-
-Returns `status` (`running` / `completed` / `failed`) and a `pages` array when completed.
+The bundle includes the `Crawl Job ID`, a `Status` of `completed`, and a `pages[]` array. Each page has `url`, `depth`, `title`, `contentType`, `status`, and `scrapeRefId`.
 
 <Tip>
-Add a **Tools → Sleep** module (60 seconds) between Start Crawl and Get Crawl Status to give the crawl time to finish before polling. For large crawls, use two separate scenarios with a Make Data Store to persist the job ID.
+Crawls can take a while on large sites. The module waits for completion before emitting its bundle — for very large crawls (hundreds of pages), increase your scenario's execution timeout in **Scenario settings**.
 </Tip>
 
 ---
 
-### Create Monitor
+### Create monitor
 
 Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect changes between runs.
 
 <Frame>
-  <img src="/integrations/images/make-create-monitor.png" alt="Create Monitor module configuration" />
+  <img src="/integrations/images/make-create-monitor.png" alt="Create monitor module configuration" />
 </Frame>
 
 | Field | Description |
@@ -211,25 +203,45 @@ Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect chan
 | Weekly on Monday | `0 9 * * 1` |
 
 <Note>
-Run Create Monitor once manually to set up the monitor, then use Get Monitor Activity in a separate scheduled scenario to fetch what changed.
+Run Create monitor once manually to set up the monitor, then use Get monitor activity in a separate scheduled scenario to fetch what changed.
 </Note>
 
 ---
 
-### Get Monitor Activity
+### Get monitor activity
 
 Fetch the latest activity ticks from an existing monitor.
 
 <Frame>
-  <img src="/integrations/images/make-monitor-activity.png" alt="Get Monitor Activity module" />
+  <img src="/integrations/images/make-monitor-activity.png" alt="Get monitor activity module" />
 </Frame>
 
 | Field | Description |
 |-------|-------------|
-| Monitor ID | The `id` returned by Create Monitor |
+| Monitor ID | The `id` returned by Create monitor |
 | Limit | Number of ticks to return (1–100, default 20) |
 
 Returns a `ticks` array where each entry has `changed` (boolean), `diffs`, `status`, and `createdAt`.
+
+---
+
+### Get a past result
+
+Fetch a stored job result by its ID. Most useful for retrieving the full content of a crawled page using the `scrapeRefId` from **Crawl a website**.
+
+<Frame>
+  <img src="/integrations/images/make-get-history.png" alt="Get a past result module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Entry ID | A job ID or `scrapeRefId` from a crawl page |
+
+Returns the full stored entry — `result` (the original response payload), `metadata` (content type and other run details), `params` (the inputs the job was run with), `service`, `status`, and `createdAt`.
+
+<Tip>
+Combine **Crawl a website → Iterator → Get a past result** to crawl a site and retrieve the full markdown / HTML / extracted JSON for every page in one scenario. Map the iterator's `scrapeRefId` into the Entry ID field — the module runs once per crawled page.
+</Tip>
 
 ---
 
