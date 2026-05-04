@@ -1,0 +1,117 @@
+---
+title: 'n8n: Transition Guide from v1 to v2'
+sidebarTitle: 'Migrating from v1'
+description: 'Move your n8n workflows from n8n-nodes-scrapegraphai 0.x to 1.0.2+'
+---
+
+## Transition from v1 to v2
+
+<Warning>
+  v1 of the n8n node (`0.x`, last published `0.1.21`) calls the deprecated v1 API. After login, v1 is deprecated within 7 days. Update to `1.0.2` and rebuild any workflows that use the renamed resources or fields below.
+</Warning>
+
+If you're on `n8n-nodes-scrapegraphai@0.x`, this is your migration checkpoint. Existing workflows keep running until next execution — once a v1 node fires against the deprecated API, it fails.
+
+## Before you start
+
+- Update the community node to `1.0.2` (or later) in n8n **Settings → Community Nodes**
+- Your existing `SGAI-APIKEY` works as-is — no re-auth needed
+- Plan ~5 minutes per affected workflow
+
+## What changed at a glance
+
+| | v1 (`0.1.21`) | v2 (`1.0.2`+) |
+|---|---|---|
+| API host | `api.scrapegraphai.com/v1` | `v2-api.scrapegraphai.com/api` |
+| Auth | `SGAI-APIKEY` header | unchanged |
+| Resources | 6 | 7 |
+| Workflow auto-migrates? | — | No, rebuild required |
+
+## Resource-by-resource migration
+
+Use this table to map each old resource to the new one. Renamed resources keep the same job; removed ones have a recommended replacement.
+
+| v1 resource | v2 resource | Notes |
+|---|---|---|
+| Markdownify | [**Scrape**](/integrations/n8n) (format `Markdown`) | One Scrape node with a single Markdown format entry replaces Markdownify. |
+| SmartScraper | [**Extract**](/integrations/n8n) | Same job — structured extraction from a URL. |
+| SearchScraper | [**Search**](/integrations/n8n) | Renamed; the prompt-style query field is now called `Query`. |
+| SmartCrawler | [**Crawl**](/integrations/n8n) (`Start` / `Get Status` / `Stop` / `Resume` / `Delete`) | Crawl is async — Start returns a job ID, then poll Get Status. |
+| Scrape | [**Scrape**](/integrations/n8n) | Same name, expanded — now supports multiple formats per call (markdown, HTML, JSON, screenshot, links, summary, branding). |
+| Agentic Scraper | **Removed** | Use Extract with **Fetch Config** (mode `JS`, stealth, wait) for hard pages. |
+| — | [**Monitor**](/integrations/n8n) (new) | Cron-scheduled fetches with diff detection and webhooks. |
+| — | [**History**](/integrations/n8n) (new) | Look up past results by `scrapeRefId` — pairs with Crawl. |
+| — | [**Credit**](/integrations/n8n) (new) | Check remaining credits and plan. |
+
+## Field rename matrix
+
+n8n won't translate these automatically — re-map them when you rebuild a node.
+
+| v1 field | v2 field | Where |
+|---|---|---|
+| `Website URL` (`websiteUrl`) | `URL` | Extract, Scrape |
+| `User Prompt` (`userPrompt`) | `Prompt` | Extract |
+| `User Prompt` (`userPrompt`) | `Query` | Search |
+| `Output Schema` (`outputSchema`) | `Schema (JSON)` (behind a `Use JSON Schema` toggle) | Extract, Search |
+| `Render Heavy JS` (`renderHeavyJs`) | `Fetch Config → Mode` set to `JS` | All |
+| `Number of Scrolls` (`numberOfScrolls`) | `Fetch Config → Scrolls` | All |
+| `Enable Pagination` / `Total Pages` | Pagination is handled per-resource — see the [n8n integration guide](/integrations/n8n) | Extract, Search |
+
+## What's new in Fetch Config
+
+In v1, fetch knobs were flat fields on each operation. v2 introduces a single **Fetch Config** collection shared by every operation, with new options that didn't exist in v1:
+
+- `Stealth` — anti-bot evasion
+- `Wait (Ms)` — pause after page load
+- `Timeout (Ms)` — overall request budget
+- `Country` — geo-routed proxy
+- `Headers (JSON)` — custom HTTP headers
+- `Cookies (JSON)` — pre-set cookies
+
+Open **Fetch Config** on any node, click **Add Field**, pick what you need.
+
+## Output shape changed
+
+Downstream nodes (Set, IF, HTTP Request) that reference v1 paths like `$json.result.markdown` will break — v2 returns a different shape.
+
+The new node ships an **Output** parameter on every content-producing operation (Scrape, Extract, Search) with three modes:
+
+- **Simplified** — flattened response with the most useful top-level fields. Closest to v1 and the safest default.
+- **Raw** — the full v2 API response, untouched.
+- **Selected Fields** — comma-separated allowlist of top-level keys.
+
+Pick **Simplified** when migrating, then move to **Raw** if you need the full response.
+
+## Step-by-step migration
+
+1. Update the node version: **Settings → Community Nodes → `n8n-nodes-scrapegraphai` → Update to `1.0.2`** (or later)
+2. Open the workflow — the v1 ScrapeGraphAI node will surface as deprecated or fail to execute
+3. Drop in a fresh **ScrapeGraphAI** node next to it
+4. Pick the matching v2 resource using the [resource table](#resource-by-resource-migration) above
+5. Re-map fields per the [field rename matrix](#field-rename-matrix)
+6. Set **Output** mode (Simplified is closest to v1)
+7. Test the node, confirm downstream expressions still resolve, delete the v1 node
+
+## FAQ
+
+- **Will my workflows keep running until I touch them?** Yes — until the next execution opens the v1 node, which then fails against the deprecated v1 API.
+- **Can I run v1 and v2 side-by-side?** No — same package, version-pinned. Updating the community node replaces v1 with v2.
+- **Self-hosted vs n8n Cloud?** Self-hosted: bump the version in **Community Nodes**. n8n Cloud doesn't yet allow community nodes.
+- **I used Agentic Scraper — what now?** Use the **Extract** resource with **Fetch Config → Mode = JS** plus **Stealth** and **Wait (Ms)** for the same hard-page handling.
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="n8n integration guide" icon="book" href="/integrations/n8n">
+    Full reference for the v2 node — every resource, operation, and field
+  </Card>
+  <Card title="API transition guide" icon="arrow-right-arrow-left" href="/transition-from-v1-to-v2">
+    Python / JavaScript / REST migration — the underlying API changes
+  </Card>
+  <Card title="GitHub repo" icon="github" href="https://github.com/ScrapeGraphAI/n8n-nodes-scrapegraphai">
+    Source code, issue tracker, release notes
+  </Card>
+  <Card title="Dashboard" icon="key" href="https://scrapegraphai.com/dashboard">
+    Get a v2 API key and check usage
+  </Card>
+</CardGroup>
