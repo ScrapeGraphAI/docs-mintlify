@@ -106,7 +106,14 @@
               {
                 "group": "No-code",
                 "pages": [
-                  "integrations/n8n",
+                  {
+                    "group": "n8n",
+                    "icon": "/logo/n8n.svg",
+                    "pages": [
+                      "integrations/n8n",
+                      "integrations/n8n-transition-from-v1-to-v2"
+                    ]
+                  },
                   "integrations/make"
                 ]
               },
