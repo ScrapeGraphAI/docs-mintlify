@@ -18,36 +18,30 @@
     return el;
   }
 
-  function findTocAside() {
-    var candidates = document.querySelectorAll('aside, nav');
-    for (var i = 0; i < candidates.length; i++) {
-      var node = candidates[i];
+  function findTocList() {
+    var asides = document.querySelectorAll('aside, nav');
+    for (var i = 0; i < asides.length; i++) {
+      var node = asides[i];
       var label = (node.getAttribute('aria-label') || '').toLowerCase();
       if (label.indexOf('table of contents') !== -1 || label.indexOf('on this page') !== -1) {
+        var ul = node.querySelector('ul');
+        if (ul) return ul;
         return node;
       }
     }
     var toc = document.querySelector('#table-of-contents, [data-toc], .toc');
-    if (toc) return toc.closest('aside') || toc.parentElement;
+    if (toc) return toc.querySelector('ul') || toc;
     return null;
-  }
-
-  function relaxClipping(node) {
-    var current = node;
-    for (var i = 0; i < 4 && current; i++) {
-      current.style.overflow = 'visible';
-      current.style.maxHeight = 'none';
-      current = current.parentElement;
-    }
   }
 
   function inject() {
     if (document.getElementById(CTA_ID)) return;
-    var host = findTocAside();
-    if (!host) return;
+    var anchor = findTocList();
+    if (!anchor) return;
+    var parent = anchor.parentElement;
+    if (!parent) return;
     var cta = buildCta();
-    host.appendChild(cta);
-    relaxClipping(host);
+    parent.insertBefore(cta, anchor);
   }
 
   function schedule() {

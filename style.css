@@ -8,7 +8,7 @@
   display: block;
   box-sizing: border-box;
   width: 100%;
-  max-width: min(260px, 100%);
+  max-width: 200px;
   margin-top: 24px;
   padding: 14px;
   border-radius: 12px;
