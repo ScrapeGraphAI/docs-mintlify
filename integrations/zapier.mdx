@@ -22,11 +22,20 @@ The ScrapeGraphAI app for Zapier connects any Zap to ScrapeGraph's v2 API as nat
 2. When prompted, click **Sign in** → paste your `SGAI-APIKEY` from the [dashboard](https://scrapegraphai.com/dashboard).
 3. Save the connection — Zapier reuses it across every ScrapeGraphAI step in every Zap.
 
+<Frame>
+  <img src="/integrations/images/zapier/connection.png" alt="ScrapeGraphAI connection dialog in Zapier with API Key field" />
+</Frame>
+
 <Note>
 Your API key is stored on Zapier's side and is sent in the `SGAI-APIKEY` header on each call. Rotate it from the [dashboard](https://scrapegraphai.com/dashboard) and update the connection if needed.
 </Note>
 
 ## What's in the integration
+
+<Frame>
+  <img src="/integrations/images/zapier/actions.png" alt="Zapier action picker showing ScrapeGraphAI actions" />
+</Frame>
+
 
 | Action | What it does |
 |---|---|
@@ -60,6 +69,10 @@ Fetch a page and return its content in a chosen format.
 ### Extract Data From URL
 
 Send a URL (or raw HTML / markdown) to ScrapeGraph and get back structured JSON, driven by a natural-language prompt.
+
+<Frame>
+  <img src="/integrations/images/zapier/extract.png" alt="Extract Data From URL action configuration in Zapier" />
+</Frame>
 
 | Field | Description |
 |---|---|
@@ -112,6 +125,12 @@ Poll a crawl job until it completes. When `status` is `completed`, the response 
 | Field | Description |
 |---|---|
 | Crawl ID | The `id` returned by Crawl a Website |
+
+The async pattern looks like this on the canvas — kick off the crawl, wait, then poll:
+
+<Frame>
+  <img src="/integrations/images/zapier/crawl-pair.png" alt="Zap canvas: Schedule → Crawl a Website → Delay → Get Crawl Status" />
+</Frame>
 
 ---
 
