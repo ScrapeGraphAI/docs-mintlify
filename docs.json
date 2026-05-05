@@ -114,7 +114,8 @@
                       "integrations/n8n-transition-from-v1-to-v2"
                     ]
                   },
-                  "integrations/make"
+                  "integrations/make",
+                  "integrations/zapier"
                 ]
               },
               {
