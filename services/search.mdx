@@ -83,6 +83,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 | `prompt` | string | No | Prompt used for AI extraction across the fetched results. |
 | `schema` | object | No | JSON schema for structured output (requires `prompt`). In Python you can pass a Pydantic model via `MyModel.model_json_schema()`. |
 | `format` | string | No | Output format for page content: `"markdown"` (default) or `"html"`. |
+| `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, or `"prune"`. Default: `"prune"` (different from Scrape/Extract, which default to `"normal"`). |
 | `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results. Curated set: `ar`, `at`, `au`, `ae`, `be`, `br`, `ca`, `ch`, `cl`, `cn`, `co`, `cz`, `de`, `dk`, `eg`, `es`, `fi`, `fr`, `gb`, `gr`, `hk`, `hu`, `id`, `ie`, `il`, `in`, `it`, `jp`, `kr`, `mx`, `my`, `ng`, `nl`, `no`, `nz`, `pe`, `ph`, `pk`, `pl`, `pt`, `ro`, `ru`, `sa`, `se`, `sg`, `th`, `tr`, `tw`, `ua`, `us`, `vn`, `za`. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
