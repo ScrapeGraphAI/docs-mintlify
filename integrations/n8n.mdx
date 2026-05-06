@@ -162,6 +162,29 @@ Pick the mode that matches what your agent needs to see.
 | Recurring fetch with diff | Monitor | Wire the `webhookUrl` field to an n8n Webhook node for instant deltas |
 | AI search rollup | Search with prompt | Single-call alternative to "search → scrape each result → summarize" |
 
+## Fetch Config
+
+Five resources — **Scrape**, **Extract**, **Search**, **Crawl**, and **Monitor** — expose an optional **Fetch Config** collection that controls how each page is fetched. Open the dropdown on any of those operations to surface the eight knobs:
+
+<Frame>
+  <img src="/integrations/images/n8n/fetch-config.png" alt="Fetch Config dropdown on the Search node showing the eight available options" />
+</Frame>
+
+| Field | Description |
+|---|---|
+| Mode | Fetch mode — `Auto` (default), `Fast` (skips JS rendering), or `JS` (executes scripts) |
+| Stealth | Residential proxy + anti-bot headers. **Adds 5 credits per call** |
+| Country | Two-letter ISO country code for geo-targeted proxy (e.g. `us`, `de`, `jp`) |
+| Wait (Ms) | Milliseconds to wait after page load (0–30000) |
+| Timeout (Ms) | Request timeout in milliseconds (1000–60000) |
+| Scrolls | Number of page scrolls to trigger lazy-loaded content (0–100) |
+| Headers (JSON) | Custom HTTP headers as a JSON object string |
+| Cookies (JSON) | Cookies as a JSON object string |
+
+<Tip>
+Reach for **Stealth** + **Mode = JS** + **Wait = 2000–5000** when a site blocks bots or only renders content after JavaScript runs. Combine with **Country** for region-locked pages.
+</Tip>
+
 ## Troubleshooting
 
 - **`Unknown field name: "id"` from Airtable** — your column names don't match. Switch the Airtable node's mapping to **Map Each Column Manually** and only fill the columns that exist in your table.
