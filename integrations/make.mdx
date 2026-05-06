@@ -108,6 +108,7 @@ Fetch a URL and return its content in one or more formats: Markdown, HTML, links
 | URL | The page to fetch |
 | Format | Output format — Markdown, HTML, Links, Images, Summary, Branding |
 | HTML Mode | Rendering mode — Normal, Reader, Prune |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 ---
 
@@ -125,6 +126,7 @@ Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-l
 | Extraction Prompt | Natural-language instruction, e.g. `Extract product name and price` |
 | Output Schema (JSON) | Optional JSON schema to enforce output shape |
 | HTML Processing Mode | Normal, Reader, or Prune |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 ---
 
@@ -144,6 +146,7 @@ Run a web search and get page content returned inline — optionally with AI ext
 | Extraction Prompt | Optional AI extraction applied to each page |
 | Output Schema (JSON) | Optional schema — requires Extraction Prompt |
 | Country Code | 2-letter country code for localised results |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 ---
 
@@ -163,6 +166,7 @@ Start a multi-page crawl from an entry URL. The module polls internally and retu
 | Max Depth | How many link levels deep to traverse |
 | Max Links Per Page | Maximum links to follow per page |
 | Include / Exclude Patterns | URL glob patterns, e.g. `/blog/*` |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 **Output:**
 
@@ -193,6 +197,7 @@ Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect chan
 | Interval (cron) | Cron expression — see table below |
 | Format | Content format to capture |
 | Webhook URL | Optional URL to POST results to on each tick |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 **Common cron expressions**
 
@@ -242,6 +247,31 @@ Returns the full stored entry — `result` (the original response payload), `met
 
 <Tip>
 Combine **Crawl a website → Iterator → Get a past result** to crawl a site and retrieve the full markdown / HTML / extracted JSON for every page in one scenario. Map the iterator's `scrapeRefId` into the Entry ID field — the module runs once per crawled page.
+</Tip>
+
+---
+
+## Fetch Config
+
+Five modules — **Scrape a URL**, **Extract data from URL**, **Search web**, **Crawl a website**, and **Create monitor** — accept an optional **Fetch Config** collection that controls how each page is fetched. Leave it empty to use defaults.
+
+<Frame>
+  <img src="/integrations/images/make-fetch-config.png" alt="Fetch Config collection expanded inside the Extract module" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Mode | Fetch mode — `Auto` (default), `Fast` (skips JS rendering), or `JS` (executes scripts) |
+| Stealth | Residential proxy + anti-bot headers. **Adds 5 credits per call** |
+| Country | Two-letter ISO country code for geo-targeted proxy (e.g. `us`, `de`, `jp`) |
+| Wait (ms) | Milliseconds to wait after page load (0–30000) |
+| Timeout (ms) | Request timeout in milliseconds (1000–60000) |
+| Scrolls | Number of page scrolls to trigger lazy-loaded content (0–100) |
+| Headers (JSON) | Custom HTTP headers as a JSON object string, e.g. `{"User-Agent": "..."}` |
+| Cookies (JSON) | Cookies as a JSON object string, e.g. `{"session": "abc123"}` |
+
+<Tip>
+Reach for **Stealth** + **Mode = JS** + **Wait = 2000–5000** when a site blocks bots or only renders content after JavaScript runs. Combine with **Country** to bypass region-locked pages.
 </Tip>
 
 ---
