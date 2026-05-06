@@ -62,6 +62,8 @@ Get your API key from the [ScrapeGraphAI dashboard](https://scrapegraphai.com/da
 
 Every content-producing operation (Scrape / Extract / Search) exposes an **Output** parameter with three modes — Simplified, Raw, or Selected Fields — so the response shape stays predictable when chained into AI Agent tools or downstream nodes.
 
+**Scrape**, **Extract**, **Search**, **Crawl → Start**, and **Monitor → Create / Update** also expose a **Fetch Config** dropdown — eight knobs (mode, stealth, country, wait, timeout, scrolls, headers, cookies) for hard-to-fetch pages. See [Fetch Config](#fetch-config) below.
+
 ## Example: crawl a site, save every page to Airtable
 
 This walkthrough uses **Crawl** to discover pages, **History** to fetch each page's full content, and an **Airtable** node to land the rows. The same pattern works for Notion, Google Sheets, Postgres, S3 — anywhere n8n can write.
