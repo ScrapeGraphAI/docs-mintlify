@@ -107,14 +107,18 @@ Fetch a URL and return its content in one or more formats: Markdown, HTML, links
 |-------|-------------|
 | URL | The page to fetch |
 | Format | Output format — Markdown, HTML, Links, Images, Summary, Branding |
-| HTML Mode | Rendering mode — Normal, Reader, Prune |
+| HTML Mode | Rendering mode — Normal, Reader, Prune (markdown / HTML formats) |
+| JSON Prompt | Natural-language description of what to extract (JSON format only) |
+| JSON Schema | Optional JSON Schema string to enforce output shape (JSON format only) |
+| Full Page / Width / Height / Quality | Screenshot tuning (Screenshot format only) |
+| Content Type | Optional override — Auto, HTML, or PDF |
 | Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 ---
 
 ### Extract data from URL
 
-Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-language prompt and an optional JSON schema.
+Send a URL, raw HTML, or markdown to ScrapeGraph and get back structured JSON — driven by a natural-language prompt and an optional JSON schema.
 
 <Frame>
   <img src="/integrations/images/make-extract.png" alt="Extract data from URL module configuration" />
@@ -122,11 +126,12 @@ Send a URL to ScrapeGraph and get back structured JSON — driven by a natural-l
 
 | Field | Description |
 |-------|-------------|
-| Website URL | Page to extract from |
+| Source Type | `URL`, `Raw HTML`, or `Markdown` — picks which input field is used |
+| URL / HTML / Markdown | The content to extract from (one is shown based on Source Type) |
 | Extraction Prompt | Natural-language instruction, e.g. `Extract product name and price` |
 | Output Schema (JSON) | Optional JSON schema to enforce output shape |
 | HTML Processing Mode | Normal, Reader, or Prune |
-| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
+| Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config). Only applies when Source Type = URL. |
 
 ---
 
@@ -161,7 +166,8 @@ Start a multi-page crawl from an entry URL. The module polls internally and retu
 | Field | Description |
 |-------|-------------|
 | URL | Entry point for the crawl |
-| Format | Output format per page |
+| Format | Output format per page (markdown / HTML / JSON / screenshot / links / images / summary / branding) |
+| HTML Mode / JSON Prompt / Screenshot dimensions | Format-specific sub-fields, surface based on the chosen Format |
 | Max Pages | Cap on total pages crawled (1–1000) |
 | Max Depth | How many link levels deep to traverse |
 | Max Links Per Page | Maximum links to follow per page |
@@ -195,7 +201,8 @@ Schedule ScrapeGraph to fetch a URL on a recurring cron schedule and detect chan
 | URL | Page to watch |
 | Monitor Name | Optional display name |
 | Interval (cron) | Cron expression — see table below |
-| Format | Content format to capture |
+| Format | Content format to capture (markdown / HTML / JSON / screenshot / links / summary) |
+| HTML Mode / JSON Prompt / Screenshot dimensions | Format-specific sub-fields, surface based on the chosen Format |
 | Webhook URL | Optional URL to POST results to on each tick |
 | Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
@@ -231,6 +238,27 @@ Returns a `ticks` array where each entry has `changed` (boolean), `diffs`, `stat
 
 ---
 
+### Update monitor
+
+Edit an existing monitor's interval, format, webhook, or fetch config without deleting and recreating it.
+
+<Frame>
+  <img src="/integrations/images/make-update-monitor.png" alt="Update monitor module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Monitor ID | The `cronId` returned by Create monitor |
+| Interval (cron) | Optional. New 5-field cron expression |
+| Monitor Name | Optional. New display name |
+| Webhook URL | Optional. New URL to POST tick payloads to |
+| Format | Optional. Replace the captured output type — same options and sub-fields as Create monitor |
+| Fetch Config | Optional. Replace fetch options — see [Fetch Config](#fetch-config) |
+
+Any field left blank is left unchanged on the monitor. Returns the updated monitor record.
+
+---
+
 ### Get a past result
 
 Fetch a stored job result by its ID. Most useful for retrieving the full content of a crawled page using the `scrapeRefId` from **Crawl a website**.
@@ -248,6 +276,24 @@ Returns the full stored entry — `result` (the original response payload), `met
 <Tip>
 Combine **Crawl a website → Iterator → Get a past result** to crawl a site and retrieve the full markdown / HTML / extracted JSON for every page in one scenario. Map the iterator's `scrapeRefId` into the Entry ID field — the module runs once per crawled page.
 </Tip>
+
+---
+
+### List past results
+
+Browse recent ScrapeGraphAI jobs filtered by service type. Search-style module — emits one bundle per entry, ready to fan out into downstream modules.
+
+<Frame>
+  <img src="/integrations/images/make-list-history.png" alt="List past results module configuration" />
+</Frame>
+
+| Field | Description |
+|-------|-------------|
+| Service | Optional. Filter to one service: `Scrape`, `Extract`, `Search`, `Crawl`, `Monitor`, `Schema`. Leave blank for all. |
+| Page | Page number, 1-indexed (default `1`) |
+| Limit | Entries per page, 1–100 (default `20`) |
+
+Each emitted bundle has `id`, `service`, `status`, `url`, `createdAt`, and other run metadata. Pipe a bundle's `id` into **Get a past result** to retrieve the full stored payload.
 
 ---
 
