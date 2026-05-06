@@ -150,7 +150,7 @@ Run a web search and get page content returned inline — optionally with AI ext
 | Format | Content format for each result |
 | Extraction Prompt | Optional AI extraction applied to each page |
 | Output Schema (JSON) | Optional schema — requires Extraction Prompt |
-| Country Code | 2-letter country code for localised results |
+| Country Code | Curated dropdown of 51 country codes for localised results (US, UK, Germany, Japan, India, …) |
 | Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 ---
@@ -168,10 +168,12 @@ Start a multi-page crawl from an entry URL. The module polls internally and retu
 | URL | Entry point for the crawl |
 | Format | Output format per page (markdown / HTML / JSON / screenshot / links / images / summary / branding) |
 | HTML Mode / JSON Prompt / Screenshot dimensions | Format-specific sub-fields, surface based on the chosen Format |
-| Max Pages | Cap on total pages crawled (1–1000) |
-| Max Depth | How many link levels deep to traverse |
-| Max Links Per Page | Maximum links to follow per page |
+| Max Pages | Cap on total pages crawled (1–1000). Default `50`. |
+| Max Depth | How many link levels deep to traverse. Default `2`. |
+| Max Links Per Page | Maximum links to follow per page. Default `10`. |
+| Allow External Links | Whether to follow links to other domains. Off by default — same-origin only. |
 | Include / Exclude Patterns | URL glob patterns, e.g. `/blog/*` |
+| Content Types | Optional MIME-type filter (HTML, PDF, Word, Excel, …). Leave empty for all. |
 | Fetch Config | Optional fetch options — see [Fetch Config](#fetch-config) |
 
 **Output:**
