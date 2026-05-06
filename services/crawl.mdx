@@ -110,11 +110,13 @@ curl -X GET https://v2-api.scrapegraphai.com/api/crawl/:id \
 |-----------|------|----------|-------------|
 | `url` | string | Yes | Starting URL to crawl. |
 | `formats` | array | No | Output formats per page (see [Scrape formats](/services/scrape#output-formats)). |
-| `maxPages` / `max_pages` | int | No | Maximum number of pages to crawl. |
-| `maxDepth` / `max_depth` | int | No | How many levels deep to follow links. |
-| `maxLinksPerPage` / `max_links_per_page` | int | No | Cap on links expanded per page. |
+| `maxPages` / `max_pages` | int | No | Maximum number of pages to crawl. Default `50`, max `1000`. |
+| `maxDepth` / `max_depth` | int | No | How many levels deep to follow links. Default `2`. |
+| `maxLinksPerPage` / `max_links_per_page` | int | No | Cap on links expanded per page. Default `10`. |
+| `allowExternal` / `allow_external` | bool | No | Whether to follow links to other domains. Default `false` (same-origin only). |
 | `includePatterns` / `include_patterns` | array | No | URL patterns to include (e.g. `["/blog/*"]`). |
 | `excludePatterns` / `exclude_patterns` | array | No | URL patterns to exclude (e.g. `["/admin/*"]`). |
+| `contentTypes` / `content_types` | array | No | Limit crawled pages to these MIME types, e.g. `["text/html", "application/pdf"]`. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
