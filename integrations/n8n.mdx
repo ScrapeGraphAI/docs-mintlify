@@ -62,17 +62,141 @@ Get your API key from the [ScrapeGraphAI dashboard](https://scrapegraphai.com/da
 
 Every content-producing operation (Scrape / Extract / Search) exposes an **Output** parameter with three modes — Simplified, Raw, or Selected Fields — so the response shape stays predictable when chained into AI Agent tools or downstream nodes.
 
-## Example: crawl a site, save every page to Airtable
+## Tour the modules
 
-This walkthrough uses **Crawl** to discover pages, **History** to fetch each page's full content, and an **Airtable** node to land the rows. The same pattern works for Notion, Google Sheets, Postgres, S3 — anywhere n8n can write.
+Drop a **ScrapeGraphAI** node onto the canvas, pick a credential, and the **Resource** dropdown gives you everything the v2 API exposes:
+
+<Frame>
+  <img src="/integrations/images/n8n/resource-dropdown.png" alt="ScrapeGraphAI node with the Resource dropdown open showing all seven resources" />
+</Frame>
+
+The rest of this section walks through each resource with its key fields visible.
+
+### Scrape
+
+Fetch a page in one or more formats — markdown, HTML, JSON (AI extraction), screenshot, links, summary, or branding. Add as many `Format` rows as you need; each one carries its own per-format options.
+
+<Frame>
+  <img src="/integrations/images/n8n/scrape.png" alt="Scrape node with URL filled and a Markdown format row added" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| URL | The page to fetch |
+| Formats | Add one row per output format. Each format exposes its own sub-options (Mode for markdown/HTML, Prompt+Schema for JSON, Full Page/Width/Height/Quality for screenshots). |
+| Content Type | Optional MIME-type hint for the fetcher |
+| Fetch Config | See [Fetch Config](#fetch-config) below |
+
+### Extract
+
+Run a natural-language prompt over a URL, raw HTML, or markdown. Toggle **Use JSON Schema** to constrain the output shape.
+
+<Frame>
+  <img src="/integrations/images/n8n/extract.png" alt="Extract node with Source = URL, an Amazon URL, and a prompt" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| Source | `URL`, `HTML`, or `Markdown` — picks the input mode |
+| Prompt | What you want extracted, in plain English |
+| Use JSON Schema | Toggle on to paste a JSON schema and lock the output shape |
+| HTML Mode | `Normal`, `Reader`, or `Prune` — controls how the page HTML is preprocessed before extraction |
+
+### Search
+
+Run an AI-powered web search and get the top results with content already fetched. Toggle **Use AI Rollup** to summarise across all results in one call.
+
+<Frame>
+  <img src="/integrations/images/n8n/search.png" alt="Search node with a query and three results, Markdown format" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| Query | The search query |
+| Number of Results | 1–20 |
+| Result Format | `Markdown` or `HTML` for each result's inline content |
+| Use AI Rollup | Toggle on to add a `Prompt` (and optional schema) that runs across the fetched results |
+| Time Range | Filter to past hour / day / week / month / year |
+| Location (Country Code) | 52 curated ISO codes for geo-targeted results |
+
+### Crawl
+
+Asynchronous multi-page crawl with five operations:
+
+<Frame>
+  <img src="/integrations/images/n8n/crawl-ops.png" alt="Operation dropdown on the Crawl resource showing Start, Get Status, Stop, Resume, Delete" />
+</Frame>
+
+`Start` kicks off a crawl and returns a job ID — the other ops drive the lifecycle (poll, halt, resume, clean up).
+
+<Frame>
+  <img src="/integrations/images/n8n/crawl-start.png" alt="Crawl Start node with URL, Markdown format, Max Pages 50, Max Depth 2" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| URL | Starting URL |
+| Formats | Same multi-format model as Scrape — every crawled page is captured in each format you add |
+| Max Pages | Default `50`, max `1000` |
+| Max Depth | Default `2` |
+| Max Links per Page | Default `10` |
+| Allow External Links | Off by default — keeps the crawl on the starting domain |
+| Include / Exclude Patterns | Glob-style URL filters |
+| Content Types | Optional MIME-type filter (HTML, PDF, DOCX, images, …) |
+
+### Monitor
+
+Cron-scheduled fetches with diff detection and webhook delivery. Eight operations cover the whole monitor lifecycle:
+
+<Frame>
+  <img src="/integrations/images/n8n/monitor-ops.png" alt="Operation dropdown on the Monitor resource showing Create, Delete, Get, Get Activity, Get Many, Pause, Resume, Update" />
+</Frame>
+
+`Create` schedules a recurring fetch; `Get Activity` returns recent ticks with diff flags so you can react to changes.
+
+<Frame>
+  <img src="/integrations/images/n8n/monitor-create.png" alt="Monitor Create node with URL, Name, cron interval, and a Markdown format" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| URL | Page to monitor |
+| Name | Human label for the monitor |
+| Interval (Cron) | Standard 5-field cron expression — e.g. `*/30 * * * *` for every 30 minutes |
+| Formats | Same multi-format model — each tick captures all configured formats |
+| Webhook URL | Optional. Wire to an n8n Webhook node for instant delta notifications. |
+
+### History
+
+Look up past results by `scrapeRefId`. Used to retrieve full content for crawled pages (Crawl returns pointers, History fetches the bytes).
+
+<Frame>
+  <img src="/integrations/images/n8n/history-get.png" alt="History Get node with the Entry Resource Locator set to By ID" />
+</Frame>
+
+| Field | Notes |
+|---|---|
+| Operation | `Get` (single entry by ID) or `Get Many` (paginated list) |
+| Entry | Resource Locator — paste an ID directly, or use an expression like `={{ $json.scrapeRefId }}` |
+| Simplify | Toggle off to get the full v2 response payload |
+
+### Credit
+
+Quick check on remaining credits and current plan. Zero-config — pick the resource, hit **Test step**.
+
+<Frame>
+  <img src="/integrations/images/n8n/credit-get.png" alt="Credit Get node — only Resource and Operation selectors" />
+</Frame>
+
+## Example workflow: crawl a site, save every page to Airtable
+
+End-to-end walkthrough that chains **Crawl → Wait → Crawl Status → Split Out → History → Airtable**. The same pattern works for Notion, Google Sheets, Postgres, S3 — anywhere n8n can write.
 
 <img src="/integrations/images/n8n/workflow-canvas.png" alt="Full n8n workflow canvas: Manual Trigger → Crawl Start → Wait → Crawl Status → Split Out → History Get → Airtable" />
 
 ### 1. Crawl → Start
 
 Kick off the crawl. The node returns a `cronId` (the crawl job ID) which the rest of the workflow chases.
-
-<img src="/integrations/images/n8n/crawl-start.png" alt="Crawl Start node parameters: URL, formats, max pages, max depth" />
 
 | Field | Value |
 |---|---|
@@ -112,8 +236,6 @@ Split the `pages` array into one item per page so the next node runs once per cr
 ### 5. History → Get
 
 For each page, fetch the full content (markdown, HTML, JSON — whatever formats the crawl captured) using the `scrapeRefId` from Split Out.
-
-<img src="/integrations/images/n8n/history-get.png" alt="History Get node with the scrapeRefId expression in the Entry Resource Locator" />
 
 | Field | Value |
 |---|---|
