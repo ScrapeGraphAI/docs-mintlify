@@ -59,6 +59,10 @@ Zapier action timeouts cap individual steps at 30–60 seconds (depending on you
 
 Fetch a page and return its content in a chosen format.
 
+<Frame>
+  <img src="/integrations/images/zapier/scrape.png" alt="Scrape a URL action with URL filled and Format = markdown" />
+</Frame>
+
 | Field | Description |
 |---|---|
 | URL | The page to fetch |
@@ -91,6 +95,10 @@ Send a URL (or raw HTML / markdown) to ScrapeGraph and get back structured JSON,
 
 Run a web search and get the top results back inline, optionally with AI extraction applied across them.
 
+<Frame>
+  <img src="/integrations/images/zapier/search.png" alt="Search Web action with a query, 3 results, markdown format" />
+</Frame>
+
 | Field | Description |
 |---|---|
 | Query | Search query string |
@@ -105,6 +113,10 @@ Run a web search and get the top results back inline, optionally with AI extract
 ### Crawl a Website
 
 Start a multi-page crawl from an entry URL. Returns immediately with a job ID — pair with **Get Crawl Status** to retrieve the pages.
+
+<Frame>
+  <img src="/integrations/images/zapier/crawl.png" alt="Crawl a Website action with URL, format, max pages, max depth, and max links per page" />
+</Frame>
 
 | Field | Description |
 |---|---|
@@ -123,9 +135,13 @@ Start a multi-page crawl from an entry URL. Returns immediately with a job ID �
 
 Poll a crawl job until it completes. When `status` is `completed`, the response carries a `pages` array with a `scrapeRefId` per page that you can pass to **Get a Past Result**.
 
+<Frame>
+  <img src="/integrations/images/zapier/crawl-status.png" alt="Get Crawl Status action with Crawl Job ID mapped from a previous step" />
+</Frame>
+
 | Field | Description |
 |---|---|
-| Crawl ID | The `id` returned by Crawl a Website |
+| Crawl ID | The `id` returned by Crawl a Website — usually mapped from the previous step |
 
 The async pattern looks like this on the canvas — kick off the crawl, wait, then poll:
 
@@ -139,6 +155,10 @@ The async pattern looks like this on the canvas — kick off the crawl, wait, th
 
 Fetch a stored job result by its ID. Most useful for retrieving the full content of a crawled page using the `scrapeRefId` from **Get Crawl Status**.
 
+<Frame>
+  <img src="/integrations/images/zapier/past-result.png" alt="Get a Past Result action with the Entry ID field" />
+</Frame>
+
 | Field | Description |
 |---|---|
 | Entry ID | A job ID or `scrapeRefId` |
@@ -148,6 +168,10 @@ Fetch a stored job result by its ID. Most useful for retrieving the full content
 ### Create Monitor
 
 Schedule ScrapeGraph to fetch a URL on a recurring cron and detect changes between runs.
+
+<Frame>
+  <img src="/integrations/images/zapier/monitor-create.png" alt="Create Monitor action with URL, name, cron, format, HTML mode, and webhook URL fields" />
+</Frame>
 
 | Field | Description |
 |---|---|
@@ -172,6 +196,10 @@ Schedule ScrapeGraph to fetch a URL on a recurring cron and detect changes betwe
 ### Get Monitor Activity
 
 Fetch the latest activity ticks from an existing monitor.
+
+<Frame>
+  <img src="/integrations/images/zapier/monitor-activity.png" alt="Get Monitor Activity action with Monitor ID and Limit fields" />
+</Frame>
 
 | Field | Description |
 |---|---|
