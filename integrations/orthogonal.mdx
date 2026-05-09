@@ -55,7 +55,7 @@ Run `orth api scrapegraph` (CLI) or `POST /v1/list-endpoints` for the live, auth
 
 ### 1. Orthogonal SDK (`@orth/sdk`)
 
-The TypeScript SDK wraps Orthogonal's `Run API` and reads `ORTHOGONAL_API_KEY` from the environment.
+The TypeScript SDK wraps Orthogonal's `Run API`.
 
 ```bash
 npm install @orth/sdk
@@ -64,7 +64,7 @@ npm install @orth/sdk
 ```typescript
 import Orthogonal from "@orth/sdk";
 
-const orthogonal = new Orthogonal();
+const orthogonal = new Orthogonal({ apiKey: process.env.ORTHOGONAL_API_KEY });
 
 const result = await orthogonal.run({
   api: "scrapegraph",
@@ -89,15 +89,19 @@ The CLI is ideal for one-off scrapes, ad-hoc research, and shell pipelines.
 
 ```bash
 npm install -g @orth/cli
-orth login        # paste your orth_live_ key
+export ORTHOGONAL_API_KEY="orth_live_xxxxxxxxxxxx"
 ```
 
 ```bash
 # Discover ScrapeGraph endpoints
 orth search "web scraping"
-# → scrapegraph     ScrapeGraph AI  (6 endpoints)
+# → scrapegraph     ScrapeGraph AI  (N endpoints)
 
+# View the full ScrapeGraph endpoint list with prices
 orth api scrapegraph
+
+# View the parameter schema for a specific endpoint
+orth api scrapegraph /v1/smartscraper
 
 # Run an extract
 orth run scrapegraph /v1/smartscraper \
@@ -162,13 +166,19 @@ The `format` field on `/v1/integrate` accepts `orth-sdk`, `run-api`, `curl`, `x4
 
 ## MCP server
 
-Orthogonal also ships an MCP server so Claude, Cursor, OpenClaw, or any MCP-compatible client can call ScrapeGraph directly without writing glue code. Setup:
+Orthogonal hosts an MCP server at `https://mcp.orth.sh` so Claude, Cursor, OpenClaw, or any MCP-compatible client can call ScrapeGraph directly without writing glue code. Register it in your client's MCP config:
 
-```bash
-npx @orth/mcp install
+```json
+{
+  "mcpServers": {
+    "orthogonal": {
+      "url": "https://mcp.orth.sh"
+    }
+  }
+}
 ```
 
-Once installed the agent gets `search_apis`, `get_details`, `run_api`, `get_code`, and `list_apis` tools — calling `run_api` with `{ api: "scrapegraph", path: "/v1/smartscraper", body: {...} }` runs the same call as the SDK example above.
+Once installed the agent gets four tools — `search`, `get_details`, `integrate`, and `use`. Calling `use` with `{ api: "scrapegraph", path: "/v1/smartscraper", body: {...} }` runs the same call as the SDK example above.
 
 See the [Orthogonal MCP setup guide](https://docs.orthogonal.com/mcp/setup) for client-specific configuration.
 
@@ -185,11 +195,12 @@ Every Orthogonal call (SDK, CLI, or `/v1/run`) returns the same envelope:
 }
 ```
 
-On failure:
+On failure (e.g. insufficient credits, returned with HTTP 402):
 
 ```json
 {
   "success": false,
+  "priceCents": 4,
   "error": "Insufficient credits. Cost: $0.04, Available: $0.00"
 }
 ```
