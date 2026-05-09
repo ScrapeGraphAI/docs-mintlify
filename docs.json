@@ -97,8 +97,8 @@
                 "group": "Frameworks",
                 "pages": [
                   "integrations/langchain",
-                  "integrations/llamaindex",
                   "integrations/langgraph",
+                  "integrations/llamaindex",
                   "integrations/crewai",
                   "integrations/agno"
                 ]
