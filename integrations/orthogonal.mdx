@@ -22,7 +22,7 @@ description: 'Call ScrapeGraph through the Orthogonal API gateway — one key, t
 ## Why call ScrapeGraph through Orthogonal
 
 - **One key, many APIs.** Combine ScrapeGraph with the rest of the Orthogonal catalog (Apollo, Hunter, Sixtyfour, Olostep, …) in a single agent without per-vendor signups.
-- **Pay-per-use credits or x402.** Top up a balance, or pay providers directly with USDC on Base via [x402](/integrations/x402). No subscription required.
+- **Pay-per-use credits or x402.** Top up a balance, or pay providers directly with USDC on Base via x402. No subscription required.
 - **Native discovery.** `POST /v1/search` finds endpoints by natural-language description; `POST /v1/details` returns the full parameter schema.
 - **Agent-ready surfaces.** Drop-in TypeScript SDK, CLI, and MCP server — pick whichever matches your stack.
 
@@ -120,9 +120,10 @@ The CLI returns the exact same JSON shape as the SDK, so output piping into `jq`
 
 ### 3. x402 — pay-per-use with stablecoins
 
-ScrapeGraph endpoints are also reachable through Orthogonal's x402 gateway at `https://x402.orth.sh/scrapegraph/<path>`. Settlement is on Base (USDC); no pre-paid Orthogonal balance is required.
+ScrapeGraph endpoints are also reachable through Orthogonal's [x402](https://x402.org) gateway at `https://x402.orth.sh/scrapegraph/<path>`. Settlement is on Base (USDC); no pre-paid Orthogonal balance is required. The flow is the standard [HTTP 402 protocol](https://github.com/coinbase/x402): your first request gets a `402 Payment Required` with payment requirements, the client signs a payment authorization with your wallet, and the request is retried with an `X-Payment` header.
 
-```javascript
+<CodeGroup>
+```javascript Node.js
 import { wrapFetchWithPayment } from "x402-fetch";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -141,7 +142,36 @@ const response = await fetchWithPayment("https://x402.orth.sh/scrapegraph/v1/sma
 const result = await response.json();
 ```
 
-For the full payment-protocol reference, payable-endpoint catalogue, and Python adapter, see the dedicated [x402 page](/integrations/x402).
+```python Python
+import os
+import requests
+from eth_account import Account
+from x402.clients.requests import x402_http_adapter
+
+account = Account.from_key(os.getenv("PRIVATE_KEY"))
+session = requests.Session()
+session.mount("https://", x402_http_adapter(account))
+
+response = session.post(
+    "https://x402.orth.sh/scrapegraph/v1/smartscraper",
+    json={
+        "user_prompt": "Extract pricing tiers",
+        "website_url": "https://scrapegraphai.com",
+    },
+)
+print(response.json())
+```
+</CodeGroup>
+
+Install:
+
+```bash
+# Node.js
+npm install x402-fetch viem
+
+# Python
+pip install x402 eth-account
+```
 
 ## Discovering and inspecting endpoints
 
@@ -218,5 +248,5 @@ A `402` HTTP status indicates the balance is too low — top up via the dashboar
 - [Orthogonal Run API](https://docs.orthogonal.com/api-reference/run)
 - [Orthogonal CLI](https://docs.orthogonal.com/cli)
 - [Orthogonal MCP server](https://docs.orthogonal.com/mcp/overview)
-- [x402 integration page](/integrations/x402) — payable endpoints and payment-protocol reference
+- [x402 protocol](https://x402.org) — open HTTP 402 payment standard
 - [ScrapeGraph API reference](/api-reference/introduction)
