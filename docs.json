@@ -96,8 +96,8 @@
               {
                 "group": "Frameworks",
                 "pages": [
-                  "integrations/llamaindex",
                   "integrations/langchain",
+                  "integrations/llamaindex",
                   "integrations/langgraph",
                   "integrations/crewai",
                   "integrations/agno"
