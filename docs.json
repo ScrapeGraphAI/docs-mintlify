@@ -100,7 +100,8 @@
                   "integrations/langgraph",
                   "integrations/llamaindex",
                   "integrations/crewai",
-                  "integrations/agno"
+                  "integrations/agno",
+                  "integrations/orthogonal"
                 ]
               },
               {

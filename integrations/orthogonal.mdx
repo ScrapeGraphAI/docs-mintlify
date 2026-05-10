@@ -1,0 +1,256 @@
+---
+title: 'Orthogonal'
+description: 'Call ScrapeGraph through the Orthogonal API gateway — one key, the @orth/sdk, the orth CLI, MCP, and x402 stablecoin payments'
+---
+
+<Frame>
+  <img src="/integrations/images/orthogonal.png" alt="Orthogonal" style={{ width: 96, height: 96 }} />
+</Frame>
+
+## Overview
+
+[Orthogonal](https://orthogonal.com) is an API gateway and skill catalog for AI agents. You sign up once, fund a single account, and call any catalogued API — including every ScrapeGraph v2 endpoint — through a unified `Run API`, a TypeScript SDK, a CLI, an MCP server, or x402 stablecoin payments. No separate `SGAI_API_KEY` is required when calling ScrapeGraph through Orthogonal — your `orth_live_…` key is enough.
+
+<Card
+  title="Official Orthogonal Documentation"
+  icon="book"
+  href="https://docs.orthogonal.com"
+>
+  Reference for every Orthogonal endpoint, SDK, CLI command, and MCP tool
+</Card>
+
+<Note>
+**When should you use Orthogonal?** Reach for Orthogonal when your agent needs more than just ScrapeGraph — e.g. scraping plus lead enrichment, email finding, or sending outreach — and you'd rather manage one key, one balance, and one usage dashboard. If you only call ScrapeGraph endpoints, the native [`scrapegraph-py`](/sdks/python) SDK is the most direct path.
+</Note>
+
+## Why call ScrapeGraph through Orthogonal
+
+- **One key, many APIs.** Combine ScrapeGraph with the rest of the Orthogonal catalog (Apollo, Hunter, Sixtyfour, Olostep, …) in a single agent without per-vendor signups.
+- **Pay-per-use credits or x402.** Top up a balance, or pay providers directly with USDC on Base via x402. No subscription required.
+- **Native discovery.** `POST /v1/search` finds endpoints by natural-language description; `POST /v1/details` returns the full parameter schema.
+- **Agent-ready surfaces.** Drop-in TypeScript SDK, CLI, and MCP server — pick whichever matches your stack.
+
+## Setup
+
+1. Create an account at [orthogonal.com](https://orthogonal.com) — new accounts include $5 of free credit.
+2. Generate an API key in **Dashboard → API Keys** (`orth_live_…` for production, `orth_test_…` for development).
+3. Export it:
+
+```bash
+export ORTHOGONAL_API_KEY="orth_live_xxxxxxxxxxxx"
+```
+
+That's it — there's no separate ScrapeGraph key to configure.
+
+## ScrapeGraph endpoints exposed through Orthogonal
+
+| Endpoint                      | Slug + path                       | Notes                                          |
+| ----------------------------- | --------------------------------- | ---------------------------------------------- |
+| **SmartScraper** (Extract)    | `scrapegraph` `/v1/smartscraper`  | NL-prompt structured extraction from a URL     |
+| **Scrape**                    | `scrapegraph` `/v1/scrape`        | Raw HTML + JS rendering                        |
+| **Markdownify**               | `scrapegraph` `/v1/markdownify`   | Page → clean Markdown                          |
+| **Crawl**                     | `scrapegraph` `/v1/crawl`         | Async multi-page crawl, poll for status        |
+| **SearchScraper**             | `scrapegraph` `/v1/searchscraper` | AI-powered web search + scrape                 |
+| **Sitemap**                   | `scrapegraph` `/v1/sitemap`       | Extract all URLs from a site sitemap           |
+
+Run `orth api scrapegraph` (CLI) or `POST /v1/list-endpoints` for the live, authoritative list and current pricing.
+
+## Three ways to call ScrapeGraph
+
+### 1. Orthogonal SDK (`@orth/sdk`)
+
+The TypeScript SDK wraps Orthogonal's `Run API`.
+
+```bash
+npm install @orth/sdk
+```
+
+```typescript
+import Orthogonal from "@orth/sdk";
+
+const orthogonal = new Orthogonal({ apiKey: process.env.ORTHOGONAL_API_KEY });
+
+const result = await orthogonal.run({
+  api: "scrapegraph",
+  path: "/v1/smartscraper",
+  body: {
+    user_prompt: "Extract the company name, founders, and pricing tiers",
+    website_url: "https://scrapegraphai.com",
+  },
+});
+
+if (result.success) {
+  console.log(result.data); // ScrapeGraph response payload
+  console.log(`Cost: ${result.priceCents}¢, request_id: ${result.requestId}`);
+}
+```
+
+The same pattern works for every ScrapeGraph endpoint — just change `path` and `body`. For asynchronous endpoints like `/v1/crawl`, poll `GET /v1/crawl/{task_id}` (also via `orthogonal.run`) until the job reaches a terminal state.
+
+### 2. Orthogonal CLI (`orth`)
+
+The CLI is ideal for one-off scrapes, ad-hoc research, and shell pipelines.
+
+```bash
+npm install -g @orth/cli
+
+# Option 1: browser-based login (recommended)
+orth login
+
+# Option 2: pass the key explicitly
+export ORTHOGONAL_API_KEY="orth_live_xxxxxxxxxxxx"
+```
+
+```bash
+# Discover ScrapeGraph endpoints
+orth search "web scraping"
+# → scrapegraph     ScrapeGraph AI  (N endpoints)
+
+# View the full ScrapeGraph endpoint list with prices
+orth api scrapegraph
+
+# View the parameter schema for a specific endpoint
+orth api scrapegraph /v1/smartscraper
+
+# Run an extract
+orth run scrapegraph /v1/smartscraper \
+  --body '{
+    "user_prompt": "Extract pricing tiers",
+    "website_url": "https://scrapegraphai.com"
+  }'
+```
+
+The CLI returns the exact same JSON shape as the SDK, so output piping into `jq` or another tool works without translation.
+
+### 3. x402 — pay-per-use with stablecoins
+
+ScrapeGraph endpoints are also reachable through Orthogonal's [x402](https://x402.org) gateway at `https://x402.orth.sh/scrapegraph/<path>`. Settlement is on Base (USDC); no pre-paid Orthogonal balance is required. The flow is the standard [HTTP 402 protocol](https://github.com/coinbase/x402): your first request gets a `402 Payment Required` with payment requirements, the client signs a payment authorization with your wallet, and the request is retried with an `X-Payment` header.
+
+<CodeGroup>
+```javascript Node.js
+import { wrapFetchWithPayment } from "x402-fetch";
+import { privateKeyToAccount } from "viem/accounts";
+
+const account = privateKeyToAccount(process.env.PRIVATE_KEY);
+const fetchWithPayment = wrapFetchWithPayment(fetch, account);
+
+const response = await fetchWithPayment("https://x402.orth.sh/scrapegraph/v1/smartscraper", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    user_prompt: "Extract pricing tiers",
+    website_url: "https://scrapegraphai.com",
+  }),
+});
+
+const result = await response.json();
+```
+
+```python Python
+import os
+import requests
+from eth_account import Account
+from x402.clients.requests import x402_http_adapter
+
+account = Account.from_key(os.getenv("PRIVATE_KEY"))
+session = requests.Session()
+session.mount("https://", x402_http_adapter(account))
+
+response = session.post(
+    "https://x402.orth.sh/scrapegraph/v1/smartscraper",
+    json={
+        "user_prompt": "Extract pricing tiers",
+        "website_url": "https://scrapegraphai.com",
+    },
+)
+print(response.json())
+```
+</CodeGroup>
+
+Install:
+
+```bash
+# Node.js
+npm install x402-fetch viem
+
+# Python
+pip install x402 eth-account
+```
+
+## Discovering and inspecting endpoints
+
+Orthogonal exposes the same metadata your agent needs to construct valid requests at runtime:
+
+```bash
+# Natural-language search
+curl -X POST 'https://api.orthogonal.com/v1/search' \
+  -H "Authorization: Bearer $ORTHOGONAL_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "prompt": "extract structured data from a webpage", "limit": 5 }'
+
+# Full parameter schema for a specific endpoint
+curl -X POST 'https://api.orthogonal.com/v1/details' \
+  -H "Authorization: Bearer $ORTHOGONAL_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "api": "scrapegraph", "path": "/v1/smartscraper" }'
+
+# Code snippets in any supported format
+curl -X POST 'https://api.orthogonal.com/v1/integrate' \
+  -H "Authorization: Bearer $ORTHOGONAL_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{ "api": "scrapegraph", "path": "/v1/smartscraper", "format": "all" }'
+```
+
+The `format` field on `/v1/integrate` accepts `orth-sdk`, `run-api`, `curl`, `x402-fetch`, `x402-python`, or `all`.
+
+## MCP server
+
+Orthogonal hosts an MCP server at `https://mcp.orth.sh` so Claude, Cursor, OpenClaw, or any MCP-compatible client can call ScrapeGraph directly without writing glue code. Register it in your client's MCP config:
+
+```json
+{
+  "mcpServers": {
+    "orthogonal": {
+      "url": "https://mcp.orth.sh"
+    }
+  }
+}
+```
+
+Once installed the agent gets four tools — `search`, `get_details`, `integrate`, and `use`. Calling `use` with `{ api: "scrapegraph", path: "/v1/smartscraper", body: {...} }` runs the same call as the SDK example above.
+
+See the [Orthogonal MCP setup guide](https://docs.orthogonal.com/mcp/setup) for client-specific configuration.
+
+## Response shape
+
+Every Orthogonal call (SDK, CLI, or `/v1/run`) returns the same envelope:
+
+```json
+{
+  "success": true,
+  "priceCents": 4,
+  "data": { /* raw ScrapeGraph response */ },
+  "requestId": "run_xxxxxxxx"
+}
+```
+
+On failure (e.g. insufficient credits, returned with HTTP 402):
+
+```json
+{
+  "success": false,
+  "priceCents": 4,
+  "error": "Insufficient credits. Cost: $0.04, Available: $0.00"
+}
+```
+
+A `402` HTTP status indicates the balance is too low — top up via the dashboard or switch the call to the x402 gateway above.
+
+## Resources
+
+- [Orthogonal docs](https://docs.orthogonal.com) — full API reference
+- [Orthogonal Run API](https://docs.orthogonal.com/api-reference/run)
+- [Orthogonal CLI](https://docs.orthogonal.com/cli)
+- [Orthogonal MCP server](https://docs.orthogonal.com/mcp/overview)
+- [x402 protocol](https://x402.org) — open HTTP 402 payment standard
+- [ScrapeGraph API reference](/api-reference/introduction)
