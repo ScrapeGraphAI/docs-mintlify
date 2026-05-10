@@ -41,14 +41,15 @@ That's it — there's no separate ScrapeGraph key to configure.
 
 ## ScrapeGraph endpoints exposed through Orthogonal
 
-| Endpoint                      | Slug + path                       | Notes                                          |
-| ----------------------------- | --------------------------------- | ---------------------------------------------- |
-| **SmartScraper** (Extract)    | `scrapegraph` `/v1/smartscraper`  | NL-prompt structured extraction from a URL     |
-| **Scrape**                    | `scrapegraph` `/v1/scrape`        | Raw HTML + JS rendering                        |
-| **Markdownify**               | `scrapegraph` `/v1/markdownify`   | Page → clean Markdown                          |
-| **Crawl**                     | `scrapegraph` `/v1/crawl`         | Async multi-page crawl, poll for status        |
-| **SearchScraper**             | `scrapegraph` `/v1/searchscraper` | AI-powered web search + scrape                 |
-| **Sitemap**                   | `scrapegraph` `/v1/sitemap`       | Extract all URLs from a site sitemap           |
+These map onto ScrapeGraph's v2 API (`https://v2-api.scrapegraphai.com/api/*`). If you previously called `smartscraper`, `markdownify`, or `searchscraper` directly, see the [v1 → v2 transition guide](/transition-from-v1-to-v2).
+
+| Endpoint      | Slug + path                  | Notes                                                          |
+| ------------- | ---------------------------- | -------------------------------------------------------------- |
+| **Extract**   | `scrapegraph` `/v1/extract`  | NL-prompt structured extraction from a URL (replaces v1 `smartscraper`) |
+| **Scrape**    | `scrapegraph` `/v1/scrape`   | Raw HTML, JS rendering, and Markdown output (replaces v1 `markdownify`) |
+| **Search**    | `scrapegraph` `/v1/search`   | AI-powered web search + extraction (replaces v1 `searchscraper`) |
+| **Crawl**     | `scrapegraph` `/v1/crawl`    | Async multi-page crawl, poll for status                        |
+| **Monitor**   | `scrapegraph` `/v1/monitor`  | Schedule and track recurring jobs                              |
 
 Run `orth api scrapegraph` (CLI) or `POST /v1/list-endpoints` for the live, authoritative list and current pricing.
 
@@ -69,10 +70,10 @@ const orthogonal = new Orthogonal({ apiKey: process.env.ORTHOGONAL_API_KEY });
 
 const result = await orthogonal.run({
   api: "scrapegraph",
-  path: "/v1/smartscraper",
+  path: "/v1/extract",
   body: {
-    user_prompt: "Extract the company name, founders, and pricing tiers",
-    website_url: "https://scrapegraphai.com",
+    prompt: "Extract the company name, founders, and pricing tiers",
+    url: "https://scrapegraphai.com",
   },
 });
 
@@ -83,6 +84,10 @@ if (result.success) {
 ```
 
 The same pattern works for every ScrapeGraph endpoint — just change `path` and `body`. For asynchronous endpoints like `/v1/crawl`, poll `GET /v1/crawl/{task_id}` (also via `orthogonal.run`) until the job reaches a terminal state.
+
+<Note>
+ScrapeGraph v2 uses `url` and `prompt` (not `website_url` and `user_prompt`). For Markdown output, call `/v1/scrape` with `formats: [{ type: "markdown" }]`.
+</Note>
 
 ### 2. Orthogonal CLI (`orth`)
 
@@ -107,13 +112,13 @@ orth search "web scraping"
 orth api scrapegraph
 
 # View the parameter schema for a specific endpoint
-orth api scrapegraph /v1/smartscraper
+orth api scrapegraph /v1/extract
 
 # Run an extract
-orth run scrapegraph /v1/smartscraper \
+orth run scrapegraph /v1/extract \
   --body '{
-    "user_prompt": "Extract pricing tiers",
-    "website_url": "https://scrapegraphai.com"
+    "prompt": "Extract pricing tiers",
+    "url": "https://scrapegraphai.com"
   }'
 ```
 
@@ -131,12 +136,12 @@ import { privateKeyToAccount } from "viem/accounts";
 const account = privateKeyToAccount(process.env.PRIVATE_KEY);
 const fetchWithPayment = wrapFetchWithPayment(fetch, account);
 
-const response = await fetchWithPayment("https://x402.orth.sh/scrapegraph/v1/smartscraper", {
+const response = await fetchWithPayment("https://x402.orth.sh/scrapegraph/v1/extract", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    user_prompt: "Extract pricing tiers",
-    website_url: "https://scrapegraphai.com",
+    prompt: "Extract pricing tiers",
+    url: "https://scrapegraphai.com",
   }),
 });
 
@@ -154,10 +159,10 @@ session = requests.Session()
 session.mount("https://", x402_http_adapter(account))
 
 response = session.post(
-    "https://x402.orth.sh/scrapegraph/v1/smartscraper",
+    "https://x402.orth.sh/scrapegraph/v1/extract",
     json={
-        "user_prompt": "Extract pricing tiers",
-        "website_url": "https://scrapegraphai.com",
+        "prompt": "Extract pricing tiers",
+        "url": "https://scrapegraphai.com",
     },
 )
 print(response.json())
@@ -189,13 +194,13 @@ curl -X POST 'https://api.orthogonal.com/v1/search' \
 curl -X POST 'https://api.orthogonal.com/v1/details' \
   -H "Authorization: Bearer $ORTHOGONAL_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{ "api": "scrapegraph", "path": "/v1/smartscraper" }'
+  -d '{ "api": "scrapegraph", "path": "/v1/extract" }'
 
 # Code snippets in any supported format
 curl -X POST 'https://api.orthogonal.com/v1/integrate' \
   -H "Authorization: Bearer $ORTHOGONAL_API_KEY" \
   -H 'Content-Type: application/json' \
-  -d '{ "api": "scrapegraph", "path": "/v1/smartscraper", "format": "all" }'
+  -d '{ "api": "scrapegraph", "path": "/v1/extract", "format": "all" }'
 ```
 
 The `format` field on `/v1/integrate` accepts `orth-sdk`, `run-api`, `curl`, `x402-fetch`, `x402-python`, or `all`.
@@ -214,7 +219,7 @@ Orthogonal hosts an MCP server at `https://mcp.orth.sh` so Claude, Cursor, OpenC
 }
 ```
 
-Once installed the agent gets four tools — `search`, `get_details`, `integrate`, and `use`. Calling `use` with `{ api: "scrapegraph", path: "/v1/smartscraper", body: {...} }` runs the same call as the SDK example above.
+Once installed the agent gets four tools — `search`, `get_details`, `integrate`, and `use`. Calling `use` with `{ api: "scrapegraph", path: "/v1/extract", body: {...} }` runs the same call as the SDK example above.
 
 See the [Orthogonal MCP setup guide](https://docs.orthogonal.com/mcp/setup) for client-specific configuration.
 
