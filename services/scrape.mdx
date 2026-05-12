@@ -190,6 +190,127 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
 
 </CodeGroup>
 
+### Screenshot
+
+Capture a screenshot of the page. Use `fullPage` to grab the entire scrollable area, or set `width`/`height` for a fixed viewport. `quality` (1–100) controls JPEG compression.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, ScreenshotFormatConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(
+    "https://scrapegraphai.com",
+    formats=[
+        ScreenshotFormatConfig(
+            full_page=True,
+            width=1440,
+            height=900,
+            quality=90,
+        ),
+    ],
+)
+
+if res.status == "success":
+    shot = res.data.results.get("screenshot", {}).get("data", {})
+    print("URL:", shot.get("url"))
+    print("Size:", f"{shot.get('width')}x{shot.get('height')}")
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://scrapegraphai.com",
+  formats: [
+    { type: "screenshot", fullPage: true, width: 1440, height: 900, quality: 90 },
+  ],
+});
+
+if (res.status === "success") {
+  const shot = res.data?.results.screenshot?.data;
+  console.log("URL:", shot?.url);
+  console.log("Size:", `${shot?.width}x${shot?.height}`);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com",
+    "formats": [
+      { "type": "screenshot", "fullPage": true, "width": 1440, "height": 900, "quality": 90 }
+    ]
+  }'
+```
+
+</CodeGroup>
+
+| Option | Type | Default | Range | Description |
+|--------|------|---------|-------|-------------|
+| `fullPage` | bool | `false` | — | Capture the whole scrollable page instead of just the viewport. |
+| `width` | int | `1440` | `320`–`3840` | Viewport width in pixels. |
+| `height` | int | `900` | `200`–`2160` | Viewport height in pixels. |
+| `quality` | int | `80` | `1`–`100` | JPEG quality. |
+
+### Branding
+
+Extract a page's brand identity — colors, typography, and logos — in a single call.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import ScrapeGraphAI, BrandingFormatConfig
+
+sgai = ScrapeGraphAI()
+
+res = sgai.scrape(
+    "https://scrapegraphai.com",
+    formats=[BrandingFormatConfig()],
+)
+
+if res.status == "success":
+    branding = res.data.results.get("branding", {}).get("data")
+    print(branding)
+```
+
+```javascript JavaScript
+import { ScrapeGraphAI } from "scrapegraph-js";
+
+const sgai = ScrapeGraphAI();
+
+const res = await sgai.scrape({
+  url: "https://scrapegraphai.com",
+  formats: [{ type: "branding" }],
+});
+
+if (res.status === "success") {
+  console.log(res.data?.results.branding?.data);
+}
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://scrapegraphai.com",
+    "formats": [{ "type": "branding" }]
+  }'
+```
+
+</CodeGroup>
+
+<Note>
+Branding costs **25 credits** per call — significantly more than other formats because it runs additional vision and typography analysis on top of the page fetch.
+</Note>
+
 ### Structured JSON extraction
 
 Use the `json` format to extract structured data during the scrape.
