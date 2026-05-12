@@ -8,6 +8,8 @@ description: 'How to extract real estate data from Homes.com'
   src="/cookbook/images/homes-banner.png"
 />
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ScrapeGraphAI/scrapegraph-py/blob/main/cookbook/homes-forsale/scrapegraph_sdk.ipynb) [![View on GitHub](https://img.shields.io/badge/GitHub-View_Notebook-181717?logo=github)](https://github.com/ScrapeGraphAI/scrapegraph-py/blob/main/cookbook/homes-forsale/scrapegraph_sdk.ipynb)
+
 Learn how to extract property listings from Homes.com using ScrapeGraphAI's Extract service. This example demonstrates how to gather detailed property information, pricing, and agent details.
 
 ## The Goal
@@ -33,7 +35,7 @@ We'll extract the following property information:
 ```python
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from scrapegraph_py import ScrapeGraphAI
+from scrapegraph_py import ScrapeGraphAI, FetchConfig
 
 # Schema for a single house listing
 class HouseSchema(BaseModel):
@@ -59,6 +61,7 @@ res = sgai.extract(
     "Extract property listings information",
     url="https://www.homes.com/san-francisco-ca/?bb=nzpwspy0mS749snkvsb",
     schema=HouseListingsSchema.model_json_schema(),
+    fetch_config=FetchConfig(stealth=True),  # homes.com has anti-bot defenses
 )
 
 if res.status == "success":
