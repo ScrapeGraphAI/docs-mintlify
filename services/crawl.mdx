@@ -14,7 +14,20 @@ Try Crawl instantly in our [interactive playground](https://scrapegraphai.com/da
 
 ## Pricing
 
-A Crawl job costs **2 credits** to start, plus the per-page Scrape cost for every page processed (1 credit for `markdown`, 2 for `screenshot`, 25 for `branding`; multiple formats are summed). Enabling `stealth` in `fetchConfig` adds 5 credits per page; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
+A Crawl job costs **2 credits** to start, plus the per-page Scrape cost for every page processed. Per-page format costs:
+
+| Format | Credits |
+|--------|---------|
+| `markdown` | 1 |
+| `html` | 1 |
+| `links` | 1 |
+| `images` | 1 |
+| `summary` | 1 |
+| `json` | 5 |
+| `screenshot` | 2 |
+| `branding` | 25 |
+
+When a page is requested in multiple formats, the per-format costs are summed. Enabling `stealth` in `fetchConfig` adds 5 credits per page; render mode (`auto` / `fast` / `js`) does not affect the cost. See the [pricing page](https://scrapegraphai.com/pricing) for the full breakdown.
 
 ## Getting Started
 
