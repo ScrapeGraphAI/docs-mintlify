@@ -1,11 +1,13 @@
 ---
 title: Transition from Firecrawl to ScrapeGraph v2
-description: A practical guide for migrating your scraping workflows from Firecrawl to ScrapeGraph v2
+description: A practical, end-to-end guide for migrating your scraping workflows from Firecrawl to ScrapeGraph v2
 ---
 
 ## Why switch?
 
-ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and first-class scheduled monitoring through a unified API. If you're coming from Firecrawl, this page maps every endpoint, SDK method, and concept to its ScrapeGraph equivalent so you can migrate quickly.
+ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and first-class scheduled monitoring through a unified API. If you're coming from Firecrawl, this page maps every endpoint, SDK method, parameter, and response shape to its ScrapeGraph equivalent so you can migrate quickly and confidently.
+
+The migration is mechanical for most workloads: change a header, swap an import, and adjust one or two argument names. The places that need genuine rethinking are **change tracking** (now a first-class `monitor` resource) and **browser actions** (replaced by a simpler `fetchConfig` model).
 
 ## Feature comparison at a glance
 
@@ -15,10 +17,13 @@ ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and fir
 | Structured extraction (prompt + schema) | `POST /v2/extract` | `POST /api/extract` |
 | Web search with optional extraction | `POST /v2/search` | `POST /api/search` |
 | Async multi-page crawl | `POST /v2/crawl` → `GET /v2/crawl/{id}` | `POST /api/crawl` → `GET /api/crawl/{id}` |
-| URL discovery (sitemap + links) | `POST /v2/map` | Use `crawl.start` with patterns, or the legacy sitemap endpoint |
-| Batch scrape a list of URLs | `POST /v2/batch/scrape` | Loop over `scrape`, or use `crawl.start` with a URL list |
+| URL discovery (sitemap + links) | `POST /v2/map` | Use `crawl.start` with patterns (no one-shot map) |
+| Batch scrape a list of URLs | `POST /v2/batch/scrape` | Loop concurrent `scrape` calls, or `crawl.start` with a URL list |
 | Change tracking | `changeTracking` format on `scrape`/`crawl` | First-class **monitor** resource with cron scheduling (`POST /api/monitor`) |
-| Browser interactions before scrape | `actions` array on `/v2/scrape` | `fetchConfig` (`mode="js"`, `stealth`, `wait`) on `scrape`/`extract` |
+| Browser interactions before scrape | `actions` array on `/v2/scrape` (click/scroll/type/wait) | `fetchConfig` (`mode="js"`, `stealth`, `wait`, `scrolls`) on `scrape`/`extract`/`search`/`crawl` |
+| Webhooks | Crawl webhooks | Monitor + crawl webhooks (`webhookUrl`) |
+| Async SDK | `AsyncFirecrawl` | `AsyncScrapeGraphAI` |
+| Response shape | Direct values (raises on error) | `ApiResult` envelope (`status` + `data` + `error`) |
 
 ## Authentication
 
@@ -27,6 +32,9 @@ ScrapeGraph v2 offers AI-powered scraping, extraction, search, crawling, and fir
 | Header | `Authorization: Bearer fc-...` | `SGAI-APIKEY: sgai-...` |
 | Env var | `FIRECRAWL_API_KEY` | `SGAI_API_KEY` |
 | Base URL | `https://api.firecrawl.dev/v2` | `https://v2-api.scrapegraphai.com/api` |
+| Key format | `fc-` prefix, 32-char hex | `sgai-` prefix, UUID-style |
+
+The header name is the most common source of migration bugs — `SGAI-APIKEY` is not a Bearer token.
 
 ## SDK installation
 
@@ -88,7 +96,7 @@ const fc = new Firecrawl({ apiKey: "fc-..." });
 // After (ScrapeGraph v2)
 import { ScrapeGraphAI } from "scrapegraph-js";
 // reads SGAI_API_KEY from env, or pass explicitly: ScrapeGraphAI({ apiKey: "..." })
-const sgai = ScrapeGraphAI();
+const sgai = new ScrapeGraphAI();
 ```
 
 </CodeGroup>
@@ -96,6 +104,25 @@ const sgai = ScrapeGraphAI();
 ### Scrape → `scrape`
 
 Firecrawl's `scrape` fetches a page in one or more formats. ScrapeGraph's `scrape` mirrors that, with typed format configs in Python and plain objects in JS.
+
+#### Format coverage
+
+| Firecrawl format | ScrapeGraph format | Notes |
+|---|---|---|
+| `"markdown"` | `MarkdownFormatConfig(mode="normal" \| "reader" \| "prune")` | `reader` strips chrome, `prune` is aggressive |
+| `"html"` | `HtmlFormatConfig(mode=...)` | Same `mode` options as markdown |
+| `"rawHtml"` | `HtmlFormatConfig(mode="normal")` | No separate raw variant — `normal` mode is the unprocessed page |
+| `"links"` | `LinksFormatConfig()` | Returns every outbound link |
+| `"screenshot"` / `"screenshot@fullPage"` | `ScreenshotFormatConfig(full_page=True, width=..., height=..., quality=...)` | Width 320–3840, height 200–2160, quality 1–100 |
+| `{"type": "json", ...}` | `JsonFormatConfig(prompt="...", schema={...})` | Inline LLM extraction during scrape |
+| (n/a) | `ImagesFormatConfig()` | Every image URL on the page |
+| (n/a) | `SummaryFormatConfig()` | LLM-generated TL;DR |
+| (n/a) | `BrandingFormatConfig()` | Logo, palette, fonts |
+| `{"type": "changeTracking"}` | Use `monitor.create` instead | See [Change tracking](#change-tracking-monitor) below |
+
+You can request several formats in a single call — they share the page fetch, so it costs one navigation.
+
+#### Basic scrape
 
 <CodeGroup>
 
@@ -132,9 +159,122 @@ if (res.status === "success") {
 
 </CodeGroup>
 
+#### Multiple formats in one call
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl)
+doc = fc.scrape("https://example.com", formats=["markdown", "html", "links", "screenshot"])
+print(doc.markdown, doc.html, doc.links, doc.screenshot)
+
+# After (ScrapeGraph v2)
+from scrapegraph_py import (
+    MarkdownFormatConfig, HtmlFormatConfig,
+    LinksFormatConfig, ScreenshotFormatConfig,
+)
+
+res = sgai.scrape(
+    "https://example.com",
+    formats=[
+        MarkdownFormatConfig(),
+        HtmlFormatConfig(mode="reader"),
+        LinksFormatConfig(),
+        ScreenshotFormatConfig(full_page=True, width=1440, height=900),
+    ],
+)
+results = res.data.results
+print(results["markdown"]["data"][0])
+print(results["html"]["data"][0])
+print(results["links"]["data"])
+print(results["screenshot"]["data"][0])  # base64 PNG
+```
+
+```javascript JavaScript
+// After (ScrapeGraph v2)
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [
+    { type: "markdown" },
+    { type: "html", mode: "reader" },
+    { type: "links" },
+    { type: "screenshot", fullPage: true, width: 1440, height: 900 },
+  ],
+});
+const r = res.data?.results;
+console.log(r?.markdown?.data?.[0]);
+console.log(r?.screenshot?.data?.[0]); // base64 PNG
+```
+
+</CodeGroup>
+
+#### Browser interactions: `actions` → `fetchConfig`
+
+Firecrawl exposes an `actions` array (`click`, `scroll`, `wait`, `type`, `press`, `screenshot`) executed before the page is captured. ScrapeGraph replaces this with a declarative `fetchConfig`:
+
+| Firecrawl action | ScrapeGraph equivalent |
+|---|---|
+| `{"type": "wait", "milliseconds": 2000}` | `fetch_config=FetchConfig(wait=2000)` |
+| `{"type": "scroll", ...}` (repeated) | `fetch_config=FetchConfig(scrolls=5)` |
+| `{"type": "click", "selector": "..."}` | Not supported — split into two scrapes, or use a webhook-driven workflow |
+| `{"type": "screenshot"}` | Add `ScreenshotFormatConfig()` to `formats` |
+| Mobile / desktop UA toggle | `headers={"User-Agent": "..."}` |
+| Geolocation / proxy region | `country="US"` (ISO 3166-1 alpha-2) |
+
+`fetchConfig` accepts: `mode` (`"auto"` / `"fast"` / `"js"`), `stealth` (bool, residential proxy + anti-bot headers), `headers`, `cookies`, `scrolls` (0–100), `wait` (0–30000 ms), `timeout` (1000–60000 ms), `country` (2-letter ISO code).
+
+<CodeGroup>
+
+```python Python
+# Before (Firecrawl — actions array)
+doc = fc.scrape(
+    "https://example.com",
+    formats=["markdown"],
+    actions=[
+        {"type": "wait", "milliseconds": 2000},
+        {"type": "scroll", "direction": "down"},
+        {"type": "scroll", "direction": "down"},
+    ],
+)
+
+# After (ScrapeGraph v2 — declarative fetchConfig)
+from scrapegraph_py import MarkdownFormatConfig, FetchConfig
+
+res = sgai.scrape(
+    "https://example.com",
+    formats=[MarkdownFormatConfig()],
+    fetch_config=FetchConfig(
+        mode="js",         # render JavaScript
+        stealth=True,      # rotate residential proxy
+        wait=2000,         # ms after navigation
+        scrolls=2,         # programmatic scroll ticks
+        country="US",
+    ),
+)
+```
+
+```javascript JavaScript
+// After (ScrapeGraph v2)
+const res = await sgai.scrape({
+  url: "https://example.com",
+  formats: [{ type: "markdown" }],
+  fetchConfig: {
+    mode: "js",
+    stealth: true,
+    wait: 2000,
+    scrolls: 2,
+    country: "US",
+  },
+});
+```
+
+</CodeGroup>
+
 ### Extract → `extract`
 
-Same shape: URL + natural-language prompt + optional JSON schema.
+Same shape: URL + natural-language prompt + optional JSON schema. ScrapeGraph also accepts inline `html` or `markdown` instead of a URL — useful when you already have the content.
+
+#### Basic extract
 
 <CodeGroup>
 
@@ -177,9 +317,55 @@ if (res.status === "success") {
 
 </CodeGroup>
 
-Firecrawl accepts a list of URLs or wildcards in one call. On ScrapeGraph, call `extract` per URL or use `crawl.start` to discover pages first.
+#### Pydantic schemas (Python)
+
+`scrapegraph-py` accepts any dict that conforms to JSON Schema, so Pydantic models work via `model_json_schema()`:
+
+```python
+from pydantic import BaseModel, Field
+from scrapegraph_py import ScrapeGraphAI
+
+class Product(BaseModel):
+    name: str
+    price_usd: float = Field(description="Price in US dollars")
+    in_stock: bool
+
+sgai = ScrapeGraphAI()
+res = sgai.extract(
+    "Extract product details",
+    url="https://example.com/product/42",
+    schema=Product.model_json_schema(),
+)
+
+if res.status == "success":
+    product = Product.model_validate(res.data.json_data)
+    print(product.name, product.price_usd)
+```
+
+#### Extract from existing HTML or markdown
+
+Skip the fetch when you already have the content (e.g., a cached page, an internal CMS document):
+
+```python
+res = sgai.extract(
+    "Extract the author and publication date",
+    html="<html>...</html>",   # or markdown="# Article\n..."
+    schema={"type": "object", "properties": {
+        "author": {"type": "string"},
+        "published_at": {"type": "string", "format": "date-time"},
+    }},
+)
+```
+
+#### Bulk URLs
+
+Firecrawl accepts a list of URLs or wildcards in one call. On ScrapeGraph, call `extract` once per URL (run them concurrently) or use `crawl.start` to discover pages first and then extract from each.
 
 ### Search → `search`
+
+ScrapeGraph's search supports the same query-and-limit pattern, plus optional LLM extraction in a single call (Firecrawl's `scrapeOptions` parameter).
+
+#### Basic search
 
 <CodeGroup>
 
@@ -213,9 +399,43 @@ if (res.status === "success") {
 
 </CodeGroup>
 
+#### Search + extract in one call
+
+Firecrawl exposes `scrapeOptions` to scrape each result; ScrapeGraph fuses search and structured extraction with a `prompt` + `schema`:
+
+```python
+res = sgai.search(
+    "open-source vector databases",
+    num_results=10,
+    prompt="Extract the project name, GitHub URL, and primary license",
+    schema={
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "github_url": {"type": "string"},
+            "license": {"type": "string"},
+        },
+    },
+)
+```
+
+#### Parameter map
+
+| Firecrawl | ScrapeGraph (Python) | ScrapeGraph (JS) |
+|---|---|---|
+| `query` | `query` (positional) | `query` |
+| `limit` | `num_results` (1–20) | `numResults` |
+| `tbs` (time filter) | `time_range="past_hour" \| "past_24_hours" \| "past_week" \| "past_month" \| "past_year"` | `timeRange` |
+| `location` | `location_geo_code` (ISO country code) | `locationGeoCode` |
+| `scrapeOptions.formats` | `format="markdown" \| "html"` + `mode` | `format` + `mode` |
+| `scrapeOptions` (full page scrape) | `prompt` + `schema` for inline extraction | same |
+| `sources=["web","news","images"]` | Web only (use `time_range` for recency) | same |
+
 ### Crawl → `crawl.start` + `crawl.get`
 
-Firecrawl's `crawl()` blocks until completion; `start_crawl()` returns a job id. ScrapeGraph's crawl is always async — start, then poll (or stop/resume).
+Firecrawl's `crawl()` blocks until completion; `start_crawl()` returns a job id. ScrapeGraph's crawl is always async — start, then poll (or stop, resume, delete).
+
+#### Start + poll
 
 <CodeGroup>
 
@@ -231,6 +451,7 @@ status = fc.get_crawl_status(started.id)
 start = sgai.crawl.start(
     "https://example.com",
     max_depth=2,
+    max_pages=50,
     include_patterns=["/blog/*"],
     exclude_patterns=["/admin/*"],
 )
@@ -249,6 +470,7 @@ const status = await fc.getCrawlStatus(started.id);
 const start = await sgai.crawl.start({
   url: "https://example.com",
   maxDepth: 2,
+  maxPages: 50,
   includePatterns: ["/blog/*"],
   excludePatterns: ["/admin/*"],
 });
@@ -257,15 +479,92 @@ const status = await sgai.crawl.get(start.data.id);
 
 </CodeGroup>
 
+#### Crawl with structured extraction
+
+Attach a `JsonFormatConfig` to every crawled page so each result already has structured fields:
+
+```python
+from scrapegraph_py import MarkdownFormatConfig, JsonFormatConfig
+
+start = sgai.crawl.start(
+    "https://docs.example.com",
+    max_depth=3,
+    max_pages=200,
+    formats=[
+        MarkdownFormatConfig(mode="reader"),
+        JsonFormatConfig(
+            prompt="Extract the page title and the list of code samples",
+            schema={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "code_samples": {"type": "array", "items": {"type": "string"}},
+                },
+            },
+        ),
+    ],
+)
+```
+
+#### Parameter map
+
+| Firecrawl | ScrapeGraph (Python) | ScrapeGraph (JS) |
+|---|---|---|
+| `limit` | `max_pages` (1–1000, default 50) | `maxPages` |
+| `maxDepth` | `max_depth` (default 2) | `maxDepth` |
+| `maxDiscoveryDepth` | n/a — use `max_depth` | n/a |
+| `includePaths` | `include_patterns` (glob) | `includePatterns` |
+| `excludePaths` | `exclude_patterns` (glob) | `excludePatterns` |
+| `allowExternalLinks` | `allow_external` (default false) | `allowExternal` |
+| `allowBackwardLinks` | always allowed inside `max_depth` | same |
+| `webhook` | Not on crawl — use a `monitor` for delivery | n/a |
+| `scrapeOptions.formats` | `formats=[...]` | `formats` |
+
+#### Lifecycle: stop, resume, delete
+
+```python
+# Pause an in-flight crawl
+sgai.crawl.stop(start.data.id)
+
+# Resume it later
+sgai.crawl.resume(start.data.id)
+
+# Drop a finished crawl and free retained pages
+sgai.crawl.delete(start.data.id)
+```
+
+```javascript
+await sgai.crawl.stop(id);
+await sgai.crawl.resume(id);
+await sgai.crawl.delete(id);
+```
+
 ### Map / batch scrape
 
-Firecrawl's `/map` returns a list of URLs quickly. ScrapeGraph doesn't have a one-shot `map`; use `crawl.start` with pattern filters to discover URLs, or call the legacy sitemap endpoint if that fits your use case.
+Firecrawl's `/map` returns a list of URLs quickly. ScrapeGraph doesn't have a one-shot `map`; use `crawl.start` with pattern filters and a shallow `max_depth` to discover URLs cheaply:
 
-For batch scraping, iterate `scrape` calls (run them concurrently for speed), or `crawl.start` with a seed list.
+```python
+from scrapegraph_py import LinksFormatConfig
+
+start = sgai.crawl.start(
+    "https://example.com",
+    max_depth=1,
+    max_pages=500,
+    max_links_per_page=50,
+    include_patterns=["/docs/*", "/blog/*"],
+    formats=[LinksFormatConfig()],   # cheapest format — just URL discovery
+)
+status = sgai.crawl.get(start.data.id)
+urls = [p.url for p in status.data.pages]
+```
+
+For batch scraping a fixed list of URLs, fan out concurrent `scrape` calls — the SDK's `AsyncScrapeGraphAI` is the easiest path (see [Async / concurrency](#async--concurrency) below).
 
 ### Change tracking → `monitor`
 
-Firecrawl ships change tracking as a `changeTracking` **format** bolted onto `scrape`/`crawl`. ScrapeGraph makes monitoring a first-class resource with cron scheduling and history.
+Firecrawl ships change tracking as a `changeTracking` **format** bolted onto `scrape`/`crawl`. ScrapeGraph makes monitoring a first-class resource with cron scheduling, webhook delivery, and a queryable activity log.
+
+#### Create a monitor
 
 <CodeGroup>
 
@@ -284,9 +583,9 @@ res = sgai.monitor.create(
     "*/30 * * * *",                 # cron expression (positional)
     name="Homepage watch",
     formats=[MarkdownFormatConfig()],
+    webhook_url="https://your-app.example.com/hooks/sgai",
 )
-# Later (monitor IDs are returned as `cronId`):
-activity = sgai.monitor.activity(res.data.cron_id)
+cron_id = res.data.cron_id
 ```
 
 ```javascript JavaScript
@@ -301,9 +600,54 @@ const res = await sgai.monitor.create({
   name: "Homepage watch",
   interval: "*/30 * * * *",
   formats: [{ type: "markdown" }],
+  webhookUrl: "https://your-app.example.com/hooks/sgai",
 });
-// monitor IDs are returned as `cronId`
-const activity = await sgai.monitor.activity(res.data?.cronId);
+const cronId = res.data?.cronId;
+```
+
+</CodeGroup>
+
+#### Full monitor lifecycle
+
+| Operation | Python | JavaScript |
+|---|---|---|
+| List all monitors | `sgai.monitor.list()` | `sgai.monitor.list()` |
+| Get one | `sgai.monitor.get(cron_id)` | `sgai.monitor.get(cronId)` |
+| Update | `sgai.monitor.update(cron_id, interval="0 * * * *")` | `sgai.monitor.update(cronId, { interval: ... })` |
+| Pause / resume | `sgai.monitor.pause(cron_id)` / `.resume(cron_id)` | same |
+| Recent ticks | `sgai.monitor.activity(cron_id)` | same |
+| Delete | `sgai.monitor.delete(cron_id)` | same |
+
+Each tick in `monitor.activity` returns `status`, `created_at`, `elapsed_ms`, plus a `changed` flag and a `diffs` field when content has moved since the previous run — same job as Firecrawl's `git-diff` mode, persisted by ScrapeGraph for you.
+
+### Async / concurrency
+
+Both SDKs ship an async client. The shape is identical — just `await` every call.
+
+<CodeGroup>
+
+```python Python
+import asyncio
+from scrapegraph_py import AsyncScrapeGraphAI, MarkdownFormatConfig
+
+async def fetch_many(urls):
+    async with AsyncScrapeGraphAI() as sgai:
+        return await asyncio.gather(*[
+            sgai.scrape(u, formats=[MarkdownFormatConfig()]) for u in urls
+        ])
+
+results = asyncio.run(fetch_many([
+    "https://example.com",
+    "https://example.org",
+]))
+```
+
+```javascript JavaScript
+// The default `ScrapeGraphAI` client is already promise-based.
+const urls = ["https://example.com", "https://example.org"];
+const results = await Promise.all(urls.map((url) =>
+  sgai.scrape({ url, formats: [{ type: "markdown" }] })
+));
 ```
 
 </CodeGroup>
@@ -331,9 +675,61 @@ if (result.status === "success") {
 
 Direct HTTP callers (curl, fetch) receive the unwrapped response body — the envelope is applied client-side by the SDKs.
 
+#### Envelope fields
+
+| Field | Type | Notes |
+|---|---|---|
+| `status` | `"success" \| "error"` | Always set |
+| `data` | `T \| None` | The endpoint's normal response body when `status == "success"` |
+| `error` | `str \| None` | Present when `status == "error"` |
+| `elapsed_ms` (Py) / `elapsedMs` (JS) | `int` | Client-measured round-trip time |
+
+### Error handling
+
+Firecrawl raises exceptions on HTTP errors; ScrapeGraph returns a non-success `ApiResult`. The HTTP status codes map cleanly:
+
+| HTTP | ScrapeGraph error type | Retryable? | Typical cause |
+|---|---|---|---|
+| 400 | `validation` (with `details[]`) | No | Bad request body |
+| 401 | `auth_missing_key` | No | `SGAI-APIKEY` header missing |
+| 402 | `insufficient_credits` | No | Top up at the dashboard |
+| 403 | `auth_invalid_key` | No | Key revoked or malformed |
+| 404 | `not_found` | No | Wrong endpoint or unknown job id |
+| 429 | `rate_limited` | Yes (backoff) | SDKs already retry with backoff |
+| 5xx | `internal_error` | Yes (backoff) | Transient — SDKs retry |
+
+A defensive wrapper looks the same as the one you wrote around Firecrawl, with one fewer `except` branch:
+
+```python
+res = sgai.scrape("https://example.com", formats=[MarkdownFormatConfig()])
+if res.status != "success":
+    raise RuntimeError(f"scrape failed: {res.error}")
+markdown = res.data.results["markdown"]["data"][0]
+```
+
 ### Test and verify
 
-Run your existing test suite and compare outputs. ScrapeGraph returns equivalent data structures — the main differences are the `ApiResult` envelope in the SDKs, the split `crawl.start`/`crawl.get` flow, and the dedicated `monitor` resource in place of change-tracking formats.
+Run your existing test suite and compare outputs. ScrapeGraph returns equivalent data structures — the main differences are:
+
+- The `ApiResult` envelope in the SDKs (no exceptions on error)
+- The split `crawl.start` / `crawl.get` flow (always async)
+- The dedicated `monitor` resource in place of change-tracking formats
+- `fetchConfig` (declarative) in place of `actions` (imperative)
+
+A quick equivalence script for a single URL:
+
+```python
+from firecrawl import Firecrawl
+from scrapegraph_py import ScrapeGraphAI, MarkdownFormatConfig
+
+fc = Firecrawl()
+sgai = ScrapeGraphAI()
+
+URL = "https://example.com"
+fc_md   = fc.scrape(URL, formats=["markdown"]).markdown
+sgai_md = sgai.scrape(URL, formats=[MarkdownFormatConfig()]).data.results["markdown"]["data"][0]
+print("len(firecrawl)=", len(fc_md), "len(scrapegraph)=", len(sgai_md))
+```
 
 </Steps>
 
@@ -345,6 +741,28 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com","formats":[{"type":"markdown"}]}'
 ```
+
+Response (note: no `ApiResult` envelope on the raw HTTP endpoint — the SDKs add that client-side):
+
+```json
+{
+  "id": "3b1c81d9-3f3b-42b0-9cf7-6926d9ebc7f5",
+  "results": {
+    "markdown": { "data": ["# Example Domain\n\n..."] }
+  },
+  "metadata": { "contentType": "text/html" }
+}
+```
+
+## Common gotchas
+
+- **Header name.** It's `SGAI-APIKEY: sgai-...`, not `Authorization: Bearer ...`. Watch for proxies that normalize header casing — the API tolerates any case, but some HTTP libraries strip non-standard headers in redirects.
+- **`schema` field name in Python.** `JsonFormatConfig` and `extract` use `schema=` (the field is internally aliased from `schema_` to avoid shadowing the `BaseModel.schema` method — pass `schema=` from your code and it works).
+- **No `actions` array.** If you relied on `click`/`type`/`press` actions, you'll need to either split the flow into two scrapes (one to trigger a navigation that produces a stable URL, one to scrape the result) or contact support about the upcoming `interactions` API.
+- **Crawl is always async.** There is no blocking `sgai.crawl(...)` — call `crawl.start` and poll, or pass a `webhookUrl` via a `monitor` instead.
+- **`changeTracking` is gone as a format.** Use `monitor.create` — it gets you cron scheduling, persistent history, and webhook delivery in one resource.
+- **Response shape per format.** Each requested format lives under `results[<format>].data` (always an array). For most formats the array has one element; for `links` and `images` it's the full list.
+- **`numResults` caps at 20 for search.** Firecrawl's `limit` accepts higher values — split the query (e.g., by `timeRange`) if you need more.
 
 ## Full SDK documentation
 
