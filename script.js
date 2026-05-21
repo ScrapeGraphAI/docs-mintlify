@@ -65,4 +65,76 @@
   history.pushState = function () { var r = origPush.apply(this, arguments); onNav(); return r; };
   history.replaceState = function () { var r = origReplace.apply(this, arguments); onNav(); return r; };
   window.addEventListener('popstate', onNav);
+
+  // GitHub stars badge auto-update
+  var GH_REPO = 'ScrapeGraphAI/Scrapegraph-ai';
+  var GH_CACHE_KEY = 'sgai-gh-stars';
+  var GH_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+  var lastStars = null;
+
+  function formatStars(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k+';
+    return String(n);
+  }
+
+  function updateBadgeLabel(count) {
+    var label = '⭐ ' + formatStars(count);
+    var links = document.querySelectorAll('a[href*="' + GH_REPO + '"]');
+    for (var i = 0; i < links.length; i++) {
+      var a = links[i];
+      var text = (a.textContent || '').trim();
+      if (text.indexOf('⭐') === -1) continue; // only the star badge link, not other GH links
+      if (text !== label) a.textContent = label;
+    }
+  }
+
+  function applyCached() {
+    if (lastStars != null) { updateBadgeLabel(lastStars); return true; }
+    try {
+      var cached = JSON.parse(localStorage.getItem(GH_CACHE_KEY) || 'null');
+      if (cached && typeof cached.n === 'number') {
+        lastStars = cached.n;
+        updateBadgeLabel(cached.n);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function fetchStars() {
+    try {
+      var cached = JSON.parse(localStorage.getItem(GH_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.t < GH_CACHE_TTL) {
+        lastStars = cached.n;
+        updateBadgeLabel(cached.n);
+        return;
+      }
+    } catch (e) {}
+
+    fetch('https://api.github.com/repos/' + GH_REPO)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || typeof data.stargazers_count !== 'number') return;
+        var n = data.stargazers_count;
+        lastStars = n;
+        try { localStorage.setItem(GH_CACHE_KEY, JSON.stringify({ n: n, t: Date.now() })); } catch (e) {}
+        updateBadgeLabel(n);
+      })
+      .catch(function () {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchStars);
+  } else {
+    fetchStars();
+  }
+
+  var starObserver = new MutationObserver(applyCached);
+  starObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+  function onStarsNav() { setTimeout(applyCached, 50); }
+  window.addEventListener('popstate', onStarsNav);
+
+  // Periodic refresh for long-lived tabs
+  setInterval(fetchStars, 30 * 60 * 1000);
 })();
