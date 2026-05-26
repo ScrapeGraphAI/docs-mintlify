@@ -139,7 +139,6 @@
               {
                 "group": "Scraping Tools",
                 "pages": [
-                  "knowledge-base/ai-tools/lovable",
                   "knowledge-base/ai-tools/v0",
                   "knowledge-base/ai-tools/bolt",
                   "knowledge-base/ai-tools/cursor"
