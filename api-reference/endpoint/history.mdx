@@ -8,7 +8,7 @@ GET https://v2-api.scrapegraphai.com/api/history
 GET https://v2-api.scrapegraphai.com/api/history/:id
 ```
 
-History stores every API call your account makes (scrape, extract, search, monitor ticks, crawl jobs, schema generations) and lets you fetch them back later by ID. The most common use case is **retrieving the content of a crawled page** — `GET /api/crawl/:id` returns each page's `scrapeRefId`, and you call `GET /api/history/:scrapeRefId` to get the formatted content (markdown, HTML, JSON extraction, screenshots, etc.) that the underlying scrape produced.
+History stores every API call your account makes (scrape, extract, search, monitor ticks, crawl jobs, schema generations) and lets you fetch them back later by ID. For crawl page content, use [`GET /api/crawl/:id/pages`](/api-reference/endpoint/crawl/pages) first; it returns paginated crawl pages with the underlying scrape result resolved into each page. Use History when you need to inspect an individual underlying request by its `scrapeRefId`.
 
 ## List history
 
