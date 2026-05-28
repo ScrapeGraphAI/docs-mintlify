@@ -113,6 +113,10 @@ curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
 # Check status (replace :id with the crawl id returned above)
 curl -X GET https://v2-api.scrapegraphai.com/api/crawl/:id \
   -H "SGAI-APIKEY: $SGAI_API_KEY"
+
+# Fetch pages with resolved scrape results
+curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/:id/pages?limit=50&cursor=0" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
 ```
 
 </CodeGroup>
@@ -173,38 +177,65 @@ Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 
 ## Fetching page content
 
-The crawl response returns each page as lightweight metadata (`url`, `depth`, `scrapeRefId`, …) — not the full body. Use the [History](/services/history) service with each `scrapeRefId` to pull the formatted content the underlying scrape produced.
-
-<CodeGroup>
-
-```python Python
-# After the crawl completes, fetch the markdown for each page
-for page in status.data.pages:
-    if page.status != "completed":
-        continue
-    entry = sgai.history.get(page.scrape_ref_id)
-    md = entry.data.result.results.get("markdown", {}).get("data", [None])[0]
-    print(page.url, "->", md[:80] if md else "(empty)")
-```
-
-```javascript JavaScript
-for (const page of status.data.pages) {
-  if (page.status !== "completed") continue;
-  const entry = await sgai.history.get(page.scrapeRefId);
-  const md = entry.data?.result?.results?.markdown?.data?.[0];
-  console.log(page.url, "->", md?.slice(0, 80) ?? "(empty)");
-}
-```
+`GET /api/crawl/:id` is designed for status polling and returns lightweight page metadata. To fetch the actual per-page content, call the paginated pages endpoint:
 
 ```bash cURL
-# Pick any scrapeRefId from the pages[] array of the crawl status response
-curl -X GET https://v2-api.scrapegraphai.com/api/history/<scrapeRefId> \
+curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/79694e03-f2ea-43f2-93cc-7c6fc26f999a/pages?limit=50&cursor=0" \
   -H "SGAI-APIKEY: $SGAI_API_KEY"
 ```
 
-</CodeGroup>
+The response is cursor-paginated:
 
-See the [History service](/services/history) for the full entry shape and the `requestParentId` linkage that ties each child scrape back to its parent crawl.
+```json
+{
+  "data": [
+    {
+      "url": "https://example.com",
+      "status": "completed",
+      "depth": 0,
+      "parentUrl": null,
+      "scrapeRefId": "83a911ed-c0bc-4a8c-ad62-8efeeb93f33a",
+      "scrape": {
+        "results": {
+          "markdown": {
+            "data": ["# Example Domain\n\nThis domain is for use in illustrative examples..."]
+          }
+        },
+        "metadata": {
+          "contentType": "text/html"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "nextCursor": null
+  }
+}
+```
+
+`limit` controls how many crawl pages are returned in one response. It defaults to `50`, with a maximum of `100`.
+
+`cursor` is a zero-based index into the ordered crawl page list. Start with `cursor=0`, then use `pagination.nextCursor` as the next request's `cursor` until it returns `null`.
+
+```bash
+# First 50 pages
+curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/:id/pages?limit=50&cursor=0" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+
+# Next 50 pages when the previous response returns "nextCursor": "50"
+curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/:id/pages?limit=50&cursor=50" \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
+
+See the [Get crawl pages API reference](/api-reference/endpoint/crawl/pages) for the full response shape.
+
+If you only need one page's underlying Scrape request, fetch that page's `scrapeRefId` through [History](/api-reference/endpoint/history):
+
+```bash
+curl -X GET https://v2-api.scrapegraphai.com/api/history/83a911ed-c0bc-4a8c-ad62-8efeeb93f33a \
+  -H "SGAI-APIKEY: $SGAI_API_KEY"
+```
 
 ## Managing Crawl Jobs
 

@@ -7,7 +7,7 @@ description: 'Kick off an async multi-page crawl and return a job id.'
 POST https://v2-api.scrapegraphai.com/api/crawl
 ```
 
-Starts an asynchronous crawl. The response returns a job `id` immediately; poll [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status) or manage the job via the [control endpoints](/api-reference/endpoint/crawl/manage).
+Starts an asynchronous crawl. The response returns a job `id` immediately; poll [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status), fetch page content with [`GET /api/crawl/:id/pages`](/api-reference/endpoint/crawl/pages), or manage the job via the [control endpoints](/api-reference/endpoint/crawl/manage).
 
 ## Request body
 
@@ -82,5 +82,6 @@ curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
 ## Related
 
 - Poll progress: [`GET /api/crawl/:id`](/api-reference/endpoint/crawl/get-status)
+- Fetch pages: [`GET /api/crawl/:id/pages`](/api-reference/endpoint/crawl/pages)
 - Stop, resume, or delete: [Manage crawl jobs](/api-reference/endpoint/crawl/manage)
 - Service overview: [Crawl](/services/crawl)

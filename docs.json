@@ -235,6 +235,7 @@
                 "pages": [
                   "api-reference/endpoint/crawl/start",
                   "api-reference/endpoint/crawl/get-status",
+                  "api-reference/endpoint/crawl/pages",
                   "api-reference/endpoint/crawl/manage"
                 ]
               },
