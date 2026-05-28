@@ -1,108 +1,230 @@
 ---
-title: "⚡ Vercel AI"
-description: "Integrate ScrapeGraphAI into Vercel AI"
+title: "Vercel AI SDK"
+description: "Use ScrapeGraphAI as first-party tools inside Vercel AI SDK agents"
+icon: "/logo/vercel.svg"
 ---
 
 ## Overview
 
-[Vercel AI SDK](https://ai-sdk.dev/) is a popular JavaScript/TypeScript framework to interact with various LLM providers. This page shows how to integrate it with ScrapeGraph.
+`@scrapegraph-ai/ai-sdk` exposes ScrapeGraphAI endpoints as [Vercel AI SDK](https://ai-sdk.dev/docs/introduction) tools. Add the tools to `generateText` or `streamText`, set `stopWhen`, and the model can scrape, extract, search, crawl, and monitor web data during the run.
 
-<Card
-  title="Official Vercel AI documentation"
-  icon="book"
-  href="https://ai-sdk.dev/"
->
-  View the Vercel AI SDK documentation
-</Card>
+<CardGroup cols={2}>
+  <Card
+    title="Vercel AI SDK docs"
+    icon="book"
+    href="https://ai-sdk.dev/docs/introduction"
+  >
+    Official Vercel AI SDK documentation
+  </Card>
+  <Card
+    title="Tool calling"
+    icon="wrench"
+    href="https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling"
+  >
+    How AI SDK Core tools are executed
+  </Card>
+</CardGroup>
 
 ## Installation
 
-Follow our [JavaScript SDK installation steps](/sdks/javascript) using your favourite package manager:
+Install the ScrapeGraphAI tool package, the AI SDK, and the model provider you use:
 
 ```bash
-# Using npm
-npm i scrapegraph-js
-
-# Using pnpm
-pnpm i scrapegraph-js
-
-# Using yarn
-yarn add scrapegraph-js
-
-# Using bun
-bun add scrapegraph-js
+npm i @scrapegraph-ai/ai-sdk ai @ai-sdk/openai
+pnpm add @scrapegraph-ai/ai-sdk ai @ai-sdk/openai
+yarn add @scrapegraph-ai/ai-sdk ai @ai-sdk/openai
+bun add @scrapegraph-ai/ai-sdk ai @ai-sdk/openai
 ```
 
-Then, install [Vercel AI](https://ai-sdk.dev/docs/getting-started) with their [OpenAI provider](https://ai-sdk.dev/providers/ai-sdk-providers/openai):
+Set your keys:
 
 ```bash
-# Using npm
-npm i ai @ai-sdk/openai
-
-# Using pnpm
-pnpm i ai @ai-sdk/openai
-
-# Using yarn
-yarn add ai @ai-sdk/openai
-
-# Using bun
-bun add ai @ai-sdk/openai
+export SGAI_API_KEY="your-scrapegraph-key"
+export OPENAI_API_KEY="your-openai-key"
 ```
 
-## Usage
+<Note>
+The tools read `SGAI_API_KEY` from the environment by default. You can also pass `{ apiKey: process.env.SGAI_API_KEY }` to any tool factory.
+</Note>
 
-The ScrapeGraph SDK can be used like any other tool. See [Vercel AI tool calling docs](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling).
+## Quickstart
+
+Give the model a scrape tool and allow multiple steps so it can call the tool, receive the result, then write the final answer.
 
 ```ts
-import { z } from "zod";
-import { generateText, tool } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { extract } from "scrapegraph-js";
+import { generateText, stepCountIs } from "ai";
+import { scrapeTool } from "@scrapegraph-ai/ai-sdk";
 
-const result = await generateText({
-  model: openai("gpt-4.1-mini"),
+const { text } = await generateText({
+  model: openai("gpt-5-nano"),
+  prompt:
+    "Scrape Hacker News and write a short, concise summary of what people are talking about today.",
   tools: {
-    scrape: tool({
-      description: "Extract articles information from a given URL.",
-      parameters: z.object({
-        url: z.string().describe("The exact URL."),
-      }),
-      execute: async ({ url }) => {
-        const response = await extract(process.env.SGAI_API_KEY!, {
-          url,
-          prompt: "Extract the article information",
-          schema: {
-            type: "object",
-            properties: {
-              articles: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string" },
-                    author: { type: "string" },
-                    publishDate: { type: "string" },
-                    content: { type: "string" },
-                    category: { type: "string" },
-                  },
-                },
-              },
-            },
-          },
-        });
-        return response.data?.json;
-      },
-    }),
+    scrape: scrapeTool(),
   },
-  prompt: "Can you find me the articles on https://scrapegraphai.com/blog?",
+  stopWhen: stepCountIs(3),
 });
 
-console.log(result);
+console.log(text);
 ```
 
-## Support
+## Available tools
 
-Need help with the integration?
+| Factory | What it gives the model |
+|---|---|
+| `scrapeTool()` | Scrape a page as markdown, HTML, JSON, links, images, summary, branding, or screenshot |
+| `extractTool()` | Extract structured JSON from a URL, HTML, or markdown with a prompt |
+| `searchTool()` | Search the web and optionally extract structured data from results |
+| `crawlTools()` | Start, poll, page through, stop, resume, and delete crawl jobs |
+| `monitorTools()` | Create, list, update, pause, resume, delete, and inspect monitor activity |
+
+Use a narrow tool set when the task is specific. Use all tools when the agent needs to decide the workflow:
+
+```ts
+import { openai } from "@ai-sdk/openai";
+import { generateText, stepCountIs } from "ai";
+import {
+  crawlTools,
+  extractTool,
+  monitorTools,
+  scrapeTool,
+  searchTool,
+} from "@scrapegraph-ai/ai-sdk";
+
+const { text } = await generateText({
+  model: openai("gpt-5-nano"),
+  prompt: "Search for ScrapeGraphAI docs, scrape the best page, and summarize it.",
+  tools: {
+    scrape: scrapeTool(),
+    extract: extractTool(),
+    search: searchTool(),
+    ...crawlTools(),
+    ...monitorTools(),
+  },
+  stopWhen: stepCountIs(10),
+});
+
+console.log(text);
+```
+
+## Scrape example
+
+This is the smallest useful agent: one scrape tool, a concrete target, and enough steps for the model to call the tool before answering.
+
+```ts
+import { openai } from "@ai-sdk/openai";
+import { generateText, stepCountIs } from "ai";
+import { scrapeTool } from "@scrapegraph-ai/ai-sdk";
+
+const result = await generateText({
+  model: openai("gpt-5-nano"),
+  prompt: "Find the main headline on https://example.com",
+  tools: {
+    scrape: scrapeTool(),
+  },
+  stopWhen: stepCountIs(5),
+});
+
+console.log(result.text);
+```
+
+Pass an API key explicitly when your runtime does not expose environment variables:
+
+```ts
+const tools = {
+  scrape: scrapeTool({ apiKey: process.env.SGAI_API_KEY }),
+};
+```
+
+## Crawl example
+
+`crawlTools()` gives the model the full async crawl loop: start the job, poll status with `getCrawl`, then retrieve paginated pages with `getCrawlPages`.
+
+```ts
+import { openai } from "@ai-sdk/openai";
+import { generateText, stepCountIs } from "ai";
+import { crawlTools } from "@scrapegraph-ai/ai-sdk";
+
+const { text, steps } = await generateText({
+  model: openai("gpt-5-nano"),
+  prompt:
+    "Find 10 https://scrapegraphai.com/ blog posts. Start a crawl, poll its status, fetch crawled pages with getCrawlPages, then summarize what you found.",
+  tools: {
+    ...crawlTools(),
+  },
+  stopWhen: stepCountIs(20),
+});
+
+for (const step of steps) {
+  for (const toolCall of step.toolCalls) {
+    console.log(`[tool] ${toolCall.toolName}`);
+    console.log(JSON.stringify(toolCall.input, null, 2));
+  }
+}
+
+console.log(text);
+```
+
+For longer crawls, keep the same tools but add your app's own timeout, cancellation, and persistence around the AI SDK call.
+
+## Tool reference
+
+### Scrape
+
+```ts
+import { scrapeTool } from "@scrapegraph-ai/ai-sdk";
+
+const tools = {
+  scrape: scrapeTool(),
+};
+```
+
+### Extract
+
+```ts
+import { extractTool } from "@scrapegraph-ai/ai-sdk";
+
+const tools = {
+  extract: extractTool(),
+};
+```
+
+### Search
+
+```ts
+import { searchTool } from "@scrapegraph-ai/ai-sdk";
+
+const tools = {
+  search: searchTool(),
+};
+```
+
+### Crawl
+
+```ts
+import { crawlTools } from "@scrapegraph-ai/ai-sdk";
+
+const tools = {
+  ...crawlTools(),
+};
+```
+
+`crawlTools()` registers `startCrawl`, `getCrawl`, `getCrawlPages`, `stopCrawl`, `resumeCrawl`, and `deleteCrawl`.
+
+### Monitor
+
+```ts
+import { monitorTools } from "@scrapegraph-ai/ai-sdk";
+
+const tools = {
+  ...monitorTools(),
+};
+```
+
+`monitorTools()` registers `createMonitor`, `listMonitors`, `getMonitor`, `updateMonitor`, `deleteMonitor`, `pauseMonitor`, `resumeMonitor`, and `getMonitorActivity`.
+
+## Support
 
 <CardGroup cols={2}>
   <Card
