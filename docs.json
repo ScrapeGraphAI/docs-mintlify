@@ -285,28 +285,7 @@
                   "v1/scrape",
                   "v1/smartcrawler",
                   "v1/sitemap",
-                  "v1/agenticscraper",
-                  {
-                    "group": "CLI",
-                    "icon": "terminal",
-                    "pages": [
-                      "v1/cli/introduction",
-                      "v1/cli/commands",
-                      "v1/cli/json-mode",
-                      "v1/cli/ai-agent-skill",
-                      "v1/cli/examples"
-                    ]
-                  },
-                  {
-                    "group": "MCP Server",
-                    "icon": "/logo/mcp.svg",
-                    "pages": [
-                      "v1/mcp-server/introduction",
-                      "v1/mcp-server/cursor",
-                      "v1/mcp-server/claude",
-                      "v1/mcp-server/smithery"
-                    ]
-                  }
+                  "v1/agenticscraper"
                 ]
               }
             ]
