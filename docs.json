@@ -96,6 +96,7 @@
               {
                 "group": "Frameworks",
                 "pages": [
+                  "integrations/vercel_ai",
                   "integrations/langchain",
                   "integrations/langgraph",
                   "integrations/llamaindex",
