@@ -654,7 +654,7 @@ const results = await Promise.all(urls.map((url) =>
 
 ### Handle the `ApiResult` wrapper
 
-The ScrapeGraph Python and JS SDKs wrap every response in an `ApiResult` — no exceptions to catch on HTTP errors. Check `status` before reading `data`:
+The ScrapeGraphAI Python and JS SDKs wrap every response in an `ApiResult` — no exceptions to catch on HTTP errors. Check `status` before reading `data`:
 
 ```python
 result = sgai.extract("...", url="https://example.com")
