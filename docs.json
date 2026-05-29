@@ -89,6 +89,7 @@
               {
                 "group": "LLM SDKs",
                 "pages": [
+                  "developer-guides/llm-sdks-and-frameworks/openai",
                   "developer-guides/llm-sdks-and-frameworks/gemini",
                   "developer-guides/llm-sdks-and-frameworks/anthropic"
                 ]

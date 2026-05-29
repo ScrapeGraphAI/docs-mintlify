@@ -1,0 +1,146 @@
+---
+title: 'OpenAI'
+description: 'Use ScrapeGraphAI with OpenAI for web scraping + AI workflows'
+---
+
+> Integrate ScrapeGraphAI with OpenAI to build AI applications powered by web data.
+
+## Setup
+
+```bash
+npm install scrapegraph-js openai
+```
+
+Create `.env` file:
+
+```bash
+SGAI_APIKEY=your_scrapegraph_key
+OPENAI_API_KEY=your_openai_key
+```
+
+<Note>
+If using Node < 20, install `dotenv` and add `import 'dotenv/config'` to your code.
+</Note>
+
+## Scrape + Summarize
+
+This example demonstrates a simple workflow: scrape a website and summarize the content using OpenAI.
+
+```typescript
+import { extract } from 'scrapegraph-js';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://scrapegraphai.com',
+    prompt: 'Extract all content from this page',
+});
+
+const data = result.data?.json;
+console.log('Scraped content length:', JSON.stringify(data).length);
+
+const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+        { role: 'user', content: `Summarize in 100 words: ${JSON.stringify(data)}` }
+    ]
+});
+
+console.log('Response:', completion.choices[0].message.content);
+```
+
+## Tool Use
+
+This example shows how to use OpenAI's function calling to let the model decide when to scrape websites based on user requests.
+
+```typescript
+import { extract } from 'scrapegraph-js';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+console.log("Sending user message to OpenAI and requesting tool use if necessary...");
+const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{
+        role: 'user',
+        content: 'What is ScrapeGraphAI? Check scrapegraphai.com'
+    }],
+    tools: [{
+        type: 'function',
+        function: {
+            name: 'scrape_website',
+            description: 'Scrape and extract structured data from a website URL',
+            parameters: {
+                type: 'object',
+                properties: {
+                    url: { type: 'string', description: 'The URL to scrape' }
+                },
+                required: ['url']
+            }
+        }
+    }]
+});
+
+const toolCall = response.choices[0].message.tool_calls?.[0];
+
+if (toolCall) {
+    const { url } = JSON.parse(toolCall.function.arguments);
+    console.log(`Calling tool: ${toolCall.function.name} | URL: ${url}`);
+
+    const result = await extract(process.env.SGAI_APIKEY!, {
+        url,
+        prompt: 'Extract all content from this page',
+    });
+
+    const data = result.data?.json;
+    console.log(`Scraped content preview: ${JSON.stringify(data)?.substring(0, 300)}...`);
+    // Continue with the conversation or process the scraped content as needed
+}
+```
+
+## Structured Extraction
+
+This example demonstrates how to use OpenAI's JSON mode to extract structured data from scraped website content.
+
+```typescript
+import { extract } from 'scrapegraph-js';
+import OpenAI from 'openai';
+import { z } from 'zod';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const CompanyInfoSchema = z.object({
+    name: z.string(),
+    industry: z.string().optional(),
+    description: z.string().optional()
+});
+
+const result = await extract(process.env.SGAI_APIKEY!, {
+    url: 'https://stripe.com',
+    prompt: 'Extract all content from this page',
+});
+const data = result.data?.json;
+
+const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
+    messages: [
+        {
+            role: 'system',
+            content: `Extract company information from the website content. Respond ONLY with valid JSON in this exact format:
+{ "name": "Company Name", "industry": "Industry", "description": "One sentence description" }`
+        },
+        { role: 'user', content: JSON.stringify(data) }
+    ]
+});
+
+const companyInfo = CompanyInfoSchema.parse(
+    JSON.parse(completion.choices[0].message.content!)
+);
+
+console.log(companyInfo);
+```
+
+For more examples, check the [OpenAI documentation](https://platform.openai.com/docs).

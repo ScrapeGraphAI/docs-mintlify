@@ -8,7 +8,7 @@ description: 'Use ScrapeGraphAI with Claude for web scraping + AI workflows'
 ## Setup
 
 ```bash
-npm install scrapegraph-js @anthropic-ai/sdk zod zod-to-json-schema
+npm install scrapegraph-js @anthropic-ai/sdk zod
 ```
 
 Create `.env` file:
@@ -58,15 +58,9 @@ This example shows how to use Claude's tool use feature to let the model decide 
 ```typescript
 import { extract } from 'scrapegraph-js';
 import { Anthropic } from '@anthropic-ai/sdk';
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY
-});
-
-const ScrapeArgsSchema = z.object({
-    url: z.string()
 });
 
 console.log("Sending user message to Claude and requesting tool use if necessary...");
@@ -76,7 +70,13 @@ const response = await anthropic.messages.create({
     tools: [{
         name: 'scrape_website',
         description: 'Scrape and extract structured data from a website URL',
-        input_schema: zodToJsonSchema(ScrapeArgsSchema, 'ScrapeArgsSchema') as any
+        input_schema: {
+            type: 'object',
+            properties: {
+                url: { type: 'string', description: 'The URL to scrape' }
+            },
+            required: ['url']
+        }
     }],
     messages: [{
         role: 'user',
