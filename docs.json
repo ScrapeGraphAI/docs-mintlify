@@ -103,7 +103,8 @@
                   "integrations/llamaindex",
                   "integrations/crewai",
                   "integrations/agno",
-                  "integrations/orthogonal"
+                  "integrations/orthogonal",
+                  "integrations/hermes"
                 ]
               },
               {
