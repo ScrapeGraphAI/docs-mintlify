@@ -103,7 +103,12 @@
                   "integrations/llamaindex",
                   "integrations/crewai",
                   "integrations/agno",
-                  "integrations/orthogonal",
+                  "integrations/orthogonal"
+                ]
+              },
+              {
+                "group": "Personal AI Agents",
+                "pages": [
                   "integrations/hermes",
                   "integrations/openclaw"
                 ]
