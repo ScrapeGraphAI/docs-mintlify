@@ -1,0 +1,146 @@
+---
+title: 'OpenClaw'
+description: 'Scrape any URL into structured JSON from Telegram, Slack, or Discord with OpenClaw and the just-scrape skill'
+icon: '/logo/openclaw.svg'
+---
+
+## Overview
+
+[OpenClaw](https://openclaw.ai) is a self-hosted gateway that connects your chat apps to an AI coding agent — message it from Telegram, Slack, Discord, WhatsApp, and more. The one thing it cannot do out of the box is read the live web reliably with structured output.
+
+The ScrapeGraphAI [just-scrape](https://github.com/ScrapeGraphAI/just-scrape) skill fixes that. One CLI install plus one skill install gives the agent behind OpenClaw a clean scraping toolkit that returns schema-enforced JSON instead of markdown soup. OpenClaw's channels let you drive it from wherever you already chat.
+
+<Card
+  title="GitHub Repository"
+  icon="github"
+  href="https://github.com/ScrapeGraphAI/just-scrape"
+>
+  Browse the CLI and skill source
+</Card>
+
+## Prerequisites
+
+| Requirement | Where to get it |
+| --- | --- |
+| OpenClaw installed | [docs.openclaw.ai](https://docs.openclaw.ai/start/getting-started) |
+| An AI provider API key | Anthropic, OpenAI, or Google — chosen during onboarding |
+| A ScrapeGraphAI API key | [scrapegraphai.com/dashboard](https://scrapegraphai.com/dashboard) |
+| Node.js 22+ | Needed to run `just-scrape` and `npx skills add` |
+
+## Setup
+
+<Steps>
+  <Step title="Install OpenClaw">
+    Install OpenClaw on macOS or Linux:
+
+    ```bash
+    curl -fsSL https://openclaw.ai/install.sh | bash
+    ```
+
+    Run the onboarding wizard, which installs the background daemon and walks you through picking a model provider and entering its API key:
+
+    ```bash
+    openclaw onboard --install-daemon
+    ```
+
+    Confirm the gateway is running (it listens on port 18789):
+
+    ```bash
+    openclaw gateway status
+    ```
+  </Step>
+  <Step title="Connect a channel">
+    Connect Telegram (or any other channel) so you can message your agent from your phone. Follow OpenClaw's [Telegram channel guide](https://docs.openclaw.ai/channels/telegram) to wire up the bot and approve your first chat.
+
+    Once connected, any message you send the bot is routed to your agent, and its reply comes straight back in the same thread.
+  </Step>
+  <Step title="Install the just-scrape CLI">
+    Install the ScrapeGraphAI command-line tool globally:
+
+    ```bash
+    npm install -g just-scrape@latest
+    ```
+
+    Set your API key and confirm it works:
+
+    ```bash
+    export SGAI_API_KEY="sgai-xxxxxxxxxxxxxxxxxxxx"
+    just-scrape validate
+    ```
+
+    <Note>
+    Get your API key from the [dashboard](https://scrapegraphai.com/dashboard). Add the export to your shell profile so the agent inherits it on every launch.
+    </Note>
+  </Step>
+  <Step title="Install the just-scrape skill">
+    Install the skill so the agent behind OpenClaw knows how and when to call `just-scrape`:
+
+    ```bash
+    npx skills add https://github.com/ScrapeGraphAI/just-scrape --skill just-scrape
+    ```
+
+    The skill lands in `~/.agents/skills` — one of the directories OpenClaw [loads skills from](https://docs.openclaw.ai/tools/skills) — so it is available to your agent on the next session.
+  </Step>
+</Steps>
+
+## Scrape from chat
+
+Open the chat with your bot and send it a URL plus a request. For the demo, point it at an eBay search for consoles:
+
+```text
+> hey i want you to extract the consoles in a list along with all their
+  details, use just-scrape
+  https://www.ebay.com/sch/i.html?_nkw=consoles
+```
+
+The agent picks up the `just-scrape` skill and runs `just-scrape extract`. eBay is JavaScript-heavy, so it reaches for `--mode js --stealth` on its own — a plain extract comes back almost empty. It pulls 82 console listings and saves them as structured data, right there in the thread.
+
+![OpenClaw agent in Telegram running just-scrape extract with stealth mode and saving 82 eBay console listings as JSON](https://pub-308fdc8a1858487d9ab275774108077b.r2.dev/images/blog/scrapegraphai-openclaw/01-scrape-request.webp)
+
+Because `just-scrape` returns schema-validated data, every listing comes back with the same fields: title, price, condition, shipping, seller, ratings, sold/watchers, image URL, and listing URL. No regex parsing, no markdown wrangling — and you get both JSON and CSV out.
+
+## Put it on a schedule
+
+You do not have to trigger every run by hand. Ask the agent to keep watching, and it sets up a recurring job that reports back to your chat:
+
+```text
+> can you setup a cron for it to scrape everyday at 6pm and report back
+  to me what's new?
+```
+
+The agent schedules a daily run, re-runs the same `just-scrape` extraction at 6 PM UTC, and pings you with anything new.
+
+![OpenClaw agent confirming a daily 6PM cron job that scrapes eBay console listings and reports new findings back to Telegram](https://pub-308fdc8a1858487d9ab275774108077b.r2.dev/images/blog/scrapegraphai-openclaw/02-cron-setup.webp)
+
+Each run scrapes the search page, compares against the last result, and sends what changed: new listings, removed listings, price moves. If nothing moved, no noise.
+
+## What you can build
+
+The pattern is always the same: ask from chat, get structured data back. Swap the URL and prompt and you have a different agent.
+
+- **Competitor pricing watch** — point it at a SaaS pricing page, schema the plan tiers, ask for a diff whenever you want one
+- **Lead enrichment** — message a list of company URLs; the agent scrapes each homepage and extracts name, industry, headcount, and latest news
+- **Job board scraper** — ask it to check a "remote senior Go" search and ping you with the role, salary, and link
+- **Release notes digest** — scrape changelog pages for tools you depend on and get a summary of what shipped
+- **News digest** — `just-scrape search "AI news"` and get the top stories summarized before your first meeting
+
+## Support
+
+Need help with the integration?
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/just-scrape/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
