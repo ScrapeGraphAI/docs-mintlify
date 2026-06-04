@@ -104,7 +104,8 @@
                   "integrations/crewai",
                   "integrations/agno",
                   "integrations/orthogonal",
-                  "integrations/hermes"
+                  "integrations/hermes",
+                  "integrations/openclaw"
                 ]
               },
               {
