@@ -1,0 +1,154 @@
+---
+title: "LiteLLM"
+description: "Expose ScrapeGraphAI to any model through the LiteLLM MCP gateway"
+icon: "network-wired"
+---
+
+## Overview
+
+[LiteLLM](https://docs.litellm.ai/) ships a built-in [MCP gateway](https://docs.litellm.ai/docs/mcp) that lets the LiteLLM Proxy connect to Model Context Protocol servers and surface their tools to any model you route through it. ScrapeGraphAI is available as a first-party MCP server, so a single config entry gives every LiteLLM client access to smart scraping, web crawling, search scraping, and agentic scraping workflows.
+
+LiteLLM ships ScrapeGraph in its default [`mcp_servers.json`](https://github.com/BerriAI/litellm/blob/main/mcp_servers.json), pointing at the [ScrapeGraph MCP server](https://github.com/ScrapeGraphAI/scrapegraph-mcp) hosted on [Smithery](https://smithery.ai/).
+
+<CardGroup cols={2}>
+  <Card
+    title="LiteLLM MCP docs"
+    icon="book"
+    href="https://docs.litellm.ai/docs/mcp"
+  >
+    How LiteLLM connects to MCP servers
+  </Card>
+  <Card
+    title="ScrapeGraph MCP server"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-mcp"
+  >
+    The MCP server LiteLLM connects to
+  </Card>
+</CardGroup>
+
+## Prerequisites
+
+- A [ScrapeGraphAI API key](https://dashboard.scrapegraphai.com/) — set as `SGAI_API_KEY`
+- LiteLLM installed with proxy extras:
+
+```bash
+pip install 'litellm[proxy]'
+```
+
+## Configure the MCP server
+
+Add ScrapeGraph to the `mcp_servers` block of your LiteLLM proxy config. This is the same entry LiteLLM ships in its default `mcp_servers.json` — the Smithery-hosted server exposes both HTTP and SSE transports.
+
+```yaml config.yaml
+model_list:
+  - model_name: gpt-5
+    litellm_params:
+      model: openai/gpt-5
+      api_key: os.environ/OPENAI_API_KEY
+
+mcp_servers:
+  scrapegraph:
+    url: "https://smithery.ai/api/mcp/scrapegraph-mcp"
+    description: "Smart scraping, web crawling, search scraping, and agentic scraping workflows."
+```
+
+The raw `mcp_servers.json` entry added in LiteLLM looks like this:
+
+```json mcp_servers.json
+{
+  "scrapegraph": {
+    "http_url": "https://smithery.ai/api/mcp/scrapegraph-mcp",
+    "sse_url": "https://smithery.ai/api/mcp/scrapegraph-mcp/sse",
+    "description": "The ScrapeGraph MCP server provides programmatic access to ScrapeGraph AI's web scraping capabilities, including smart scraping, web crawling, search scraping, and agentic scraping workflows."
+  }
+}
+```
+
+<Note>
+The ScrapeGraph MCP server reads your ScrapeGraphAI API key from `SGAI_API_KEY`. Set it in the environment where the proxy runs, or pass it through the Smithery config of your MCP server deployment.
+</Note>
+
+## Start the proxy
+
+```bash
+export OPENAI_API_KEY="your-openai-key"
+export SGAI_API_KEY="your-scrapegraph-key"
+
+litellm --config config.yaml
+```
+
+The proxy boots on `http://localhost:4000` and registers the ScrapeGraph tools under the MCP gateway.
+
+## List the available tools
+
+LiteLLM exposes connected MCP tools over its MCP endpoint. Point any MCP-aware client at `http://localhost:4000/mcp` to discover them:
+
+```bash
+curl -s http://localhost:4000/mcp \
+  -H "Authorization: Bearer $LITELLM_API_KEY"
+```
+
+The ScrapeGraph server registers these tools:
+
+| Tool | What it does |
+|---|---|
+| `scrape` | Fetch a page as markdown, HTML, links, or a screenshot |
+| `extract` | Extract structured JSON from a URL with a prompt and optional schema |
+| `search` | Search the web and return ranked results |
+| `crawl_start` | Start an async multi-page crawl |
+| `crawl_get_status` | Poll a crawl job's progress |
+| `crawl_stop` / `crawl_resume` | Control an active crawl |
+| `schema` | Generate or augment a JSON Schema from a prompt |
+| `monitor_*` | Create, list, pause, resume, and inspect scheduled jobs |
+| `credits` | Check remaining account credits |
+| `history` | View paginated request history |
+
+## Use it from a model
+
+With the gateway running, any model routed through LiteLLM can call the ScrapeGraph tools during a completion. Pass the proxy's MCP tools through your client of choice:
+
+```python
+import openai
+
+client = openai.OpenAI(
+    base_url="http://localhost:4000",
+    api_key="sk-1234",  # your LiteLLM proxy key
+)
+
+response = client.responses.create(
+    model="gpt-5",
+    input="Scrape https://scrapegraphai.com and summarize what the product does.",
+    tools=[
+        {
+            "type": "mcp",
+            "server_label": "scrapegraph",
+            "server_url": "http://localhost:4000/mcp",
+            "require_approval": "never",
+        }
+    ],
+)
+
+print(response.output_text)
+```
+
+The model decides when to call `scrape`, `search`, or `extract`, receives the structured result, and writes its final answer from the scraped data.
+
+## Support
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Issues"
+    icon="github"
+    href="https://github.com/ScrapeGraphAI/scrapegraph-mcp/issues"
+  >
+    Report bugs and request features
+  </Card>
+  <Card
+    title="Discord Community"
+    icon="discord"
+    href="https://discord.gg/uJN7TYcpNa"
+  >
+    Get help from our community
+  </Card>
+</CardGroup>
