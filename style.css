@@ -132,3 +132,57 @@ html:not(.dark) .sgai-cta__btn--secondary {
 html:not(.dark) .sgai-cta__btn--secondary:hover {
   background: rgba(36, 36, 36, 0.08);
 }
+
+/* "Setup for agents" copy button */
+.sgai-agent-setup {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 16px 0;
+}
+
+.sgai-agent-setup__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-sizing: border-box;
+  padding: 7px 13px;
+  border-radius: 8px;
+  border: 1px solid rgba(172, 109, 255, 0.32);
+  background: rgba(172, 109, 255, 0.10);
+  color: #AC6DFF;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sgai-agent-setup__btn:hover {
+  background: rgba(172, 109, 255, 0.18);
+  border-color: rgba(172, 109, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.sgai-agent-setup__icon {
+  flex: 0 0 auto;
+}
+
+.sgai-agent-setup__btn.is-copied {
+  background: rgba(172, 109, 255, 0.9);
+  border-color: rgba(172, 109, 255, 0.9);
+  color: #EFEFEF;
+}
+
+html:not(.dark) .sgai-agent-setup__btn {
+  color: #7A3FE4;
+  border-color: rgba(172, 109, 255, 0.4);
+  background: rgba(172, 109, 255, 0.08);
+}
+html:not(.dark) .sgai-agent-setup__btn:hover {
+  background: rgba(172, 109, 255, 0.15);
+}
+html:not(.dark) .sgai-agent-setup__btn.is-copied {
+  color: #EFEFEF;
+}

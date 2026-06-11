@@ -66,6 +66,164 @@
   history.replaceState = function () { var r = origReplace.apply(this, arguments); onNav(); return r; };
   window.addEventListener('popstate', onNav);
 
+  // "Setup for Agents" button — copies a ready-to-paste setup prompt for AI agents
+  var AGENT_BTN_ID = 'sgai-agent-setup-btn';
+
+  var AGENT_SETUP_TEXT = [
+    '# ScrapeGraphAI — Setup for AI Agents',
+    '',
+    'You are integrating ScrapeGraphAI, an LLM-powered web-scraping API that turns any website into structured data. Use it for AI-powered structured extraction, page-to-markdown conversion, AI web search, and multi-page crawling.',
+    '',
+    '## 1. Get an API key',
+    'Sign up at https://scrapegraphai.com/dashboard and copy your key (starts with `sgai-`).',
+    'Expose it as an environment variable:',
+    '',
+    '    export SGAI_API_KEY="sgai-..."',
+    '',
+    '## 2. Install an SDK',
+    'Python (>= 3.12):',
+    '',
+    '    pip install "scrapegraph-py>=2.1.0"',
+    '',
+    'JavaScript / TypeScript (Node >= 22, ESM-only):',
+    '',
+    '    npm i scrapegraph-js@latest',
+    '',
+    '## 3. Core services',
+    '- scrape  — fetch a page as markdown / html / screenshot',
+    '- extract — AI structured extraction from a URL, HTML, or markdown (prompt + optional JSON schema)',
+    '- search  — AI web search returning structured results',
+    '- crawl   — async multi-page crawling (sgai.crawl.*)',
+    '- monitor — cron-scheduled jobs (sgai.monitor.*)',
+    '- history — inspect past requests (sgai.history.*)',
+    '',
+    'Every call returns an ApiResult: { status: "success" | "error", data, error, elapsed_ms }.',
+    'No exceptions are thrown on API errors — always check `status` first.',
+    '',
+    '## 4. Python quick start',
+    '',
+    '    from scrapegraph_py import ScrapeGraphAI',
+    '',
+    '    sgai = ScrapeGraphAI()  # reads SGAI_API_KEY from env',
+    '',
+    '    res = sgai.extract(',
+    '        "Extract the company name and description",',
+    '        url="https://scrapegraphai.com",',
+    '    )',
+    '    print(res.data.json_data if res.status == "success" else res.error)',
+    '',
+    '## 5. JavaScript quick start',
+    '',
+    '    import { ScrapeGraphAI } from "scrapegraph-js";',
+    '',
+    '    const sgai = ScrapeGraphAI(); // reads SGAI_API_KEY from env',
+    '',
+    '    const res = await sgai.extract({',
+    '      url: "https://scrapegraphai.com",',
+    '      prompt: "Extract the company name and description",',
+    '    });',
+    '',
+    '    if (res.status === "success") console.log(res.data?.json);',
+    '    else console.error(res.error);',
+    '',
+    '## Docs',
+    'Full documentation: https://docs.scrapegraphai.com',
+    ''
+  ].join('\n');
+
+  function buildAgentBtn() {
+    var wrap = document.createElement('div');
+    wrap.id = AGENT_BTN_ID;
+    wrap.className = 'sgai-agent-setup';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sgai-agent-setup__btn';
+    btn.innerHTML = [
+      '<svg class="sgai-agent-setup__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+      '  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>',
+      '  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>',
+      '</svg>',
+      '<span class="sgai-agent-setup__label">Setup for agents</span>'
+    ].join('');
+
+    btn.addEventListener('click', function () {
+      copyText(AGENT_SETUP_TEXT).then(function () {
+        var label = btn.querySelector('.sgai-agent-setup__label');
+        if (!label) return;
+        var prev = label.textContent;
+        label.textContent = 'Copied!';
+        btn.classList.add('is-copied');
+        setTimeout(function () {
+          label.textContent = prev;
+          btn.classList.remove('is-copied');
+        }, 1800);
+      });
+    });
+
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).catch(function () { return legacyCopy(text); });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (e) {}
+  }
+
+  function findContentRoot() {
+    return document.querySelector('#content-area') ||
+      document.querySelector('main article') ||
+      document.querySelector('article') ||
+      document.querySelector('main');
+  }
+
+  function injectAgentBtn() {
+    if (document.getElementById(AGENT_BTN_ID)) return;
+    var root = findContentRoot();
+    if (!root) return;
+    var btn = buildAgentBtn();
+    root.insertBefore(btn, root.firstChild);
+  }
+
+  function scheduleAgentBtn() {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectAgentBtn);
+    } else {
+      injectAgentBtn();
+    }
+  }
+
+  scheduleAgentBtn();
+
+  var agentObserver = new MutationObserver(function () {
+    if (!document.getElementById(AGENT_BTN_ID)) injectAgentBtn();
+  });
+  agentObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+  function onAgentNav() { setTimeout(injectAgentBtn, 50); }
+  history.pushState = (function (orig) {
+    return function () { var r = orig.apply(this, arguments); onAgentNav(); return r; };
+  })(history.pushState);
+  history.replaceState = (function (orig) {
+    return function () { var r = orig.apply(this, arguments); onAgentNav(); return r; };
+  })(history.replaceState);
+  window.addEventListener('popstate', onAgentNav);
+
   // GitHub stars badge auto-update
   var GH_REPO = 'ScrapeGraphAI/Scrapegraph-ai';
   var GH_CACHE_KEY = 'sgai-gh-stars';
