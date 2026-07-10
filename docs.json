@@ -79,9 +79,7 @@
                     "icon": "/logo/mcp.svg",
                     "pages": [
                       "services/mcp-server/introduction",
-                      "services/mcp-server/cursor",
-                      "services/mcp-server/claude",
-                      "services/mcp-server/smithery"
+                      "services/mcp-server/claude"
                     ]
                   }
                 ]
@@ -103,7 +101,6 @@
                   "integrations/llamaindex",
                   "integrations/crewai",
                   "integrations/agno",
-                  "integrations/litellm",
                   "integrations/orthogonal"
                 ]
               },
@@ -150,8 +147,7 @@
                 "group": "Scraping Tools",
                 "pages": [
                   "knowledge-base/ai-tools/v0",
-                  "knowledge-base/ai-tools/bolt",
-                  "knowledge-base/ai-tools/cursor"
+                  "knowledge-base/ai-tools/bolt"
                 ]
               },
               {
@@ -385,7 +381,6 @@
       "claude",
       "perplexity",
       "mcp",
-      "cursor",
       "vscode"
     ]
   }

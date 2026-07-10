@@ -3,7 +3,7 @@ title: Using just-scrape as a coding agent skill
 description: 'Give AI coding agents access to web scraping through the just-scrape skill'
 ---
 
-`just-scrape` can be installed as a **skill** for AI coding agents via [Vercel's skills.sh](https://skills.sh). This lets agents like Claude, Cursor, and others call ScrapeGraphAI commands directly during a coding session.
+`just-scrape` can be installed as a **skill** for AI coding agents via [Vercel's skills.sh](https://skills.sh). This lets agents like Claude and others call ScrapeGraphAI commands directly during a coding session.
 
 ## Install the skill
 
@@ -85,20 +85,6 @@ Use --stealth (with -m js if needed) for sites with anti-bot protection.
 claude -p "Use just-scrape to scrape https://example.com/changelog \
   and extract the latest 5 releases. Save as CHANGELOG_SUMMARY.md"
 ```
-
-## Manual setup with Cursor
-
-If you are using Cursor without the skills.sh integration, configure `just-scrape` via the [MCP Server](/services/mcp-server/cursor) for the best experience.
-
-Alternatively, add a script to your project that Cursor can call:
-
-```bash
-# .cursor/scrape.sh
-#!/bin/bash
-just-scrape extract "$1" -p "$2" --json
-```
-
-Then tell Cursor: *"Run `.cursor/scrape.sh <url> <prompt>` to scrape a page."*
 
 ## Tips
 

@@ -5,7 +5,7 @@ description: 'Get started with ScrapeGraphAI MCP Server - Connect LLMs to web sc
 
 ## Overview
 
-The ScrapeGraphAI MCP Server is a production-ready Model Context Protocol (MCP) server that connects Large Language Models (LLMs) to the ScrapeGraph AI API. It enables AI assistants like Claude and Cursor to perform AI-powered web scraping, research, and crawling directly through natural language interactions.
+The ScrapeGraphAI MCP Server is a production-ready Model Context Protocol (MCP) server that connects Large Language Models (LLMs) to the ScrapeGraph AI API. It enables AI assistants like Claude to perform AI-powered web scraping, research, and crawling directly through natural language interactions.
 
 <Card
   title="⭐ Star us on GitHub"
@@ -29,7 +29,7 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
     Use the hosted HTTP endpoint or run locally via Python
   </Card>
   <Card title="Universal Compatibility" icon="plug">
-    Works with Cursor, Claude Desktop, and any MCP-compatible client
+    Works with Claude Desktop and any MCP-compatible client
   </Card>
   <Card title="Production Ready" icon="shield-check">
     Robust error handling, timeouts, and reliability tested in production
@@ -71,7 +71,7 @@ The MCP server exposes the following tools via API v2:
     Create an account and copy your API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard)
   </Step>
   <Step title="Choose Your Client">
-    Select your preferred AI assistant: <a href="/services/mcp-server/cursor">Cursor</a> or <a href="/services/mcp-server/claude">Claude Desktop</a>
+    Use <a href="/services/mcp-server/claude">Claude Desktop</a> or another MCP-compatible client
   </Step>
   <Step title="Configure MCP">
     Follow the setup guide for your client to connect the MCP server
@@ -83,14 +83,7 @@ The MCP server exposes the following tools via API v2:
 
 ## Setup Guides
 
-<CardGroup cols={2}>
-  <Card
-    title="Cursor Setup"
-    icon="/logo/APP_ICON_2D_DARK.png"
-    href="/services/mcp-server/cursor"
-  >
-    Configure ScrapeGraph MCP in Cursor (remote-first)
-  </Card>
+<CardGroup cols={1}>
   <Card
     title="Claude Desktop Setup"
     icon="/logo/claude-color.svg"
@@ -108,7 +101,7 @@ The easiest way to get started is using our hosted MCP endpoint:
 https://mcp.scrapegraphai.com/mcp
 ```
 
-This requires no local installation and works seamlessly with both Cursor and Claude Desktop. See the setup guides above for configuration details.
+This requires no local installation and works seamlessly with Claude Desktop. See the setup guide above for configuration details.
 
 ## Local Installation
 
@@ -128,10 +121,9 @@ Prefer running locally? You can install the Python package and run it via stdio.
 
 ## Next Steps
 
-- Read the detailed setup guide for <a href="/services/mcp-server/cursor">Cursor</a>
 - Read the detailed setup guide for <a href="/services/mcp-server/claude">Claude Desktop</a>
 - Browse the [GitHub repo](https://github.com/ScrapeGraphAI/scrapegraph-mcp) for source, advanced configuration, and release notes
 
-<Card title="Ready to Start?" icon="rocket" href="/services/mcp-server/cursor">
-  Choose your client and start scraping with AI!
+<Card title="Ready to Start?" icon="rocket" href="/services/mcp-server/claude">
+  Configure Claude Desktop and start scraping with AI!
 </Card>
