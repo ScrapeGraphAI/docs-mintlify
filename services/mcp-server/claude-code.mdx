@@ -15,7 +15,7 @@ https://mcp.scrapegraphai.com/mcp
 Add the server with the Claude Code CLI:
 
 ```bash
-claude mcp add --transport http scrapegraph-mcp \
+claude mcp add --transport http sgai \
   https://mcp.scrapegraphai.com/mcp \
   --header "X-API-Key: YOUR_API_KEY"
 ```
@@ -25,7 +25,7 @@ The default `local` scope makes the server available in the current project. To 
 Verify the connection:
 
 ```bash
-claude mcp get scrapegraph-mcp
+claude mcp get sgai
 ```
 
 You can also run `/mcp` inside Claude Code to view the connected tools.
@@ -36,7 +36,7 @@ If you prefer running locally:
 
 ```bash
 pip install scrapegraph-mcp
-claude mcp add scrapegraph-mcp-local \
+claude mcp add sgai-local \
   --env SGAI_API_KEY=YOUR_API_KEY \
   -- python3 -m scrapegraph_mcp.server
 ```
