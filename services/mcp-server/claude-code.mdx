@@ -1,0 +1,46 @@
+---
+title: 'Claude Code'
+description: 'Configure ScrapeGraph MCP in Claude Code (remote-first)'
+icon: '/logo/claude-color.svg'
+---
+
+## Claude Code Setup
+
+Use the remote HTTP MCP endpoint (recommended):
+
+```
+https://mcp.scrapegraphai.com/mcp
+```
+
+Add the server with the Claude Code CLI:
+
+```bash
+claude mcp add --transport http scrapegraph-mcp \
+  https://mcp.scrapegraphai.com/mcp \
+  --header "X-API-Key: YOUR_API_KEY"
+```
+
+The default `local` scope makes the server available in the current project. To use it in every project, add `--scope user`.
+
+Verify the connection:
+
+```bash
+claude mcp get scrapegraph-mcp
+```
+
+You can also run `/mcp` inside Claude Code to view the connected tools.
+
+### Local (stdio) alternative
+
+If you prefer running locally:
+
+```bash
+pip install scrapegraph-mcp
+claude mcp add scrapegraph-mcp-local \
+  --env SGAI_API_KEY=YOUR_API_KEY \
+  -- python3 -m scrapegraph_mcp.server
+```
+
+<Note>
+  Use <code>--scope user</code> if you want the local server to be available in every project. On Windows, replace <code>python3</code> with the Python command available on your system.
+</Note>

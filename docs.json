@@ -81,6 +81,8 @@
                       "services/mcp-server/introduction",
                       "services/mcp-server/cursor",
                       "services/mcp-server/claude",
+                      "services/mcp-server/claude-code",
+                      "services/mcp-server/codex",
                       "services/mcp-server/smithery"
                     ]
                   }
