@@ -22,7 +22,6 @@
                 "pages": [
                   "introduction",
                   "install",
-                  "transition-from-v1-to-v2",
                   "transition-from-firecrawl",
                   {
                     "group": "Use Cases",
