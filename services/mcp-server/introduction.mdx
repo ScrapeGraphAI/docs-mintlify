@@ -5,82 +5,53 @@ description: 'Get started with ScrapeGraphAI MCP Server - Connect LLMs to web sc
 
 ## Overview
 
-The ScrapeGraphAI MCP Server is a production-ready Model Context Protocol (MCP) server that connects Large Language Models (LLMs) to the ScrapeGraph AI API. It enables AI assistants like Cursor, Claude, and Codex to perform AI-powered web scraping, research, and crawling directly through natural language interactions.
-
-<Card
-  title="⭐ Star us on GitHub"
-  icon="star"
-  href="https://github.com/ScrapeGraphAI/scrapegraph-mcp"
->
-  If this server is helpful, a star goes a long way. Thanks!
-</Card>
+The ScrapeGraphAI MCP Server is a hosted Model Context Protocol (MCP) server that connects Large Language Models (LLMs) to the ScrapeGraphAI API. It lets AI assistants like Cursor, Claude, and Codex scrape, extract, search, crawl, and schedule page monitors through natural language, without writing any code.
 
 ## What is MCP?
 
-The Model Context Protocol (MCP) is a standardized way for AI assistants to access external tools and data sources. By using the ScrapeGraphAI MCP Server, your AI assistant gains access to powerful web scraping capabilities without needing to write code.
+The Model Context Protocol (MCP) is a standardized way for AI assistants to access external tools and data sources. By connecting the ScrapeGraphAI MCP Server, your AI assistant gains access to the full v2 API surface as callable tools.
 
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card title="20 Powerful Tools" icon="tools">
-    Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs (with activity polling), and manage your account
+  <Card title="20 Tools" icon="tools">
+    Scrape, extract, search, crawl, schedule page monitors, and inspect credits and request history
   </Card>
-  <Card title="Remote & Local" icon="server">
-    Use the hosted HTTP endpoint or run locally via Python
+  <Card title="Hosted, No Install" icon="cloud">
+    One HTTPS endpoint — nothing to install, run, or keep up to date
+  </Card>
+  <Card title="Google or API Key" icon="key">
+    Sign in with Google over OAuth 2.1, or authenticate with a ScrapeGraphAI API key
   </Card>
   <Card title="Universal Compatibility" icon="plug">
     Works with Cursor, Claude Desktop, Claude Code, Codex, and any MCP-compatible client
   </Card>
-  <Card title="Production Ready" icon="shield-check">
-    Robust error handling, timeouts, and reliability tested in production
-  </Card>
 </CardGroup>
 
-## Available Tools
+## Endpoint
 
-The MCP server exposes the following tools via API v2:
-
-| Tool | Description |
-|---|---|
-| **scrape** | Fetch page content in any format: markdown (default), html, screenshot, branding, links, images, summary (POST /scrape) |
-| **extract** | AI-powered structured extraction from a URL (POST /extract) |
-| **search** | Search the web and extract structured results (POST /search) |
-| **crawl_start** | Start async multi-page crawl — markdown, html, links, images, summary, branding, or screenshot (POST /crawl) |
-| **crawl_get** | Get crawl status and pages (GET /crawl/:id) |
-| **crawl_pages** | Get paginated crawl pages (GET /crawl/:id/pages) |
-| **crawl_stop** | Stop a running crawl job (POST /crawl/:id/stop) |
-| **crawl_resume** | Resume a stopped crawl job (POST /crawl/:id/resume) |
-| **crawl_delete** | Delete a crawl job (DELETE /crawl/:id) |
-| **credits** | Check your credit balance (GET /credits) |
-| **history_list** | Browse request history with pagination (GET /history) |
-| **history_get** | Get a request history entry (GET /history/:id) |
-| **monitor_create** | Create a scheduled extraction job (POST /monitor) |
-| **monitor_list** | List all monitors (GET /monitor) |
-| **monitor_get** | Get monitor details (GET /monitor/:id) |
-| **monitor_update** | Update a monitor (PATCH /monitor/:id) |
-| **monitor_pause** | Pause a running monitor (POST /monitor/:id/pause) |
-| **monitor_resume** | Resume a paused monitor (POST /monitor/:id/resume) |
-| **monitor_delete** | Delete a monitor (DELETE /monitor/:id) |
-| **monitor_activity** | Poll tick history for a monitor with pagination (GET /monitor/:id/activity) |
+```
+https://mcp.scrapegraphai.com/mcp
+```
 
 <Note>
-  **Migrating from v2 (scrapegraph-mcp ≤ 2.x)?** Tools were renamed in v3.0.0 to match the v2 API canonical names: `smartscraper` → `extract`, `searchscraper` → `search`, `smartcrawler_initiate` → `crawl_start`, `smartcrawler_fetch_results` → `crawl_get`, `sgai_history` → `history_list`. `markdownify` was removed — use `scrape` with `output_format="markdown"` instead. See the [v3.0.0 release notes](https://github.com/ScrapeGraphAI/scrapegraph-mcp/releases/tag/v3.0.0) for full details.
+  The server speaks **Streamable HTTP**. The legacy HTTP+SSE transport is not supported — if your client offers a transport choice, pick HTTP (not SSE). Individual tool calls run up to 60 seconds; use the async `crawl_*` and `monitor_*` tools for longer jobs.
 </Note>
 
 ## Quick Start
 
 <Steps>
   <Step title="Choose how to sign in">
-    Connect with Google in the browser, or use an API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard).
+    Sign in with Google in the browser, or use an API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard).
   </Step>
-  <Step title="Choose Your Client">
-    Select your preferred AI assistant: <a href="/services/mcp-server/cursor">Cursor</a>, <a href="/services/mcp-server/claude">Claude Desktop</a>, <a href="/services/mcp-server/claude-code">Claude Code</a>, or <a href="/services/mcp-server/codex">Codex</a>
+  <Step title="Choose your client">
+    Pick your assistant: <a href="/services/mcp-server/cursor">Cursor</a>, <a href="/services/mcp-server/claude">Claude Desktop</a>, <a href="/services/mcp-server/claude-code">Claude Code</a>, or <a href="/services/mcp-server/codex">Codex</a>.
   </Step>
-  <Step title="Configure MCP">
-    Follow the setup guide for your client to connect the MCP server
+  <Step title="Add the server">
+    Follow the setup guide for your client to register the `sgai` server and authenticate.
   </Step>
-  <Step title="Start Scraping">
-    Ask your AI assistant to scrape websites, extract data, or perform research
+  <Step title="Verify">
+    Ask your assistant to run the `credits` tool. A balance response confirms the connection works end to end.
   </Step>
 </Steps>
 
@@ -92,44 +63,36 @@ The MCP server exposes the following tools via API v2:
     icon="/logo/APP_ICON_2D_DARK.png"
     href="/services/mcp-server/cursor"
   >
-    Configure ScrapeGraph MCP in Cursor (remote-first)
+    Configure ScrapeGraph MCP in Cursor
   </Card>
   <Card
     title="Claude Desktop Setup"
     icon="/logo/claude-color.svg"
     href="/services/mcp-server/claude"
   >
-    Configure ScrapeGraph MCP in Claude Desktop (remote-first)
+    Configure ScrapeGraph MCP in Claude Desktop
   </Card>
   <Card
     title="Claude Code Setup"
     icon="/logo/claude-color.svg"
     href="/services/mcp-server/claude-code"
   >
-    Configure ScrapeGraph MCP in Claude Code (remote-first)
+    Configure ScrapeGraph MCP in Claude Code
   </Card>
   <Card
     title="Codex Setup"
     icon="/logo/codex.svg"
     href="/services/mcp-server/codex"
   >
-    Configure ScrapeGraph MCP in Codex (remote-first)
+    Configure ScrapeGraph MCP in Codex
   </Card>
 </CardGroup>
 
-## Recommended: Remote HTTP Endpoint
+## Authentication
 
-The easiest way to get started is using our hosted MCP endpoint:
+### Sign in with Google (recommended)
 
-```
-https://mcp.scrapegraphai.com/mcp
-```
-
-This requires no local installation and works with MCP-compatible clients.
-
-### OAuth login with Google (recommended)
-
-Add the server without an API key. The client will use OAuth to open the ScrapeGraphAI login page:
+Add the server without any credentials. On first connection the client discovers the OAuth metadata, registers itself, and opens the ScrapeGraphAI login page in your browser.
 
 ```json
 {
@@ -141,14 +104,12 @@ Add the server without an API key. The client will use OAuth to open the ScrapeG
 }
 ```
 
-Then complete the browser authentication flow:
-
 <Steps>
   <Step title="Restart your MCP client">
     Restart the client after saving its MCP configuration so that it loads the new `sgai` server.
   </Step>
   <Step title="Start authentication">
-    Run <code>/mcp</code> in your client, select <code>sgai</code>, and choose the option to authenticate. In Codex or Claude Code, you can also run <code>codex mcp login sgai</code> or <code>claude mcp login sgai</code> from the terminal.
+    Run <code>/mcp</code> in your client, select <code>sgai</code>, and choose the option to authenticate. In Claude Code and Codex you can also start the flow from the terminal with <code>claude mcp login sgai</code> or <code>codex mcp login sgai</code>.
   </Step>
   <Step title="Continue with Google">
     In the browser window that opens, select <strong>Continue with Google</strong> and use the Google account associated with your ScrapeGraphAI account.
@@ -158,11 +119,11 @@ Then complete the browser authentication flow:
   </Step>
 </Steps>
 
-To test the OAuth connection, list the configured servers with `codex mcp get sgai` or `claude mcp get sgai`, then ask the client to run the `credits` tool. A successful response confirms that OAuth authentication and MCP tool calls are both working.
+The flow is standard OAuth 2.1 with PKCE (`S256`) and dynamic client registration, requesting the `mcp:use` scope. Tools run against the workspace tied to the account you signed in with.
 
 ### Authenticate with an API key
 
-Set your API key in the `SGAI_API_KEY` environment variable, then use this configuration:
+Set your API key in the `SGAI_API_KEY` environment variable and reference it from the client config:
 
 ```json
 {
@@ -175,35 +136,85 @@ Set your API key in the `SGAI_API_KEY` environment variable, then use this confi
 }
 ```
 
-<Warning>
-  The previous MCP server is being deprecated. Migrate to the endpoint above and restart your client after changing the configuration.
-</Warning>
+<Note>
+  Clients that send raw headers instead can pass the key as `Authorization: Bearer sgai-...`, `SGAI-APIKEY`, or `X-API-Key`. Any request carrying an API key skips the OAuth flow entirely.
+</Note>
 
-See the setup guides above for client-specific configuration details.
+### Verify the connection
 
-## Local Installation
+Ask your assistant to run the `credits` tool. A successful balance response confirms that both authentication and tool execution are working.
 
-Prefer running locally? You can install the Python package and run it via stdio. This gives you more control and doesn't require internet connectivity for the MCP connection itself.
+## Available Tools
+
+Every tool maps to a [v2 API](/api-reference/introduction) endpoint and runs against the workspace you authenticated with.
+
+### Scraping
+
+| Tool | Description |
+|---|---|
+| **scrape** | Fetch a URL as markdown (default), html, screenshot, branding, links, images, summary, or json — `POST /api/scrape` |
+| **extract** | AI-powered structured extraction from a URL, raw HTML, or markdown — `POST /api/extract` |
+| **search** | Search the web and extract structured data from the results (1–20 results, default 3) — `POST /api/search` |
+
+### Crawling
+
+| Tool | Description |
+|---|---|
+| **crawl_start** | Start an async multi-page crawl (default 50 pages, depth 2; max 1000 pages) — `POST /api/crawl` |
+| **crawl_get** | Get crawl status and pages — `GET /api/crawl/:id` |
+| **crawl_pages** | Get paginated crawl pages (default 50 per page, max 100) — `GET /api/crawl/:id/pages` |
+| **crawl_stop** | Stop a running crawl — `POST /api/crawl/:id/stop` |
+| **crawl_resume** | Resume a paused crawl — `POST /api/crawl/:id/resume` |
+| **crawl_delete** | Delete a crawl — `DELETE /api/crawl/:id` |
+
+### Monitors
+
+| Tool | Description |
+|---|---|
+| **monitor_create** | Schedule a page-change monitor with a cron expression or shorthand (e.g. `1h`) — `POST /api/monitor` |
+| **monitor_list** | List all monitors — `GET /api/monitor` |
+| **monitor_get** | Get monitor details — `GET /api/monitor/:id` |
+| **monitor_update** | Update a monitor's name, interval, formats, or webhook — `PATCH /api/monitor/:id` |
+| **monitor_pause** | Pause a running monitor — `POST /api/monitor/:id/pause` |
+| **monitor_resume** | Resume a paused monitor — `POST /api/monitor/:id/resume` |
+| **monitor_delete** | Delete a monitor — `DELETE /api/monitor/:id` |
+| **monitor_activity** | Poll a monitor's tick history (default 20 per page, max 100) — `GET /api/monitor/:id/activity` |
+
+### Account
+
+| Tool | Description |
+|---|---|
+| **credits** | Check your credit balance — `GET /api/credits` |
+| **history_list** | Browse request history, filterable by service — `GET /api/history` |
+| **history_get** | Get a single request history entry — `GET /api/history/:id` |
 
 <Note>
-  The remote endpoint is recommended for most users as it's simpler to set up and maintain.
+  **Coming from the legacy `scrapegraph-mcp` package?** The hosted server exposes the v2 API under its canonical names:
+
+  | Legacy tool | Now |
+  |---|---|
+  | `smartscraper` | `extract` |
+  | `searchscraper` | `search` |
+  | `markdownify` | `scrape` with `formats: ["markdown"]` |
+  | `smartcrawler_initiate` | `crawl_start` |
+  | `smartcrawler_fetch_results` | `crawl_get`, or `crawl_pages` for pagination |
+  | `sgai_history` | `history_list` |
+  | `generate_schema` | Removed — pass a JSON Schema directly via the `schema` parameter on `extract` and `search` |
+  | `sitemap`, `agentic_scrapper` | No direct equivalent on the hosted server |
 </Note>
 
 ## Use Cases
 
-- **Research & Analysis** - Extract data from multiple sources for research
-- **Content Aggregation** - Collect and structure content from websites
-- **Market Intelligence** - Monitor competitors and market trends
-- **Lead Generation** - Extract contact information and company data
-- **Data Collection** - Build datasets from web sources
+- **Research & Analysis** — Extract data from multiple sources for research
+- **Content Aggregation** — Collect and structure content from websites
+- **Market Intelligence** — Monitor competitors and track page changes over time
+- **Lead Generation** — Extract contact information and company data
+- **Data Collection** — Build datasets from web sources
 
 ## Next Steps
 
-- Read the detailed setup guide for <a href="/services/mcp-server/cursor">Cursor</a>
-- Read the detailed setup guide for <a href="/services/mcp-server/claude">Claude Desktop</a>
-- Read the detailed setup guide for <a href="/services/mcp-server/claude-code">Claude Code</a>
-- Read the detailed setup guide for <a href="/services/mcp-server/codex">Codex</a>
-- Browse the [GitHub repo](https://github.com/ScrapeGraphAI/scrapegraph-mcp) for source, advanced configuration, and release notes
+- Set up your client: <a href="/services/mcp-server/cursor">Cursor</a>, <a href="/services/mcp-server/claude">Claude Desktop</a>, <a href="/services/mcp-server/claude-code">Claude Code</a>, or <a href="/services/mcp-server/codex">Codex</a>
+- Browse the [v2 API reference](/api-reference/introduction) for full parameter documentation on every tool
 
 <Card title="Ready to Start?" icon="rocket" href="/services/mcp-server/cursor">
   Choose your client and start scraping with AI!
