@@ -1,45 +1,52 @@
 ---
 title: 'Codex'
-description: 'Configure ScrapeGraph MCP in Codex (remote-first)'
+description: 'Configure ScrapeGraph MCP in Codex'
 icon: '/logo/codex.svg'
 ---
 
 ## Codex Setup
 
-Use the remote HTTP MCP endpoint (recommended):
-
-```
-https://mcp.scrapegraphai.com/mcp
-```
-
-Add the following configuration to `~/.codex/config.toml`:
+Add the following to `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.sgai]
 url = "https://mcp.scrapegraphai.com/mcp"
 ```
 
-Restart Codex after saving the configuration. Run `/mcp`, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+<Note>
+  The ChatGPT desktop app, Codex CLI, and the Codex IDE extension share the same MCP configuration on a given host, so this only needs to be done once.
+</Note>
 
-After the browser shows **Authentication successful. Connected to sgai.**, return to Codex and verify the connection:
+## Authenticate
+
+```bash
+codex mcp login sgai
+```
+
+Alternatively, restart Codex, run `/mcp`, select `sgai`, and authenticate. Either way a browser window opens: choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+
+Once the browser shows **Authentication successful. Connected to sgai.**, return to Codex — the tools are ready.
+
+### With an API key instead
+
+Set `SGAI_API_KEY` in your environment and point Codex at it:
+
+```toml
+[mcp_servers.sgai]
+url = "https://mcp.scrapegraphai.com/mcp"
+bearer_token_env_var = "SGAI_API_KEY"
+```
+
+A request carrying an API key skips the OAuth flow, so there is no `codex mcp login` step.
+
+## Verify
 
 ```bash
 codex mcp get sgai
 ```
 
-To authenticate with an API key instead, set `SGAI_API_KEY` in the environment and add `bearer_token_env_var = "SGAI_API_KEY"` below the `url`.
+Then ask Codex to run the `credits` tool. A balance response confirms that authentication and tool execution both work.
 
-### Local (stdio) alternative
-
-If you prefer running locally:
-
-```bash
-pip install scrapegraph-mcp
-codex mcp add scrapegraph-mcp-local \
-  --env SGAI_API_KEY=YOUR_API_KEY \
-  -- python3 -m scrapegraph_mcp.server
-```
-
-<Note>
-  The ChatGPT desktop app, Codex CLI, and Codex IDE extension share the same MCP configuration on the same host. On Windows, replace <code>python3</code> with the Python command available on your system.
-</Note>
+<Tip>
+  See the [tool reference](/services/mcp-server/introduction#available-tools) for everything the server exposes.
+</Tip>

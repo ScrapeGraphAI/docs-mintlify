@@ -1,16 +1,10 @@
 ---
 title: 'Claude Code'
-description: 'Configure ScrapeGraph MCP in Claude Code (remote-first)'
+description: 'Configure ScrapeGraph MCP in Claude Code'
 icon: '/logo/claude-color.svg'
 ---
 
 ## Claude Code Setup
-
-Use the remote HTTP MCP endpoint (recommended):
-
-```
-https://mcp.scrapegraphai.com/mcp
-```
 
 Add the server with the Claude Code CLI:
 
@@ -19,29 +13,36 @@ claude mcp add --transport http sgai \
   https://mcp.scrapegraphai.com/mcp
 ```
 
-The default `local` scope makes the server available in the current project. To use it in every project, add `--scope user`.
+The default `local` scope makes the server available in the current project. Add `--scope user` to use it in every project.
 
-Verify the connection:
+## Authenticate
+
+```bash
+claude mcp login sgai
+```
+
+Alternatively, run `/mcp` inside Claude Code, select `sgai`, and choose **Authenticate**. Either way a browser window opens: choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+
+Once the browser shows **Authentication successful. Connected to sgai.**, return to Claude Code — the tools are ready.
+
+### With an API key instead
+
+```bash
+claude mcp add --transport http sgai \
+  https://mcp.scrapegraphai.com/mcp \
+  --header "Authorization: Bearer $SGAI_API_KEY"
+```
+
+A request carrying an API key skips the OAuth flow, so there is no `claude mcp login` step.
+
+## Verify
 
 ```bash
 claude mcp get sgai
 ```
 
-Run `/mcp` inside Claude Code, select `sgai`, and choose **Authenticate**. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+Then ask Claude Code to run the `credits` tool. A balance response confirms that authentication and tool execution both work.
 
-After the browser shows **Authentication successful. Connected to sgai.**, return to Claude Code to view and use the connected tools.
-
-### Local (stdio) alternative
-
-If you prefer running locally:
-
-```bash
-pip install scrapegraph-mcp
-claude mcp add sgai-local \
-  --env SGAI_API_KEY=YOUR_API_KEY \
-  -- python3 -m scrapegraph_mcp.server
-```
-
-<Note>
-  Use <code>--scope user</code> if you want the local server to be available in every project. On Windows, replace <code>python3</code> with the Python command available on your system.
-</Note>
+<Tip>
+  See the [tool reference](/services/mcp-server/introduction#available-tools) for everything the server exposes.
+</Tip>

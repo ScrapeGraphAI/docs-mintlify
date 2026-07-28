@@ -1,26 +1,22 @@
 ---
 title: 'Claude Desktop'
-description: 'Configure ScrapeGraph MCP in Claude Desktop (remote-first)'
+description: 'Configure ScrapeGraph MCP in Claude Desktop'
 icon: '/logo/claude-color.svg'
 ---
 
 ## Claude Desktop Setup
 
-Use the remote HTTP MCP endpoint with a lightweight proxy:
+Claude Desktop connects to MCP servers over stdio, so the hosted endpoint is reached through the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) proxy.
 
-```
-https://mcp.scrapegraphai.com/mcp
-```
-
-Add to your Claude config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+Add this to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
-    "scrapegraph-mcp": {
+    "sgai": {
       "command": "npx",
       "args": [
-        "mcp-remote@0.1.25",
+        "mcp-remote@0.1.38",
         "https://mcp.scrapegraphai.com/mcp"
       ]
     }
@@ -28,62 +24,47 @@ Add to your Claude config (`~/Library/Application Support/Claude/claude_desktop_
 }
 ```
 
-Restart Claude Desktop after saving the configuration. The first connection opens a browser window; choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+<Note>
+  `npx` requires Node.js on your `PATH`. Pinning the version keeps the setup reproducible — drop the `@0.1.38` suffix if you would rather always take the latest proxy.
+</Note>
 
-### Local (stdio) alternative
+## Authenticate
 
-Install and run locally:
+Restart Claude Desktop after saving the configuration. The first connection starts the login and opens a browser window: choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
-```bash
-pip install scrapegraph-mcp
-export SGAI_API_KEY=your-api-key
-```
+Once the browser confirms the connection, return to Claude Desktop — the tools are ready.
 
-Config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+### With an API key instead
 
-```json
-{
-  "mcpServers": {
-    "scrapegraph-mcp-local": {
-      "command": "python3",
-      "args": ["-m", "scrapegraph_mcp.server"],
-      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
-    }
-  }
-}
-```
-
-#### Alternative: use the CLI directly
+Pass the key as a header and let the proxy forward it, which skips the OAuth flow:
 
 ```json
 {
   "mcpServers": {
-    "scrapegraph-mcp": {
-      "command": "scrapegraph-mcp",
-      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    "sgai": {
+      "command": "npx",
+      "args": [
+        "mcp-remote@0.1.38",
+        "https://mcp.scrapegraphai.com/mcp",
+        "--header",
+        "Authorization:${SGAI_AUTH_HEADER}"
+      ],
+      "env": {
+        "SGAI_AUTH_HEADER": "Bearer YOUR_API_KEY"
+      }
     }
   }
 }
-```
-
-#### Windows tip
-
-If setting environment variables is problematic on Windows:
-
-```bash
-cmd /c "set SGAI_API_KEY=YOUR_API_KEY && python -m scrapegraph_mcp.server"
 ```
 
 <Note>
-  - Make sure the CLI is on your <code>PATH</code> (might be in <code>~/.local/bin</code> or the venv).<br/>
-  - You can provide an absolute <code>python</code> path if needed (pyenv/venv).<br/>
-  - Use <code>python3</code> on macOS if <code>python</code> points to Python 2.
+  The header value is split across `args` and `env` on purpose. On Windows, Claude Desktop does not escape spaces inside `args`, so keeping `Authorization:${SGAI_AUTH_HEADER}` free of spaces avoids a mangled header.
 </Note>
 
-### Optional: Smithery
+## Verify
 
-```bash
-npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
-```
+Ask Claude to run the `credits` tool. A balance response confirms that authentication and tool execution both work.
 
-Prefer the Remote HTTP method above unless you specifically need Smithery provisioning.
+<Tip>
+  See the [tool reference](/services/mcp-server/introduction#available-tools) for everything the server exposes.
+</Tip>

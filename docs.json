@@ -81,8 +81,7 @@
                       "services/mcp-server/cursor",
                       "services/mcp-server/claude",
                       "services/mcp-server/claude-code",
-                      "services/mcp-server/codex",
-                      "services/mcp-server/smithery"
+                      "services/mcp-server/codex"
                     ]
                   }
                 ]
@@ -321,7 +320,7 @@
           "href": "https://scrapegraphai.com/",
           "icon": "globe"
         },
-{
+        {
           "anchor": "Blog",
           "href": "https://scrapegraphai.com/blog",
           "icon": "newspaper"
@@ -389,5 +388,11 @@
       "cursor",
       "vscode"
     ]
-  }
+  },
+  "redirects": [
+    {
+      "source": "/services/mcp-server/smithery",
+      "destination": "/services/mcp-server/introduction"
+    }
+  ]
 }

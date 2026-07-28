@@ -1,16 +1,10 @@
 ---
 title: 'Cursor'
-description: 'Configure ScrapeGraph MCP in Cursor (remote-first)'
+description: 'Configure ScrapeGraph MCP in Cursor'
 icon: '/logo/APP_ICON_2D_DARK.png'
 ---
 
 ## Cursor Setup
-
-Use the remote HTTP MCP endpoint (recommended):
-
-```
-https://mcp.scrapegraphai.com/mcp
-```
 
 Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 
@@ -24,66 +18,31 @@ Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 }
 ```
 
-Restart Cursor, open its MCP settings, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+## Authenticate
 
-Once the browser shows **Authentication successful. Connected to sgai.**, return to Cursor and start using the tools.
+Restart Cursor, open its MCP settings, select `sgai`, and start the login. In the browser window that opens, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
-To authenticate with an API key instead, set `SGAI_API_KEY` in Cursor's environment and add `"bearer_token_env_var": "SGAI_API_KEY"` next to the `url`.
+Once the browser shows **Authentication successful. Connected to sgai.**, return to Cursor — the tools are ready.
 
-### Local (stdio) alternative
+### With an API key instead
 
-If you prefer running locally:
-
-```bash
-pip install scrapegraph-mcp
-export SGAI_API_KEY=your-api-key
-```
-
-`~/.cursor/mcp.json`:
+Set `SGAI_API_KEY` in Cursor's environment and add `bearer_token_env_var` next to the `url`:
 
 ```json
 {
   "mcpServers": {
-    "scrapegraph-mcp-local": {
-      "command": "python3",
-      "args": ["-m", "scrapegraph_mcp.server"],
-      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
+    "sgai": {
+      "url": "https://mcp.scrapegraphai.com/mcp",
+      "bearer_token_env_var": "SGAI_API_KEY"
     }
   }
 }
 ```
 
-#### Alternative: use the CLI directly
+## Verify
 
-```json
-{
-  "mcpServers": {
-    "scrapegraph-mcp": {
-      "command": "scrapegraph-mcp",
-      "env": { "SGAI_API_KEY": "YOUR_API_KEY" }
-    }
-  }
-}
-```
+Ask Cursor to run the `credits` tool. A balance response confirms that authentication and tool execution both work.
 
-#### Windows tip
-
-If environment variables are tricky in Cursor on Windows:
-
-```bash
-cmd /c "set SGAI_API_KEY=YOUR_API_KEY && python -m scrapegraph_mcp.server"
-```
-
-<Note>
-  - Ensure the CLI is on your <code>PATH</code> (it may be in <code>~/.local/bin</code> or your venv).<br/>
-  - You can use an absolute Python path if needed (e.g., from pyenv/venv).<br/>
-  - Use <code>python3</code> on macOS if <code>python</code> points to Python 2.
-</Note>
-
-### Optional: Smithery
-
-```bash
-npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
-```
-
-Use this only if you specifically want Smithery provisioning. Remote HTTP (above) is the simplest path.
+<Tip>
+  See the [tool reference](/services/mcp-server/introduction#available-tools) for everything the server exposes.
+</Tip>
