@@ -27,9 +27,17 @@ Verify the connection:
 claude mcp get sgai
 ```
 
-Run `/mcp` inside Claude Code, select `sgai`, and choose **Authenticate**. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+Start the OAuth login:
+
+```bash
+claude mcp login sgai
+```
+
+Alternatively, run `/mcp` inside Claude Code, select `sgai`, and choose **Authenticate**. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
 After the browser shows **Authentication successful. Connected to sgai.**, return to Claude Code to view and use the connected tools.
+
+Test the connection by asking Claude Code to run the `credits` tool.
 
 ### Local (stdio) alternative
 

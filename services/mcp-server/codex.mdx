@@ -19,13 +19,21 @@ Add the following configuration to `~/.codex/config.toml`:
 url = "https://mcp.scrapegraphai.com/mcp"
 ```
 
-Restart Codex after saving the configuration. Run `/mcp`, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+Start the OAuth login:
+
+```bash
+codex mcp login sgai
+```
+
+Alternatively, restart Codex, run `/mcp`, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
 After the browser shows **Authentication successful. Connected to sgai.**, return to Codex and verify the connection:
 
 ```bash
 codex mcp get sgai
 ```
+
+Then ask Codex to run the `credits` tool. A successful balance response confirms that OAuth and MCP tool execution are working.
 
 To authenticate with an API key instead, set `SGAI_API_KEY` in the environment and add `bearer_token_env_var = "SGAI_API_KEY"` below the `url`.
 

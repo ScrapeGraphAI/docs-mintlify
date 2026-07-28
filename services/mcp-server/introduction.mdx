@@ -127,9 +127,9 @@ https://mcp.scrapegraphai.com/mcp
 
 This requires no local installation and works with MCP-compatible clients.
 
-### Sign in with Google (recommended)
+### OAuth login with Google (recommended)
 
-Add the server without an API key:
+Add the server without an API key. The client will use OAuth to open the ScrapeGraphAI login page:
 
 ```json
 {
@@ -148,7 +148,7 @@ Then complete the browser authentication flow:
     Restart the client after saving its MCP configuration so that it loads the new `sgai` server.
   </Step>
   <Step title="Start authentication">
-    Run <code>/mcp</code> in your client, select <code>sgai</code>, and choose the option to authenticate.
+    Run <code>/mcp</code> in your client, select <code>sgai</code>, and choose the option to authenticate. In Codex or Claude Code, you can also run <code>codex mcp login sgai</code> or <code>claude mcp login sgai</code> from the terminal.
   </Step>
   <Step title="Continue with Google">
     In the browser window that opens, select <strong>Continue with Google</strong> and use the Google account associated with your ScrapeGraphAI account.
@@ -157,6 +157,8 @@ Then complete the browser authentication flow:
     Return to your client after you see <strong>Authentication successful. Connected to sgai.</strong> The server is ready to use.
   </Step>
 </Steps>
+
+To test the OAuth connection, list the configured servers with `codex mcp get sgai` or `claude mcp get sgai`, then ask the client to run the `credits` tool. A successful response confirms that OAuth authentication and MCP tool calls are both working.
 
 ### Authenticate with an API key
 

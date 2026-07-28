@@ -24,9 +24,11 @@ Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 }
 ```
 
-Restart Cursor, open its MCP settings, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+Restart Cursor, open its MCP settings, select `sgai`, and start the OAuth login. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
 Once the browser shows **Authentication successful. Connected to sgai.**, return to Cursor and start using the tools.
+
+Test the connection by asking Cursor to run the `credits` tool.
 
 To authenticate with an API key instead, set `SGAI_API_KEY` in Cursor's environment and add `"bearer_token_env_var": "SGAI_API_KEY"` next to the `url`.
 
