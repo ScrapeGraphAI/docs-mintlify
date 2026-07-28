@@ -22,7 +22,7 @@ The Model Context Protocol (MCP) is a standardized way for AI assistants to acce
 ## Key Features
 
 <CardGroup cols={2}>
-  <Card title="17 Powerful Tools" icon="tools">
+  <Card title="20 Powerful Tools" icon="tools">
     Scrape, extract, search, crawl, generate schemas, monitor scheduled jobs (with activity polling), and manage your account
   </Card>
   <Card title="Remote & Local" icon="server">
@@ -46,22 +46,25 @@ The MCP server exposes the following tools via API v2:
 | **extract** | AI-powered structured extraction from a URL (POST /extract) |
 | **search** | Search the web and extract structured results (POST /search) |
 | **crawl_start** | Start async multi-page crawl — markdown, html, links, images, summary, branding, or screenshot (POST /crawl) |
-| **crawl_get_status** | Poll crawl results (GET /crawl/:id) |
+| **crawl_get** | Get crawl status and pages (GET /crawl/:id) |
+| **crawl_pages** | Get paginated crawl pages (GET /crawl/:id/pages) |
 | **crawl_stop** | Stop a running crawl job (POST /crawl/:id/stop) |
 | **crawl_resume** | Resume a stopped crawl job (POST /crawl/:id/resume) |
-| **schema** | Generate or augment a JSON Schema from a prompt (POST /schema) |
+| **crawl_delete** | Delete a crawl job (DELETE /crawl/:id) |
 | **credits** | Check your credit balance (GET /credits) |
-| **history** | Browse request history with pagination (GET /history) |
+| **history_list** | Browse request history with pagination (GET /history) |
+| **history_get** | Get a request history entry (GET /history/:id) |
 | **monitor_create** | Create a scheduled extraction job (POST /monitor) |
 | **monitor_list** | List all monitors (GET /monitor) |
 | **monitor_get** | Get monitor details (GET /monitor/:id) |
+| **monitor_update** | Update a monitor (PATCH /monitor/:id) |
 | **monitor_pause** | Pause a running monitor (POST /monitor/:id/pause) |
 | **monitor_resume** | Resume a paused monitor (POST /monitor/:id/resume) |
 | **monitor_delete** | Delete a monitor (DELETE /monitor/:id) |
 | **monitor_activity** | Poll tick history for a monitor with pagination (GET /monitor/:id/activity) |
 
 <Note>
-  **Migrating from v2 (scrapegraph-mcp ≤ 2.x)?** Tools were renamed in v3.0.0 to match the v2 API canonical names: `smartscraper` → `extract`, `searchscraper` → `search`, `smartcrawler_initiate` → `crawl_start`, `smartcrawler_fetch_results` → `crawl_get_status`, `sgai_history` → `history`, `generate_schema` → `schema`. `markdownify` was removed — use `scrape` with `output_format="markdown"` instead. See the [v3.0.0 release notes](https://github.com/ScrapeGraphAI/scrapegraph-mcp/releases/tag/v3.0.0) for full details.
+  **Migrating from v2 (scrapegraph-mcp ≤ 2.x)?** Tools were renamed in v3.0.0 to match the v2 API canonical names: `smartscraper` → `extract`, `searchscraper` → `search`, `smartcrawler_initiate` → `crawl_start`, `smartcrawler_fetch_results` → `crawl_get`, `sgai_history` → `history_list`. `markdownify` was removed — use `scrape` with `output_format="markdown"` instead. See the [v3.0.0 release notes](https://github.com/ScrapeGraphAI/scrapegraph-mcp/releases/tag/v3.0.0) for full details.
 </Note>
 
 ## Quick Start
@@ -119,7 +122,7 @@ The MCP server exposes the following tools via API v2:
 The easiest way to get started is using our hosted MCP endpoint:
 
 ```
-https://sgai-mcp-main.onrender.com/mcp
+https://mcp.scrapegraphai.com/mcp
 ```
 
 This requires no local installation and works with MCP-compatible clients.
@@ -132,7 +135,7 @@ Add the server without an API key:
 {
   "mcpServers": {
     "sgai": {
-      "url": "https://sgai-mcp-main.onrender.com/mcp"
+      "url": "https://mcp.scrapegraphai.com/mcp"
     }
   }
 }
@@ -163,7 +166,7 @@ Set your API key in the `SGAI_API_KEY` environment variable, then use this confi
 {
   "mcpServers": {
     "sgai": {
-      "url": "https://sgai-mcp-main.onrender.com/mcp",
+      "url": "https://mcp.scrapegraphai.com/mcp",
       "bearer_token_env_var": "SGAI_API_KEY"
     }
   }
