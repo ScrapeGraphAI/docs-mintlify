@@ -9,15 +9,14 @@ icon: '/logo/claude-color.svg'
 Use the remote HTTP MCP endpoint (recommended):
 
 ```
-https://mcp.scrapegraphai.com/mcp
+https://sgai-mcp-main.onrender.com/mcp
 ```
 
 Add the server with the Claude Code CLI:
 
 ```bash
 claude mcp add --transport http sgai \
-  https://mcp.scrapegraphai.com/mcp \
-  --header "X-API-Key: YOUR_API_KEY"
+  https://sgai-mcp-main.onrender.com/mcp
 ```
 
 The default `local` scope makes the server available in the current project. To use it in every project, add `--scope user`.
@@ -28,7 +27,9 @@ Verify the connection:
 claude mcp get sgai
 ```
 
-You can also run `/mcp` inside Claude Code to view the connected tools.
+Run `/mcp` inside Claude Code, select `sgai`, and choose **Authenticate**. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+
+After the browser shows **Authentication successful. Connected to sgai.**, return to Claude Code to view and use the connected tools.
 
 ### Local (stdio) alternative
 

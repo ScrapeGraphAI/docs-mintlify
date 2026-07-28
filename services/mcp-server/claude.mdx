@@ -9,7 +9,7 @@ icon: '/logo/claude-color.svg'
 Use the remote HTTP MCP endpoint with a lightweight proxy:
 
 ```
-https://mcp.scrapegraphai.com/mcp
+https://sgai-mcp-main.onrender.com/mcp
 ```
 
 Add to your Claude config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
@@ -21,14 +21,14 @@ Add to your Claude config (`~/Library/Application Support/Claude/claude_desktop_
       "command": "npx",
       "args": [
         "mcp-remote@0.1.25",
-        "https://mcp.scrapegraphai.com/mcp",
-        "--header",
-        "X-API-Key:YOUR_API_KEY"
+        "https://sgai-mcp-main.onrender.com/mcp"
       ]
     }
   }
 }
 ```
+
+Restart Claude Desktop after saving the configuration. The first connection opens a browser window; choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
 
 ### Local (stdio) alternative
 
@@ -87,5 +87,3 @@ npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
 ```
 
 Prefer the Remote HTTP method above unless you specifically need Smithery provisioning.
-
-

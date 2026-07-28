@@ -9,7 +9,7 @@ icon: '/logo/APP_ICON_2D_DARK.png'
 Use the remote HTTP MCP endpoint (recommended):
 
 ```
-https://mcp.scrapegraphai.com/mcp
+https://sgai-mcp-main.onrender.com/mcp
 ```
 
 Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
@@ -17,15 +17,18 @@ Add this to your Cursor MCP settings (`~/.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "scrapegraph-mcp": {
-      "url": "https://mcp.scrapegraphai.com/mcp",
-      "headers": {
-        "X-API-Key": "YOUR_API_KEY"
-      }
+    "sgai": {
+      "url": "https://sgai-mcp-main.onrender.com/mcp"
     }
   }
 }
 ```
+
+Restart Cursor, open its MCP settings, select `sgai`, and authenticate. In the browser window, choose **Continue with Google** and sign in with the Google account associated with your ScrapeGraphAI account.
+
+Once the browser shows **Authentication successful. Connected to sgai.**, return to Cursor and start using the tools.
+
+To authenticate with an API key instead, set `SGAI_API_KEY` in Cursor's environment and add `"bearer_token_env_var": "SGAI_API_KEY"` next to the `url`.
 
 ### Local (stdio) alternative
 
@@ -84,5 +87,4 @@ npx -y @smithery/cli install @ScrapeGraphAI/scrapegraph-mcp --client claude
 ```
 
 Use this only if you specifically want Smithery provisioning. Remote HTTP (above) is the simplest path.
-
 

@@ -67,8 +67,8 @@ The MCP server exposes the following tools via API v2:
 ## Quick Start
 
 <Steps>
-  <Step title="Get Your API Key">
-    Create an account and copy your API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard)
+  <Step title="Choose how to sign in">
+    Connect with Google in the browser, or use an API key from the [ScrapeGraph Dashboard](https://scrapegraphai.com/dashboard).
   </Step>
   <Step title="Choose Your Client">
     Select your preferred AI assistant: <a href="/services/mcp-server/cursor">Cursor</a>, <a href="/services/mcp-server/claude">Claude Desktop</a>, <a href="/services/mcp-server/claude-code">Claude Code</a>, or <a href="/services/mcp-server/codex">Codex</a>
@@ -119,10 +119,62 @@ The MCP server exposes the following tools via API v2:
 The easiest way to get started is using our hosted MCP endpoint:
 
 ```
-https://mcp.scrapegraphai.com/mcp
+https://sgai-mcp-main.onrender.com/mcp
 ```
 
-This requires no local installation and works seamlessly with Cursor, Claude Desktop, Claude Code, and Codex. See the setup guides above for configuration details.
+This requires no local installation and works with MCP-compatible clients.
+
+### Sign in with Google (recommended)
+
+Add the server without an API key:
+
+```json
+{
+  "mcpServers": {
+    "sgai": {
+      "url": "https://sgai-mcp-main.onrender.com/mcp"
+    }
+  }
+}
+```
+
+Then complete the browser authentication flow:
+
+<Steps>
+  <Step title="Restart your MCP client">
+    Restart the client after saving its MCP configuration so that it loads the new `sgai` server.
+  </Step>
+  <Step title="Start authentication">
+    Run <code>/mcp</code> in your client, select <code>sgai</code>, and choose the option to authenticate.
+  </Step>
+  <Step title="Continue with Google">
+    In the browser window that opens, select <strong>Continue with Google</strong> and use the Google account associated with your ScrapeGraphAI account.
+  </Step>
+  <Step title="Confirm the connection">
+    Return to your client after you see <strong>Authentication successful. Connected to sgai.</strong> The server is ready to use.
+  </Step>
+</Steps>
+
+### Authenticate with an API key
+
+Set your API key in the `SGAI_API_KEY` environment variable, then use this configuration:
+
+```json
+{
+  "mcpServers": {
+    "sgai": {
+      "url": "https://sgai-mcp-main.onrender.com/mcp",
+      "bearer_token_env_var": "SGAI_API_KEY"
+    }
+  }
+}
+```
+
+<Warning>
+  The previous MCP server is being deprecated. Migrate to the endpoint above and restart your client after changing the configuration.
+</Warning>
+
+See the setup guides above for client-specific configuration details.
 
 ## Local Installation
 
