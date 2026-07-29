@@ -240,6 +240,7 @@ if (res.status === "success") {
 | `format`          | `string`      | No       | `"markdown"` (default) or `"html"`                                  |
 | `timeRange`       | `string`      | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | `locationGeoCode` | `string`      | No       | Two-letter country code (e.g. `"us"`)                               |
+| `contentTypes`    | `string[]`    | No       | Content types to fetch. Default `["text/html", "application/json", "text/markdown", "text/plain"]` — PDFs, documents and images are skipped unless listed |
 | `fetchConfig`     | `FetchConfig` | No       | Fetch configuration                                                 |
 
 <Accordion title="Search + extraction" icon="code">

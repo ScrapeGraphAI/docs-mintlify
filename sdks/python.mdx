@@ -270,6 +270,7 @@ if res.status == "success":
 | `schema`            | `dict`        | No       | JSON Schema for structured output. Pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`. |
 | `location_geo_code` | `str`         | No       | Two-letter country code (e.g. `"us"`, `"it"`)                             |
 | `time_range`        | `str`         | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
+| `content_types`     | `list[str]`   | No       | Content types to fetch. Default `["text/html", "application/json", "text/markdown", "text/plain"]` — PDFs, documents and images are skipped unless listed |
 | `fetch_config`      | `FetchConfig` | No       | Fetch configuration                                                       |
 
 ### Crawl

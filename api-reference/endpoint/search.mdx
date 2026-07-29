@@ -39,6 +39,10 @@ Replaces the v1 `searchscraper` endpoint. Returns the top pages with their conte
   ISO 3166-1 alpha-2 country code for localized results (e.g. `"us"`, `"it"`).
 </ParamField>
 
+<ParamField body="contentTypes" type="array">
+  Content types allowed when fetching each result. Default: `["text/html", "application/json", "text/markdown", "text/plain"]`, so PDFs, office documents and images are skipped. Add them explicitly to fetch them (e.g. `["text/html", "application/pdf"]`); an empty array disables the filter. Results whose content type is rejected are reported as failed pages and do not appear in `results`.
+</ParamField>
+
 <ParamField body="fetchConfig" type="object">
   Fetch-time options applied when crawling each result. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body) for the full field list.
 </ParamField>
@@ -51,7 +55,8 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
   -H "Content-Type: application/json" \
   -d '{
     "query": "scrapegraphai pricing",
-    "numResults": 3
+    "numResults": 3,
+    "contentTypes": ["text/html", "application/json", "text/markdown", "text/plain"]
   }'
 ```
 
