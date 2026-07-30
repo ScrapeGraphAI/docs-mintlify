@@ -46,7 +46,8 @@ Replaces the v1 `searchscraper` endpoint. Returns the top pages with their conte
 <ParamField body="processors" type="array">
   Optional processing configuration. Omit this field to use the 25-page PDF cap. You may also send
   `{"type":"pdf"}` and omit `maxPages`; it defaults to `25`. Set `maxPages` only to override the
-  default, using `1`–`500`, or `-1` for no page limit. This does not change `allowedTypes`.
+  default, using `1`–`500`, or `-1` for no page limit. PDF processing costs 1 credit per page
+  actually processed. This does not change `allowedTypes`.
 </ParamField>
 
 <ParamField body="fetchConfig" type="object">

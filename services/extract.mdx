@@ -80,7 +80,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/extract \
 | `schema` | object | No | JSON schema describing the desired output shape. In Python you can pass a Pydantic model via `MyModel.model_json_schema()`. |
 | `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"`. |
 | `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist for URL input. Omit it for all supported types; `"all"` and `"*"` are invalid. |
-| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. |
+| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
