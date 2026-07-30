@@ -42,7 +42,9 @@ Exactly one of `url`, `html`, or `markdown` must be supplied as the source.
 </ParamField>
 
 <ParamField body="processors" type="array">
-  Processing configuration for URL input. PDF defaults to `{"type":"pdf","maxPages":25}`. Use `1`–`500`, or `-1` for no page limit.
+  Optional processing configuration for URL input. Omit this field to use the 25-page PDF cap. You
+  may also send `{"type":"pdf"}` and omit `maxPages`; it defaults to `25`. Set `maxPages` only to
+  override the default, using `1`–`500`, or `-1` for no page limit.
 </ParamField>
 
 <ParamField body="fetchConfig" type="object">

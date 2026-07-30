@@ -39,7 +39,9 @@ Returns markdown, HTML, links, images, summary, JSON extraction, branding, or sc
 </ParamField>
 
 <ParamField body="processors" type="array">
-  Processing configuration. PDF defaults to `{"type":"pdf","maxPages":25}`. Use `1`–`500`, or `-1` for no page limit.
+  Optional processing configuration. Omit this field to use the 25-page PDF cap. You may also send
+  `{"type":"pdf"}` and omit `maxPages`; it defaults to `25`. Set `maxPages` only to override the
+  default, using `1`–`500`, or `-1` for no page limit.
 </ParamField>
 
 <ParamField body="fetchConfig" type="object">

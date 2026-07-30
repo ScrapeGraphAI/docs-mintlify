@@ -241,7 +241,7 @@ if (res.status === "success") {
 | `timeRange`       | `string`      | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | `locationGeoCode` | `string`      | No       | Two-letter country code (e.g. `"us"`)                               |
 | `allowedTypes`    | `string[]`    | No       | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are not accepted |
-| `processors`      | `object[]`    | No       | PDF settings, e.g. `[{ type: "pdf", maxPages: 10 }]`; default cap `25`, `-1` means unlimited |
+| `processors`      | `object[]`    | No       | Omit for the 25-page PDF cap. `{ type: "pdf" }` also defaults to 25; set `maxPages` only to override it, or use `-1` for unlimited |
 | `fetchConfig`     | `FetchConfig` | No       | Fetch configuration                                                 |
 
 <Accordion title="Search + extraction" icon="code">
@@ -304,7 +304,7 @@ await sgai.crawl.delete(crawlId);
 | `includePatterns`  | `string[]`       | No       | URL patterns to include                                  |
 | `excludePatterns`  | `string[]`       | No       | URL patterns to exclude                                  |
 | `allowedTypes`     | `string[]`       | No       | Non-empty MIME allowlist; omit it to allow every supported type |
-| `processors`       | `object[]`       | No       | PDF settings; default `maxPages` is 25 and `-1` means unlimited |
+| `processors`       | `object[]`       | No       | Omit for the 25-page PDF cap. `{ type: "pdf" }` also defaults to 25; set `maxPages` only to override it, or use `-1` for unlimited |
 | `fetchConfig`      | `FetchConfig`    | No       | Fetch configuration                                      |
 
 ### `sgai.monitor.*`
