@@ -86,20 +86,19 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 | `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, or `"prune"`. Default: `"prune"` (different from Scrape/Extract, which default to `"normal"`). |
 | `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results. Curated set (52): `ae`, `ar`, `at`, `au`, `be`, `br`, `ca`, `ch`, `cl`, `cn`, `co`, `cz`, `de`, `dk`, `eg`, `es`, `fi`, `fr`, `gb`, `gr`, `hk`, `hu`, `id`, `ie`, `il`, `in`, `it`, `jp`, `kr`, `mx`, `my`, `ng`, `nl`, `no`, `nz`, `pe`, `ph`, `pk`, `pl`, `pt`, `ro`, `ru`, `sa`, `se`, `sg`, `th`, `tr`, `tw`, `ua`, `us`, `vn`, `za`. |
-| `contentTypes` / `content_types` | array | No | Content types allowed when fetching each result. Default: `["text/html", "application/json", "text/markdown", "text/plain"]`. |
+| `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist. Every supported type, including PDF, is allowed by default. |
+| `processors` | array | No | Processor settings. PDF defaults to `{"type":"pdf","maxPages":25}`; use `1`–`500`, or `-1` for no page limit. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
-## Content Type Filtering
+## Content Types and PDF Processing
 
-By default Search only fetches text-like results: `text/html`, `application/json`, `text/markdown`
-and `text/plain`. Results served as PDFs, office documents or images are skipped and reported as
-failed pages, so a query that returns three PDFs out of five results gives you two scraped pages.
-
-Pass `contentTypes` to widen or narrow that set — for example to include PDFs:
+By default Search accepts every supported content type, including PDFs. Use `allowedTypes` to
+restrict which MIME types may be fetched, and configure the PDF page cap independently with
+`processors`. Excluding `application/pdf` rejects PDF results even when a PDF processor is present.
 
 <CodeGroup>
 
@@ -107,7 +106,8 @@ Pass `contentTypes` to widen or narrow that set — for example to include PDFs:
 res = sgai.search(
     "attention is all you need paper",
     num_results=5,
-    content_types=["text/html", "application/json", "text/markdown", "text/plain", "application/pdf"],
+    allowed_types=["application/pdf"],
+    processors=[{"type": "pdf", "max_pages": 10}],
 )
 ```
 
@@ -115,7 +115,8 @@ res = sgai.search(
 const res = await sgai.search({
   query: "attention is all you need paper",
   numResults: 5,
-  contentTypes: ["text/html", "application/json", "text/markdown", "text/plain", "application/pdf"],
+  allowedTypes: ["application/pdf"],
+  processors: [{ type: "pdf", maxPages: 10 }],
 });
 ```
 
@@ -126,18 +127,20 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
   -d '{
     "query": "attention is all you need paper",
     "numResults": 5,
-    "contentTypes": ["text/html", "application/json", "text/markdown", "text/plain", "application/pdf"]
+    "allowedTypes": ["application/pdf"],
+    "processors": [{"type": "pdf", "maxPages": 10}]
   }'
 ```
 
 </CodeGroup>
 
-Use a single entry to keep only one kind of result, e.g. `["application/pdf"]` for a PDF-only
-search. An empty array means no filter at all: every supported content type is fetched.
+`allowedTypes` and `processors` must each be non-empty when provided. Set `maxPages` to `-1` to
+process every PDF page.
 
 <Warning>
-Credits are charged per requested result (`numResults`), not per successfully fetched page, so a
-narrow filter still costs the full query.
+The playground reserves an estimate based on `numResults` and the configured PDF page cap. Completed
+PDFs are charged by pages actually processed; rejected or failed pages are not charged as successful
+results.
 </Warning>
 
 ## Search + Extraction
