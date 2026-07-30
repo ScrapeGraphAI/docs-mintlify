@@ -87,7 +87,7 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 | `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results. Curated set (52): `ae`, `ar`, `at`, `au`, `be`, `br`, `ca`, `ch`, `cl`, `cn`, `co`, `cz`, `de`, `dk`, `eg`, `es`, `fi`, `fr`, `gb`, `gr`, `hk`, `hu`, `id`, `ie`, `il`, `in`, `it`, `jp`, `kr`, `mx`, `my`, `ng`, `nl`, `no`, `nz`, `pe`, `ph`, `pk`, `pl`, `pt`, `ro`, `ru`, `sa`, `se`, `sg`, `th`, `tr`, `tw`, `ua`, `us`, `vn`, `za`. |
 | `allowedTypes` / `allowed_types` | array | No | Optional non-empty MIME allowlist. Omit it to allow every supported type, including PDF. |
-| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. |
+| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. [Configure PDF page limits](/services/scrape#configure-pdf-page-limits). |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
