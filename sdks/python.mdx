@@ -270,6 +270,8 @@ if res.status == "success":
 | `schema`            | `dict`        | No       | JSON Schema for structured output. Pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`. |
 | `location_geo_code` | `str`         | No       | Two-letter country code (e.g. `"us"`, `"it"`)                             |
 | `time_range`        | `str`         | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
+| `allowed_types`     | `list[str]`   | No       | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are not accepted |
+| `processors`        | `list[PdfProcessor]` | No | Omit for the 25-page PDF cap. `PdfProcessor()` also defaults to 25; set `max_pages` only to override it, or use `-1` for unlimited. PDF processing costs 1 credit per page actually processed |
 | `fetch_config`      | `FetchConfig` | No       | Fetch configuration                                                       |
 
 ### Crawl
@@ -316,7 +318,8 @@ sgai.crawl.delete(crawl_id)
 | `allow_external`     | `bool`                    | No       | Default `False`                                          |
 | `include_patterns`   | `list[str]`               | No       | URL glob patterns to include                             |
 | `exclude_patterns`   | `list[str]`               | No       | URL glob patterns to exclude                             |
-| `content_types`      | `list[str]`               | No       | Allowed response content types                           |
+| `allowed_types`      | `list[str]`               | No       | Non-empty MIME allowlist; omit it to allow every supported type |
+| `processors`         | `list[PdfProcessor]`       | No       | Omit for the 25-page PDF cap. `PdfProcessor()` also defaults to 25; set `max_pages` only to override it, or use `-1` for unlimited. PDF processing costs 1 credit per page actually processed |
 | `fetch_config`       | `FetchConfig`             | No       | Fetch configuration                                      |
 
 ### Monitor

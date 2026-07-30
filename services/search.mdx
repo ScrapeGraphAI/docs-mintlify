@@ -86,11 +86,69 @@ curl -X POST https://v2-api.scrapegraphai.com/api/search \
 | `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, or `"prune"`. Default: `"prune"` (different from Scrape/Extract, which default to `"normal"`). |
 | `timeRange` / `time_range` | string | No | Recency filter: `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"`. |
 | `locationGeoCode` / `location_geo_code` | string | No | Two-letter ISO country code for localized results. Curated set (52): `ae`, `ar`, `at`, `au`, `be`, `br`, `ca`, `ch`, `cl`, `cn`, `co`, `cz`, `de`, `dk`, `eg`, `es`, `fi`, `fr`, `gb`, `gr`, `hk`, `hu`, `id`, `ie`, `il`, `in`, `it`, `jp`, `kr`, `mx`, `my`, `ng`, `nl`, `no`, `nz`, `pe`, `ph`, `pk`, `pl`, `pt`, `ro`, `ru`, `sa`, `se`, `sg`, `th`, `tr`, `tw`, `ua`, `us`, `vn`, `za`. |
+| `allowedTypes` / `allowed_types` | array | No | Optional non-empty MIME allowlist. Omit it to allow every supported type, including PDF. |
+| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
+
+## Content Types and PDF Processing
+
+By default Search accepts every supported content type, including PDFs. Use `allowedTypes` to
+restrict which MIME types may be fetched, and configure the PDF page cap independently with
+`processors`. Excluding `application/pdf` rejects PDF results even when a PDF processor is present.
+
+<Note>
+There is no special `"all"` or `"*"` value. To allow every supported type, omit `allowedTypes`
+entirely. The playground follows this rule in generated snippets: when “All types” is selected, it
+does not print the full MIME list. If `allowedTypes` is present, it must contain at least one exact
+MIME type and cannot contain duplicates.
+</Note>
+
+<CodeGroup>
+
+```python Python
+res = sgai.search(
+    "attention is all you need paper",
+    num_results=5,
+    allowed_types=["application/pdf"],
+    processors=[{"type": "pdf", "max_pages": 10}],
+)
+```
+
+```javascript JavaScript
+const res = await sgai.search({
+  query: "attention is all you need paper",
+  numResults: 5,
+  allowedTypes: ["application/pdf"],
+  processors: [{ type: "pdf", maxPages: 10 }],
+});
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/search \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "attention is all you need paper",
+    "numResults": 5,
+    "allowedTypes": ["application/pdf"],
+    "processors": [{"type": "pdf", "maxPages": 10}]
+  }'
+```
+
+</CodeGroup>
+
+`allowedTypes` and `processors` must each be non-empty when provided. Set `maxPages` to `-1` to
+process every PDF page.
+
+<Warning>
+The playground reserves an estimate based on `numResults` and the configured PDF page cap. PDF
+processing costs 1 credit per page actually processed; rejected or failed pages are not charged as
+successful results.
+</Warning>
 
 ## Search + Extraction
 

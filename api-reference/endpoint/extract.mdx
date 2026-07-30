@@ -37,6 +37,17 @@ Exactly one of `url`, `html`, or `markdown` must be supplied as the source.
   HTML pre-processing mode: `"normal"`, `"reader"`, or `"prune"`.
 </ParamField>
 
+<ParamField body="allowedTypes" type="array">
+  Optional non-empty MIME allowlist for URL input. Omit it to allow every supported type; `"all"` and `"*"` are not accepted.
+</ParamField>
+
+<ParamField body="processors" type="array">
+  Optional processing configuration for URL input. Omit this field to use the 25-page PDF cap. You
+  may also send `{"type":"pdf"}` and omit `maxPages`; it defaults to `25`. Set `maxPages` only to
+  override the default, using `1`–`500`, or `-1` for no page limit. PDF processing costs 1 credit
+  per page actually processed.
+</ParamField>
+
 <ParamField body="fetchConfig" type="object">
   Fetch-time options. See the [Scrape endpoint](/api-reference/endpoint/scrape#request-body) for the full field list (`mode`, `stealth`, `headers`, `cookies`, `scrolls`, `wait`, `timeout`, `country`). Ignored when `html` or `markdown` is supplied.
 </ParamField>

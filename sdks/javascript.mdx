@@ -240,6 +240,8 @@ if (res.status === "success") {
 | `format`          | `string`      | No       | `"markdown"` (default) or `"html"`                                  |
 | `timeRange`       | `string`      | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
 | `locationGeoCode` | `string`      | No       | Two-letter country code (e.g. `"us"`)                               |
+| `allowedTypes`    | `string[]`    | No       | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are not accepted |
+| `processors`      | `object[]`    | No       | Omit for the 25-page PDF cap. `{ type: "pdf" }` also defaults to 25; set `maxPages` only to override it, or use `-1` for unlimited. PDF processing costs 1 credit per page actually processed |
 | `fetchConfig`     | `FetchConfig` | No       | Fetch configuration                                                 |
 
 <Accordion title="Search + extraction" icon="code">
@@ -301,7 +303,8 @@ await sgai.crawl.delete(crawlId);
 | `allowExternal`    | `boolean`        | No       | Allow crossing domains. Default: `false`                 |
 | `includePatterns`  | `string[]`       | No       | URL patterns to include                                  |
 | `excludePatterns`  | `string[]`       | No       | URL patterns to exclude                                  |
-| `contentTypes`     | `string[]`       | No       | Allowed content types                                    |
+| `allowedTypes`     | `string[]`       | No       | Non-empty MIME allowlist; omit it to allow every supported type |
+| `processors`       | `object[]`       | No       | Omit for the 25-page PDF cap. `{ type: "pdf" }` also defaults to 25; set `maxPages` only to override it, or use `-1` for unlimited. PDF processing costs 1 credit per page actually processed |
 | `fetchConfig`      | `FetchConfig`    | No       | Fetch configuration                                      |
 
 ### `sgai.monitor.*`
