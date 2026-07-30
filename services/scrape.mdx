@@ -88,6 +88,8 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
 | `url` | string | Yes | The URL of the webpage to scrape. |
 | `formats` | array | Yes | One or more output formats (see [Formats](#output-formats)). |
 | `contentType` | string | No | Override auto-detected content type (e.g. `"text/html"`, `"application/pdf"`). |
+| `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are invalid. |
+| `processors` | array | No | PDF settings such as `{"type":"pdf","maxPages":10}`. Default cap: 25 pages; `-1` means unlimited. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options — `mode`, `stealth`, `headers`, `cookies`, `scrolls`, `wait`, `timeout`, `country`. |
 
 <Note>

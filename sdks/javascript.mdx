@@ -303,7 +303,8 @@ await sgai.crawl.delete(crawlId);
 | `allowExternal`    | `boolean`        | No       | Allow crossing domains. Default: `false`                 |
 | `includePatterns`  | `string[]`       | No       | URL patterns to include                                  |
 | `excludePatterns`  | `string[]`       | No       | URL patterns to exclude                                  |
-| `contentTypes`     | `string[]`       | No       | Allowed content types                                    |
+| `allowedTypes`     | `string[]`       | No       | Non-empty MIME allowlist; omit it to allow every supported type |
+| `processors`       | `object[]`       | No       | PDF settings; default `maxPages` is 25 and `-1` means unlimited |
 | `fetchConfig`      | `FetchConfig`    | No       | Fetch configuration                                      |
 
 ### `sgai.monitor.*`

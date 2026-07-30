@@ -133,7 +133,8 @@ curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/:id/pages?limit=50&curso
 | `allowExternal` / `allow_external` | bool | No | Whether to follow links to other domains. Default `false` (same-origin only). |
 | `includePatterns` / `include_patterns` | array | No | URL patterns to include (e.g. `["/blog/*"]`). |
 | `excludePatterns` / `exclude_patterns` | array | No | URL patterns to exclude (e.g. `["/admin/*"]`). |
-| `contentTypes` / `content_types` | array | No | Limit crawled pages to these MIME types, e.g. `["text/html", "application/pdf"]`. |
+| `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are invalid. |
+| `processors` | array | No | PDF settings such as `{"type":"pdf","maxPages":10}`. Default cap: 25 pages; `-1` means unlimited. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>

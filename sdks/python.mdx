@@ -318,7 +318,8 @@ sgai.crawl.delete(crawl_id)
 | `allow_external`     | `bool`                    | No       | Default `False`                                          |
 | `include_patterns`   | `list[str]`               | No       | URL glob patterns to include                             |
 | `exclude_patterns`   | `list[str]`               | No       | URL glob patterns to exclude                             |
-| `content_types`      | `list[str]`               | No       | Allowed response content types                           |
+| `allowed_types`      | `list[str]`               | No       | Non-empty MIME allowlist; omit it to allow every supported type |
+| `processors`         | `list[PdfProcessor]`       | No       | PDF settings; default `max_pages` is 25 and `-1` means unlimited |
 | `fetch_config`       | `FetchConfig`             | No       | Fetch configuration                                      |
 
 ### Monitor

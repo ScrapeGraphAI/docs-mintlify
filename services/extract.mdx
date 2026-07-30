@@ -79,6 +79,8 @@ curl -X POST https://v2-api.scrapegraphai.com/api/extract \
 | `prompt` | string | Yes | Natural-language description of what to extract. |
 | `schema` | object | No | JSON schema describing the desired output shape. In Python you can pass a Pydantic model via `MyModel.model_json_schema()`. |
 | `mode` | string | No | HTML processing mode: `"normal"`, `"reader"`, `"prune"`. |
+| `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist for URL input. Omit it for all supported types; `"all"` and `"*"` are invalid. |
+| `processors` | array | No | PDF settings such as `{"type":"pdf","maxPages":10}`. Default cap: 25 pages; `-1` means unlimited. |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>

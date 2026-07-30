@@ -34,6 +34,14 @@ Returns markdown, HTML, links, images, summary, JSON extraction, branding, or sc
   Override auto-detected content type. Common values: `"text/html"`, `"application/pdf"`.
 </ParamField>
 
+<ParamField body="allowedTypes" type="array">
+  Optional non-empty MIME allowlist. Omit it to allow every supported type; `"all"` and `"*"` are not accepted.
+</ParamField>
+
+<ParamField body="processors" type="array">
+  Processing configuration. PDF defaults to `{"type":"pdf","maxPages":25}`. Use `1`–`500`, or `-1` for no page limit.
+</ParamField>
+
 <ParamField body="fetchConfig" type="object">
   Fetch-time options. All fields are optional.
 
