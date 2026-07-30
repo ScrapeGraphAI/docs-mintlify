@@ -40,7 +40,7 @@ Replaces the v1 `searchscraper` endpoint. Returns the top pages with their conte
 </ParamField>
 
 <ParamField body="allowedTypes" type="array">
-  MIME types allowed when fetching each result. All supported types, including `application/pdf`, are allowed by default. Pass a non-empty subset such as `["text/html", "application/pdf"]` to restrict results. Rejected types are reported as failed pages and do not appear in `results`.
+  Optional MIME allowlist for fetched results. Omit this field to allow every supported type, including `application/pdf`. There is no `"all"` or `"*"` keyword. When provided, it must be a non-empty array of exact supported MIME types, such as `["text/html", "application/pdf"]`. Rejected types are reported as failed pages and do not appear in `results`.
 </ParamField>
 
 <ParamField body="processors" type="array">

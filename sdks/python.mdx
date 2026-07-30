@@ -270,7 +270,7 @@ if res.status == "success":
 | `schema`            | `dict`        | No       | JSON Schema for structured output. Pass a Pydantic model's `model_json_schema()` to reuse a `BaseModel`. |
 | `location_geo_code` | `str`         | No       | Two-letter country code (e.g. `"us"`, `"it"`)                             |
 | `time_range`        | `str`         | No       | `"past_hour"`, `"past_24_hours"`, `"past_week"`, `"past_month"`, `"past_year"` |
-| `allowed_types`     | `list[str]`   | No       | Non-empty MIME allowlist. All supported types, including PDF, are allowed by default |
+| `allowed_types`     | `list[str]`   | No       | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are not accepted |
 | `processors`        | `list[PdfProcessor]` | No | PDF settings such as `PdfProcessor(max_pages=10)`; default cap `25`, `-1` means unlimited |
 | `fetch_config`      | `FetchConfig` | No       | Fetch configuration                                                       |
 
