@@ -134,7 +134,7 @@ curl -X GET "https://v2-api.scrapegraphai.com/api/crawl/:id/pages?limit=50&curso
 | `includePatterns` / `include_patterns` | array | No | URL patterns to include (e.g. `["/blog/*"]`). |
 | `excludePatterns` / `exclude_patterns` | array | No | URL patterns to exclude (e.g. `["/admin/*"]`). |
 | `allowedTypes` / `allowed_types` | array | No | Non-empty MIME allowlist. Omit it for all supported types; `"all"` and `"*"` are invalid. |
-| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. |
+| `processors` | array | No | Omit for the 25-page PDF cap. Send it only to override the cap; `maxPages` also defaults to 25 when omitted, and `-1` means unlimited. PDF processing costs 1 credit per page actually processed. [Configure PDF page limits](/services/scrape#configure-pdf-page-limits). |
 | `fetchConfig` / `fetch_config` | object | No | Fetch options (see [Scrape · FetchConfig](/services/scrape#fetchconfig)). |
 
 <Note>

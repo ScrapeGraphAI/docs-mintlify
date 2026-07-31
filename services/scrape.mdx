@@ -96,6 +96,57 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
 
+## Configure PDF page limits
+
+PDF page limits are configured inside the `processors` array, not as a top-level request field.
+The API uses a 25-page limit when `processors` is omitted or when the PDF processor does not include
+`maxPages`.
+
+| Configuration | PDF pages processed |
+|---|---|
+| Omit `processors` | Up to 25 pages |
+| `{"type": "pdf"}` | Up to 25 pages |
+| `{"type": "pdf", "maxPages": 10}` | Up to 10 pages |
+| `{"type": "pdf", "maxPages": -1}` | Every page |
+
+Use an integer from `1` to `500` for a custom limit. The limit is an upper bound, not a fixed
+charge: PDF processing costs 1 credit for each page actually processed. For example, a 6-page PDF
+with `maxPages: 25` processes 6 pages and costs 6 credits.
+
+<CodeGroup>
+
+```python Python
+from scrapegraph_py import PdfProcessor
+
+res = sgai.scrape(
+    "https://example.com/document.pdf",
+    processors=[PdfProcessor(max_pages=10)],
+)
+```
+
+```javascript JavaScript
+const res = await sgai.scrape({
+  url: "https://example.com/document.pdf",
+  processors: [{ type: "pdf", maxPages: 10 }],
+});
+```
+
+```bash cURL
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://example.com/document.pdf",
+    "formats": [{"type": "markdown"}],
+    "processors": [{"type": "pdf", "maxPages": 10}]
+  }'
+```
+
+</CodeGroup>
+
+Python uses `max_pages`; JavaScript and the REST API use `maxPages`. The same `processors`
+configuration is available on Scrape, Extract, Search, and Crawl.
+
 <Accordion title="Example Response" icon="terminal">
 ```json
 {
