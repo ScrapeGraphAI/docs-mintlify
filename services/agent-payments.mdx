@@ -1,0 +1,143 @@
+---
+title: 'Agent Payments'
+description: 'Let AI agents buy API access with a crypto wallet — no signup, no human'
+icon: 'robot'
+---
+
+## Overview
+
+Agent Payments lets an AI agent with a crypto wallet and **no account** buy access to
+ScrapeGraphAI on its own. The agent pays an [MPP](https://mpp.dev) payment challenge and
+receives a real API key plus credits — the same key any customer uses. Payment replaces
+signup.
+
+Unlike single-use prepaid tokens, a payment mints a **durable, refillable account**: a user,
+a workspace, and an API key with a credit balance that persists across purchases.
+
+<Note>
+Agent Payments is designed for autonomous agents that hold a wallet and have been authorized
+to spend. Human developers should [sign up](https://scrapegraphai.com/dashboard) for an API
+key the normal way.
+</Note>
+
+## How it works
+
+1. The agent calls a product endpoint (e.g. `POST /api/scrape`) with no key and gets a `401`
+   whose error body points at the agent-access endpoints.
+2. `POST /api/agent/mpp/access/{pack}` with no credentials returns a `402` with a
+   `WWW-Authenticate: Payment` challenge (MPP).
+3. The agent's wallet pays the challenge, then retries the request with
+   `Authorization: Payment <credential>`. If the wallet requires approval, the owner
+   approves the payment in their wallet app.
+4. The response contains an **API key and credits**. The agent sends the key as
+   `SGAI-APIKEY` on every request thereafter. The key is returned once — store it.
+
+<Frame caption="An MPP payment request awaiting approval in the InFlow app">
+  <img src="/images/agent-payments/inflow-approval.png" alt="InFlow MPP payment approval — 5 USDC approved" />
+</Frame>
+
+## Payment methods
+
+A single `402` advertises one challenge per supported method; the agent's wallet pays
+whichever it holds.
+
+| Method | Rail | Pay with | Currency |
+|--------|------|----------|----------|
+| `inflow` | Balance (PSP) | [InFlow](https://inflowpay.ai) CLI/SDK | USDC |
+| `tempo` | On-chain (Tempo) | [`mppx`](https://mpp.dev) CLI | Tempo stablecoin |
+
+<Note>
+Use the client that matches the method you chose — the `inflow` and `mppx` CLIs are separate
+wallets. The `tempo` rail is only offered when the service has it enabled.
+</Note>
+
+## Credit packs
+
+| Pack | Price (USDC) | Credits |
+|------|--------------|---------|
+| `small` | 5 | 1,000 |
+| `medium` | 40 | 10,000 |
+| `large` | 150 | 50,000 |
+
+Credits meter product usage the same way a normal account's do. A minted account starts on
+the free plan (10 requests/min, 1 concurrent crawl, 1 monitor).
+
+## Endpoints
+
+| Method | Endpoint | Auth | Purpose |
+|--------|----------|------|---------|
+| `GET` | `/api/agent/protocols` | none | Discover packs, methods, and endpoints |
+| `POST` | `/api/agent/mpp/access/{pack}` | none | Pay → mint account, API key, and credits |
+| `POST` | `/api/credits/purchase/{pack}` | `SGAI-APIKEY` | Refill credits on your account |
+| `GET` | `/api/credits` | `SGAI-APIKEY` | Check remaining balance |
+
+## Getting Started
+
+### 1. Discover
+
+Free and unauthenticated — start here to learn the packs, methods, and endpoints.
+
+```bash cURL
+curl https://api.scrapegraphai.com/api/agent/protocols
+```
+
+### 2. Pay and mint
+
+<CodeGroup>
+
+```bash InFlow
+inflow mpp pay \
+  https://api.scrapegraphai.com/api/agent/mpp/access/small \
+  --method POST
+# → { "apiKey": "sgai-…", "pack": "small", "credits": 1000,
+#     "remaining": 1000, "account": "created" }
+```
+
+```bash Tempo (mppx)
+bunx mppx \
+  https://api.scrapegraphai.com/api/agent/mpp/access/small -X POST
+# → { "apiKey": "sgai-…", "pack": "small", "credits": 1000,
+#     "remaining": 1000, "account": "created" }
+```
+
+</CodeGroup>
+
+### 3. Use the key
+
+```bash cURL
+curl -X POST https://api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: sgai-…" \
+  -H "content-type: application/json" \
+  -d '{"url": "https://example.com"}'
+```
+
+## Refilling
+
+When credits run low, pay the keyed purchase route **with your API key** to top up the same
+account. Keep your key — it is the only way to refill.
+
+```bash cURL
+inflow mpp pay \
+  https://api.scrapegraphai.com/api/credits/purchase/small \
+  --method POST \
+  --header "SGAI-APIKEY: sgai-…"
+# → { "pack": "small", "credits": 1000, "remaining": 2000 }
+```
+
+If you lose the key, pay `POST /api/agent/mpp/access/{pack}` again — every new payment mints a
+fresh account.
+
+## Terms
+
+- **Minimum purchase:** the `small` pack (5 USDC).
+- **Idempotency:** replaying the same payment credential re-delivers the same result. You are
+  never charged or credited twice for one payment.
+- **Refunds:** payments are handled out-of-band. If a payment settles but access is not
+  granted (a transient error), retry with the same credential — the flow is idempotent and
+  self-heals. For anything unrecoverable, contact [support](mailto:support@scrapegraphai.com)
+  with your payment reference (returned in the `Payment-Receipt` header).
+
+## Reference
+
+- OpenAPI: `https://api.scrapegraphai.com/api/openapi.json`
+- Machine-readable guide for agents: `GET /api/agent/protocols`
