@@ -32,15 +32,55 @@ key the normal way.
 4. The response contains an **API key and credits**. The agent sends the key as
    `SGAI-APIKEY` on every request thereafter. The key is returned once — store it.
 
+## Payment method
+
+Payments settle over [InFlow](https://inflowpay.ai), a wallet and payment service for AI
+agents. The `402` challenge advertises it in the `WWW-Authenticate: Payment` header; pay it
+with the InFlow CLI or SDK.
+
+- **Currency:** USDC
+- **Method:** `inflow` (balance rail, via InFlow)
+
+## Set up an InFlow wallet
+
+To pay, an agent needs an InFlow account, the CLI (or SDK), and a funded wallet.
+
+<Steps>
+  <Step title="Create an InFlow account">
+    Sign up at [inflowpay.ai](https://inflowpay.ai) — this is the account your agent pays
+    from.
+  </Step>
+  <Step title="Install and authenticate">
+    Install the CLI from [inflowcli.ai](https://inflowcli.ai), then log in to your account:
+
+    ```bash
+    inflow auth login
+    ```
+  </Step>
+  <Step title="Fund the wallet">
+    Add USDC to your InFlow account and confirm it's available:
+
+    ```bash
+    inflow balances list
+    ```
+  </Step>
+  <Step title="Let the agent pay">
+    Give your agent the InFlow CLI (or [MCP server](https://inflowpay.ai)) and its
+    [agentic-payments skill](https://mpp.dev). The agent handles the payment on its own —
+    it hits an `/api/agent/mpp/access/{pack}` endpoint, reads the `402` challenge, pays, and
+    retries with the credential. You only approve the spend if your wallet policy requires
+    it. The commands below show what that exchange looks like under the hood.
+  </Step>
+</Steps>
+
 <Frame caption="An MPP payment request awaiting approval in the InFlow app">
   <img src="/images/agent-payments/inflow-approval.png" alt="InFlow MPP payment approval — 5 USDC approved" />
 </Frame>
 
-## Payment method
-
-Payments settle over [InFlow](https://inflowpay.ai) using the `inflow` method (USDC). The
-`402` challenge advertises it in the `WWW-Authenticate: Payment` header; pay it with the
-InFlow CLI or SDK.
+<Note>
+InFlow is one MPP-compatible wallet. Any wallet or agent runtime that speaks MPP and holds
+USDC can pay the `inflow` challenge — see [mpp.dev](https://mpp.dev) for the protocol.
+</Note>
 
 ## Credit packs
 
@@ -57,7 +97,7 @@ the free plan (10 requests/min, 1 concurrent crawl, 1 monitor).
 
 | Method | Endpoint | Auth | Purpose |
 |--------|----------|------|---------|
-| `GET` | `/api/agent/protocols` | none | Discover packs, methods, and endpoints |
+| `GET` | `/api/agent/protocols` | none | Discover packs, method, and endpoints |
 | `POST` | `/api/agent/mpp/access/{pack}` | none | Pay → mint account, API key, and credits |
 | `POST` | `/api/credits/purchase/{pack}` | `SGAI-APIKEY` | Refill credits on your account |
 | `GET` | `/api/credits` | `SGAI-APIKEY` | Check remaining balance |
@@ -66,7 +106,7 @@ the free plan (10 requests/min, 1 concurrent crawl, 1 monitor).
 
 ### 1. Discover
 
-Free and unauthenticated — start here to learn the packs, methods, and endpoints.
+Free and unauthenticated — start here to learn the packs, method, and endpoints.
 
 ```bash cURL
 curl https://v2-api.scrapegraphai.com/api/agent/protocols
