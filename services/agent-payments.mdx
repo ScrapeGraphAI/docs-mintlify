@@ -36,20 +36,11 @@ key the normal way.
   <img src="/images/agent-payments/inflow-approval.png" alt="InFlow MPP payment approval — 5 USDC approved" />
 </Frame>
 
-## Payment methods
+## Payment method
 
-A single `402` advertises one challenge per supported method; the agent's wallet pays
-whichever it holds.
-
-| Method | Rail | Pay with | Currency |
-|--------|------|----------|----------|
-| `inflow` | Balance (PSP) | [InFlow](https://inflowpay.ai) CLI/SDK | USDC |
-| `tempo` | On-chain (Tempo) | [`mppx`](https://mpp.dev) CLI | Tempo stablecoin |
-
-<Note>
-Use the client that matches the method you chose — the `inflow` and `mppx` CLIs are separate
-wallets. The `tempo` rail is only offered when the service has it enabled.
-</Note>
+Payments settle over [InFlow](https://inflowpay.ai) using the `inflow` method (USDC). The
+`402` challenge advertises it in the `WWW-Authenticate: Payment` header; pay it with the
+InFlow CLI or SDK.
 
 ## Credit packs
 
@@ -83,8 +74,6 @@ curl https://api.scrapegraphai.com/api/agent/protocols
 
 ### 2. Pay and mint
 
-<CodeGroup>
-
 ```bash InFlow
 inflow mpp pay \
   https://api.scrapegraphai.com/api/agent/mpp/access/small \
@@ -92,15 +81,6 @@ inflow mpp pay \
 # → { "apiKey": "sgai-…", "pack": "small", "credits": 1000,
 #     "remaining": 1000, "account": "created" }
 ```
-
-```bash Tempo (mppx)
-bunx mppx \
-  https://api.scrapegraphai.com/api/agent/mpp/access/small -X POST
-# → { "apiKey": "sgai-…", "pack": "small", "credits": 1000,
-#     "remaining": 1000, "account": "created" }
-```
-
-</CodeGroup>
 
 ### 3. Use the key
 
