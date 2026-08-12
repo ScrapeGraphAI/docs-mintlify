@@ -69,14 +69,14 @@ the free plan (10 requests/min, 1 concurrent crawl, 1 monitor).
 Free and unauthenticated — start here to learn the packs, methods, and endpoints.
 
 ```bash cURL
-curl https://api.scrapegraphai.com/api/agent/protocols
+curl https://v2-api.scrapegraphai.com/api/agent/protocols
 ```
 
 ### 2. Pay and mint
 
 ```bash InFlow
 inflow mpp pay \
-  https://api.scrapegraphai.com/api/agent/mpp/access/small \
+  https://v2-api.scrapegraphai.com/api/agent/mpp/access/small \
   --method POST
 # → { "apiKey": "sgai-…", "pack": "small", "credits": 1000,
 #     "remaining": 1000, "account": "created" }
@@ -85,7 +85,7 @@ inflow mpp pay \
 ### 3. Use the key
 
 ```bash cURL
-curl -X POST https://api.scrapegraphai.com/api/scrape \
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
   -H "SGAI-APIKEY: sgai-…" \
   -H "content-type: application/json" \
   -d '{"url": "https://example.com"}'
@@ -98,7 +98,7 @@ account. Keep your key — it is the only way to refill.
 
 ```bash cURL
 inflow mpp pay \
-  https://api.scrapegraphai.com/api/credits/purchase/small \
+  https://v2-api.scrapegraphai.com/api/credits/purchase/small \
   --method POST \
   --header "SGAI-APIKEY: sgai-…"
 # → { "pack": "small", "credits": 1000, "remaining": 2000 }
@@ -119,5 +119,5 @@ fresh account.
 
 ## Reference
 
-- OpenAPI: `https://api.scrapegraphai.com/api/openapi.json`
+- OpenAPI: `https://v2-api.scrapegraphai.com/api/openapi.json`
 - Machine-readable guide for agents: `GET /api/agent/protocols`
