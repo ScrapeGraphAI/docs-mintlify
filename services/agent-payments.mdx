@@ -36,9 +36,10 @@ key the normal way.
 
 Payments settle over [InFlow](https://inflowpay.ai), a wallet and payment service for AI
 agents. The `402` challenge advertises it in the `WWW-Authenticate: Payment` header; pay it
-with the InFlow CLI or SDK.
+with the InFlow CLI or SDK. Fund the InFlow wallet by sending USDC over the Base network.
 
 - **Currency:** USDC
+- **Network:** Base
 - **Method:** `inflow` (balance rail, via InFlow)
 
 ## Set up an InFlow wallet
@@ -58,7 +59,7 @@ To pay, an agent needs an InFlow account, the CLI (or SDK), and a funded wallet.
     ```
   </Step>
   <Step title="Fund the wallet">
-    Add USDC to your InFlow account and confirm it's available:
+    Send USDC over the Base network to your InFlow account, then confirm it's available:
 
     ```bash
     inflow balances list
