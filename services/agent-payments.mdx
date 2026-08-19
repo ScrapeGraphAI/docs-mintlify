@@ -9,7 +9,7 @@ icon: 'robot'
 Agent Payments lets an AI agent with a crypto wallet and **no account** buy access to
 ScrapeGraphAI on its own. The agent pays an [MPP](https://mpp.dev) payment challenge and
 receives a real API key plus credits, the same key any customer uses. Payment replaces
-signup.
+signup. Agents can make a one-time credit purchase or start a recurring monthly subscription.
 
 Unlike single-use prepaid tokens, a payment mints a **durable, refillable account**: a user,
 a workspace, and an API key with a credit balance that persists across purchases.
@@ -24,8 +24,9 @@ key the normal way.
 
 1. The agent calls a product endpoint (e.g. `POST /api/scrape`) with no key and gets a `401`
    whose error body points at the agent-access endpoints.
-2. `POST /api/agent/mpp/access/{pack}` with no credentials returns a `402` with a
-   `WWW-Authenticate: Payment` challenge (MPP).
+2. The agent chooses one-time access at `POST /api/agent/mpp/access/{pack}` or recurring
+   access at `POST /api/agent/mpp/subscription/{plan}`. An unpaid request returns a `402`
+   with a `WWW-Authenticate: Payment` challenge (MPP).
 3. The agent's wallet pays the challenge, then retries the request with
    `Authorization: Payment <credential>`. If the wallet requires approval, the owner
    approves the payment in their wallet app.
@@ -94,12 +95,33 @@ USDC can pay the `inflow` challenge. See [mpp.dev](https://mpp.dev) for the prot
 Credits meter product usage the same way a normal account's do. A minted account starts on
 the free plan (10 requests/min, 1 concurrent crawl, 1 monitor).
 
+## Monthly subscriptions
+
+MPP also supports recurring payments. A subscription creates a durable account and stable API
+key, then grants the plan's credit allowance for each paid monthly period.
+
+| Plan | Price (USDC/month) | Credits/month |
+|------|--------------------|---------------|
+| `starter` | 20 | 10,000 |
+| `growth` | 100 | 100,000 |
+| `pro` | 500 | 750,000 |
+
+The first period settles when the subscription is activated. The MPP challenge binds the amount,
+currency, billing period, plan, and subscription expiration into immutable terms that the wallet
+shows for approval.
+
+<Warning>
+An MPP subscription is a recurring payment commitment, not a one-time credit pack. Review the
+amount and monthly period in the InFlow approval screen before approving it.
+</Warning>
+
 ## Endpoints
 
 | Method | Endpoint | Auth | Purpose |
 |--------|----------|------|---------|
 | `GET` | `/api/agent/protocols` | none | Discover packs, method, and endpoints |
 | `POST` | `/api/agent/mpp/access/{pack}` | none | Pay → mint account, API key, and credits |
+| `POST` | `/api/agent/mpp/subscription/{plan}` | none | Subscribe → mint account, API key, and monthly credits |
 | `POST` | `/api/credits/purchase/{pack}` | `SGAI-APIKEY` | Refill credits on your account |
 | `GET` | `/api/credits` | `SGAI-APIKEY` | Check remaining balance |
 
@@ -131,6 +153,104 @@ curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
   -H "content-type: application/json" \
   -d '{"url": "https://example.com"}'
 ```
+
+## Subscribe with MPP
+
+Use `mpp subscribe`, not `mpp pay`, when the challenge has `intent: subscription`.
+
+### 1. Inspect the recurring terms
+
+Inspection is read-only and does not create a payment:
+
+```bash InFlow
+inflow inspect \
+  https://v2-api.scrapegraphai.com/api/agent/mpp/subscription/starter \
+  --method POST
+```
+
+The response contains one or more MPP subscription options. Review these fields:
+
+- `amount` and `currency`
+- `period_count` and `period_unit`
+- `subscription_expires`
+- `external_id`
+- `option_id`
+
+If multiple options are returned, choose one explicitly. Never assume the first option is the one
+the owner wants.
+
+### 2. Start the subscription
+
+Pass the `option_id` returned by inspection:
+
+```bash InFlow
+inflow mpp subscribe \
+  https://v2-api.scrapegraphai.com/api/agent/mpp/subscription/starter \
+  --method POST \
+  --option-id <option_id>
+```
+
+InFlow returns an `approval_url`. Open it in the InFlow app or dashboard and approve the recurring
+terms. The approval activates the subscription and settles the first monthly period.
+
+For an agent that can wait for approval inline, poll automatically:
+
+```bash InFlow
+inflow mpp subscribe \
+  https://v2-api.scrapegraphai.com/api/agent/mpp/subscription/starter \
+  --method POST \
+  --option-id <option_id> \
+  --interval 5 \
+  --max-attempts 180
+```
+
+On success, ScrapeGraphAI returns the stable API key and subscription details:
+
+```json
+{
+  "apiKey": "sgai-…",
+  "subscriptionId": "…",
+  "plan": "starter",
+  "creditsPerMonth": 10000,
+  "remaining": 10000,
+  "renewed": true
+}
+```
+
+Store the API key securely. Send it as `SGAI-APIKEY` on normal ScrapeGraphAI API requests.
+
+### 3. Use and manage the subscription
+
+List or inspect subscriptions from the buyer account:
+
+```bash InFlow
+inflow subscriptions list
+inflow subscriptions get <subscription_id>
+```
+
+To request the subscription resource again, including after the billing period changes, use:
+
+```bash InFlow
+inflow subscriptions fetch \
+  <subscription_id> \
+  https://v2-api.scrapegraphai.com/api/agent/mpp/subscription/starter \
+  --method POST
+```
+
+InFlow obtains a fresh credential for the current challenge. If the current period is already
+paid, access continues without another period charge. If a new period is due, InFlow processes the
+next recurring payment before ScrapeGraphAI renews the monthly credits.
+
+### Cancel a subscription
+
+Cancellation is immediate and stops future periods. It does not refund a period that already
+settled:
+
+```bash InFlow
+inflow subscriptions cancel <subscription_id>
+```
+
+Always confirm cancellation with the subscription owner before running this command.
 
 ## Refilling
 
