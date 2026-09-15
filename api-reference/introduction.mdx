@@ -40,6 +40,22 @@ SGAI-APIKEY: sgai-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 Keep your API key secret. Never ship it in client-side code — load it from an environment variable or a server-side secret store.
 </Note>
 
+## Group requests by session
+
+Add the optional `SGAI-Session-Id` header to requests that belong to the same workflow, agent run, or batch:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "SGAI-Session-Id: import-2026-09-15" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","formats":[{"type":"markdown"}]}'
+```
+
+The value is trimmed, must contain 1–128 characters, and is stored as request metadata. It does not change request parameters or cache keys. Requests without the header have no session ID.
+
+Use the same value across related calls, then filter them in the dashboard or with [`GET /api/history?sessionId=import`](/api-reference/endpoint/history). Session filtering is case-insensitive and supports partial matches. Crawl child requests inherit the session ID from the request that started the crawl.
+
 ## Endpoints
 
 <CardGroup cols={2}>
