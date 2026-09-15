@@ -32,10 +32,14 @@ Returns a paginated list of recent entries, newest first.
   Filter by service. One of `"scrape"`, `"extract"`, `"search"`, `"monitor"`, `"crawl"`, `"schema"`.
 </ParamField>
 
+<ParamField query="sessionId" type="string">
+  Filter by session ID using a case-insensitive partial match. For example, `sessionId=import` matches `import-2026-09-15`.
+</ParamField>
+
 ### Example request
 
 ```bash
-curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=5" \
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&sessionId=import&limit=5" \
   -H "SGAI-APIKEY: $SGAI_API_KEY"
 ```
 
@@ -47,6 +51,7 @@ curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=5
     {
       "id": "9701fc04-23de-4684-a48f-7e8fa287550b",
       "userId": "4406e370-2405-4927-b7b3-b85c0a769b63",
+      "sessionId": "import-2026-09-15",
       "service": "scrape",
       "status": "completed",
       "params": {
@@ -106,6 +111,7 @@ curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f
 {
   "id": "9701fc04-23de-4684-a48f-7e8fa287550b",
   "userId": "4406e370-2405-4927-b7b3-b85c0a769b63",
+  "sessionId": "import-2026-09-15",
   "service": "scrape",
   "status": "completed",
   "params": {
@@ -135,6 +141,7 @@ Every entry — both in `GET /history` and `GET /history/:id` — has the same s
 |-------|-------------|
 | `id` | Entry UUID. Same UUID as the originating endpoint returned. |
 | `userId` | The account that issued the request. |
+| `sessionId` | Optional request session from the `SGAI-Session-Id` header. `null` when the request did not include one. |
 | `service` | `"scrape"` \| `"extract"` \| `"search"` \| `"monitor"` \| `"crawl"` \| `"schema"`. |
 | `status` | Lifecycle: `"running"` \| `"completed"` \| `"failed"`. |
 | `params` | The request body that produced this entry (URL, prompt, formats, etc.). |
@@ -152,6 +159,7 @@ The canonical pattern: start a crawl, poll until completed, then for each page f
 # 1. Start the crawl
 curl -X POST https://v2-api.scrapegraphai.com/api/crawl \
   -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "SGAI-Session-Id: docs-crawl-1" \
   -H "Content-Type: application/json" \
   -d '{ "url": "https://example.com", "formats": [{ "type": "markdown" }], "maxPages": 5 }'
 # → { "id": "crawl-uuid", "status": "running", ... }
@@ -167,19 +175,18 @@ curl -X GET https://v2-api.scrapegraphai.com/api/history/page-uuid \
 # → { "service": "scrape", "result": { "results": { "markdown": { "data": ["# ..."] } } }, ... }
 ```
 
-The `requestParentId` on each child scrape entry equals the parent crawl's `id`, so you can also list every page produced by a single crawl with:
+The `requestParentId` on each child scrape entry equals the parent crawl's `id`. Child entries also inherit the crawl request's session ID, so you can list the workflow with:
 
 ```bash
-curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=100" \
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&sessionId=docs-crawl-1&limit=100" \
   -H "SGAI-APIKEY: $SGAI_API_KEY"
-# Then filter client-side by `requestParentId === crawl-uuid`.
 ```
 
 ## Errors
 
 | HTTP | `error.type` | When |
 |------|--------------|------|
-| `400` | `validation` | Malformed `id` (must be a UUID), or invalid `service` filter value. |
+| `400` | `validation` | Malformed `id`, invalid `service`, or a `sessionId` longer than 128 characters. |
 | `404` | `not_found` | The `id` is well-formed but no matching entry exists for this account. |
 | `403` | `auth_invalid_key` | The API key is invalid or revoked. |
 

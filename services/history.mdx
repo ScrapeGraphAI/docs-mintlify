@@ -53,7 +53,7 @@ if (one.status === "success") {
 
 ```bash cURL
 # List
-curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&limit=5" \
+curl -X GET "https://v2-api.scrapegraphai.com/api/history?service=scrape&sessionId=import&limit=5" \
   -H "SGAI-APIKEY: $SGAI_API_KEY"
 
 # Get one
@@ -72,6 +72,7 @@ curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f
 | `page` | integer | No | Page number (1-indexed). Default: `1`. |
 | `limit` | integer | No | Entries per page. Default: `20`. |
 | `service` | string | No | Filter by service: `scrape`, `extract`, `search`, `monitor`, `crawl`, `schema`. |
+| `sessionId` | string | No | Case-insensitive partial session ID match. |
 
 **Get** (`GET /api/history/:id`)
 
@@ -82,6 +83,22 @@ curl -X GET https://v2-api.scrapegraphai.com/api/history/9701fc04-23de-4684-a48f
 <Note>
 Get your API key from the [dashboard](https://scrapegraphai.com/dashboard).
 </Note>
+
+## Grouping related requests
+
+Send `SGAI-Session-Id` with each REST API request in the same workflow:
+
+```bash
+curl -X POST https://v2-api.scrapegraphai.com/api/scrape \
+  -H "SGAI-APIKEY: $SGAI_API_KEY" \
+  -H "SGAI-Session-Id: import-2026-09-15" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com","formats":[{"type":"markdown"}]}'
+```
+
+The session ID is optional, accepts 1–128 characters after trimming, and is returned as `sessionId` on history entries. Search by any case-insensitive portion of the value, such as `sessionId=import`. The dashboard also displays and filters by session ID.
+
+When a crawl request includes the header, its child scrape entries inherit the same session ID.
 
 ## Fetching crawled page content
 
@@ -164,6 +181,7 @@ children = [e for e in page.data.data if e.request_parent_id == crawl_id]
 | Field | Description |
 |-------|-------------|
 | `id` | Entry UUID — same UUID the originating endpoint returned. |
+| `sessionId` | Optional session identifier supplied through `SGAI-Session-Id`; `null` when omitted. |
 | `service` | `scrape` \| `extract` \| `search` \| `monitor` \| `crawl` \| `schema`. |
 | `status` | `running` \| `completed` \| `failed`. |
 | `params` | The request body that produced this entry. |
@@ -198,8 +216,8 @@ asyncio.run(main())
   <Card title="Replay Past Requests" icon="clock-rotate-left">
     Fetch the full result of any past call without re-running it (no extra credits).
   </Card>
-  <Card title="Service Filtering" icon="filter">
-    Narrow by `scrape`, `extract`, `search`, `monitor`, `crawl`, or `schema`.
+  <Card title="Session Filtering" icon="filter">
+    Group related calls and find them with a case-insensitive partial session ID match.
   </Card>
   <Card title="Parent Linking" icon="link">
     `requestParentId` ties child requests back to the crawl or workflow that spawned them.
